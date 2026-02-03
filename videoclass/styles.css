@@ -87,8 +87,10 @@
 .videoclass-video-embed embed,
 .videoclass-video-embed img {
     width: 100% !important;
+    max-width: 100% !important;
     height: auto !important;
     aspect-ratio: 16 / 9;
+    display: block;
     border: 0;
     border-radius: 16px;
     box-shadow: 0 16px 30px rgba(2, 6, 23, 0.45);
@@ -98,7 +100,7 @@
 .videoclass-video-embed .no-overflow,
 .videoclass-video-embed p {
     width: 100%;
-    max-width: 100%;
+    max-width: 100% !important;
     margin: 0;
 }
 
