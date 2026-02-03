@@ -244,3 +244,21 @@ body.format-videoclass.drawer-open-left {
 body.format-videoclass.drawer-open-left #page {
     margin-left: 0 !important;
 }
+
+/* Expand content area when the drawer is removed. */
+body.format-videoclass #page-content,
+body.format-videoclass .container,
+body.format-videoclass .container-fluid {
+    max-width: 100% !important;
+}
+
+body.format-videoclass #page-content {
+    padding-left: 24px;
+    padding-right: 24px;
+}
+
+body.format-videoclass #region-main,
+body.format-videoclass .region-main {
+    width: 100%;
+    max-width: 100%;
+}
