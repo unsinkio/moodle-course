@@ -262,3 +262,19 @@ body.format-videoclass .region-main {
     width: 100%;
     max-width: 100%;
 }
+
+/* Remove leftover drawer spacing on the page wrapper. */
+body.format-videoclass #page.drawers.show-drawer-left,
+body.format-videoclass #page.drawers.show-drawer-left.drag-container {
+    margin-left: 0 !important;
+    padding-left: 0 !important;
+}
+
+body.format-videoclass #page .main-inner {
+    max-width: 100% !important;
+}
+
+body.format-videoclass #page-header.header-maxwidth,
+body.format-videoclass .secondary-navigation {
+    max-width: 100% !important;
+}
