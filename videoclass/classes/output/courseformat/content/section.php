@@ -27,20 +27,39 @@ namespace format_videoclass\output\courseformat\content;
 use core_courseformat\output\local\content\section as section_base;
 use stdClass;
 
-class section extends section_base {
+class section extends section_base
+{
     private const RESOURCE_MODULES = [
-        'resource', 'url', 'page', 'book', 'folder', 'file', 'imscp', 'scorm', 'h5pactivity'
+        'resource',
+        'url',
+        'page',
+        'book',
+        'folder',
+        'file',
+        'imscp',
+        'scorm',
+        'h5pactivity'
     ];
 
     private const NOTES_MODULES = [
-        'assign', 'quiz', 'lesson', 'workshop', 'feedback', 'survey'
+        'assign',
+        'quiz',
+        'lesson',
+        'workshop',
+        'feedback',
+        'survey'
     ];
 
     private const QA_MODULES = [
-        'forum', 'chat', 'choice', 'wiki', 'glossary'
+        'forum',
+        'chat',
+        'choice',
+        'wiki',
+        'glossary'
     ];
 
-    public function export_for_template(\renderer_base $output): stdClass {
+    public function export_for_template(\renderer_base $output): stdClass
+    {
         $data = parent::export_for_template($output);
 
         $cms = [];
@@ -50,7 +69,7 @@ class section extends section_base {
 
         [$resources, $notes, $qa] = $this->split_cms($cms);
 
-        $data->videoclass = (object)[
+        $data->videoclass = (object) [
             'lessons' => $this->wrap_cmlist($cms),
             'resources' => $this->wrap_cmlist($resources),
             'notes' => $this->wrap_cmlist($notes),
@@ -67,12 +86,13 @@ class section extends section_base {
      * @param stdClass $data
      * @return bool
      */
-    private function summary_has_video(stdClass $data): bool {
+    private function summary_has_video(stdClass $data): bool
+    {
         if (empty($data->summary) || empty($data->summary->summarytext)) {
             return false;
         }
 
-        $html = (string)$data->summary->summarytext;
+        $html = (string) $data->summary->summarytext;
         if (preg_match('/<(iframe|video|embed|source)\b/i', $html)) {
             return true;
         }
@@ -86,7 +106,8 @@ class section extends section_base {
      * @param array $cms
      * @return array
      */
-    private function split_cms(array $cms): array {
+    private function split_cms(array $cms): array
+    {
         $resources = [];
         $notes = [];
         $qa = [];
@@ -100,7 +121,7 @@ class section extends section_base {
             $cmitem = $cmwrapper->cmitem;
             $label = '';
             if (!empty($cmitem->cmformat) && !empty($cmitem->cmformat->cmname)) {
-                $label = strip_tags($cmitem->cmformat->cmname);
+                $label = strip_tags((string) $cmitem->cmformat->cmname);
             }
 
             $bucket = $this->bucket_from_label($label);
@@ -139,7 +160,8 @@ class section extends section_base {
      * @param string $label
      * @return string
      */
-    private function bucket_from_label(string $label): string {
+    private function bucket_from_label(string $label): string
+    {
         $label = trim($label);
         if ($label === '') {
             return '';
@@ -166,8 +188,9 @@ class section extends section_base {
      * @param array $cms
      * @return stdClass
      */
-    private function wrap_cmlist(array $cms): stdClass {
-        return (object)[
+    private function wrap_cmlist(array $cms): stdClass
+    {
+        return (object) [
             'cms' => $cms,
             'hascms' => !empty($cms),
         ];
