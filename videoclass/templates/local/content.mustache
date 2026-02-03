@@ -1,0 +1,27 @@
+{{!
+    @template format_videoclass/local/content
+}}
+
+<div class="videoclass-course {{sectionclasses}}">
+    {{#announcement}}
+        <div class="videoclass-banner">
+            {{{announcement}}}
+        </div>
+    {{/announcement}}
+
+    <div class="videoclass-course-body">
+        <ul class="{{format}}">
+            {{#singlesection}}
+                {{$ format_videoclass/local/content/section }}
+                    {{> format_videoclass/local/content/section }}
+                {{/ format_videoclass/local/content/section }}
+            {{/singlesection}}
+        </ul>
+    </div>
+
+    {{#bulkedittools}}
+        {{$ core_courseformat/local/content/bulkedittools}}
+            {{> core_courseformat/local/content/bulkedittools}}
+        {{/ core_courseformat/local/content/bulkedittools}}
+    {{/bulkedittools}}
+</div>

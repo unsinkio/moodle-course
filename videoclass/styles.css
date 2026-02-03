@@ -1,0 +1,179 @@
+.videoclass-course {
+    --vc-bg: #0f172a;
+    --vc-surface: #ffffff;
+    --vc-ink: #0b1220;
+    --vc-muted: #5b6475;
+    --vc-accent: #f97316;
+    --vc-accent-soft: #ffedd5;
+    --vc-border: rgba(15, 23, 42, 0.12);
+    font-family: "Space Grotesk", "Figtree", "Segoe UI", sans-serif;
+}
+
+.videoclass-banner {
+    background: linear-gradient(135deg, #111827 0%, #1f2937 55%, #0f172a 100%);
+    color: #f8fafc;
+    border-radius: 18px;
+    padding: 18px 22px;
+    margin-bottom: 24px;
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.18);
+}
+
+.videoclass-banner a {
+    color: #fde68a;
+    text-decoration: underline;
+}
+
+.videoclass-course-body {
+    margin-bottom: 24px;
+}
+
+.videoclass-section {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.videoclass-section-content {
+    background: transparent;
+}
+
+.videoclass-availability {
+    margin-bottom: 12px;
+}
+
+.videoclass-layout {
+    display: grid;
+    grid-template-columns: minmax(240px, 28%) minmax(0, 1fr);
+    gap: 24px;
+    align-items: stretch;
+    margin-bottom: 24px;
+}
+
+.videoclass-sidebar {
+    background: var(--vc-surface);
+    border: 1px solid var(--vc-border);
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+}
+
+.videoclass-sidebar-header {
+    font-size: 0.85rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--vc-muted);
+    margin-bottom: 12px;
+}
+
+.videoclass-video {
+    background: radial-gradient(circle at top left, #1e293b 0%, #0f172a 55%, #020617 100%);
+    border-radius: 22px;
+    padding: 18px;
+    color: #f8fafc;
+    box-shadow: inset 0 0 0 1px rgba(248, 250, 252, 0.08), 0 20px 40px rgba(2, 6, 23, 0.45);
+    min-height: 320px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.videoclass-video-embed iframe,
+.videoclass-video-embed video,
+.videoclass-video-embed embed {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    border: 0;
+    border-radius: 16px;
+    box-shadow: 0 16px 30px rgba(2, 6, 23, 0.45);
+}
+
+.videoclass-video-placeholder {
+    border: 1px dashed rgba(248, 250, 252, 0.4);
+    border-radius: 16px;
+    padding: 32px;
+    text-align: center;
+    font-size: 0.95rem;
+    color: rgba(248, 250, 252, 0.8);
+}
+
+.videoclass-tabs {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    background: var(--vc-surface);
+    border-radius: 18px;
+    padding: 12px;
+    border: 1px solid var(--vc-border);
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
+}
+
+.videoclass-tab-toggle {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.videoclass-tab-label {
+    cursor: pointer;
+    padding: 10px 12px;
+    border-radius: 12px;
+    text-align: center;
+    font-weight: 600;
+    color: var(--vc-muted);
+    background: #f8fafc;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.videoclass-tabs > input:nth-of-type(1):checked + label,
+.videoclass-tabs > input:nth-of-type(2):checked + label,
+.videoclass-tabs > input:nth-of-type(3):checked + label {
+    color: var(--vc-ink);
+    background: var(--vc-accent-soft);
+    border-color: rgba(249, 115, 22, 0.35);
+    box-shadow: 0 6px 16px rgba(249, 115, 22, 0.2);
+}
+
+.videoclass-tab-panels {
+    grid-column: 1 / -1;
+    background: #ffffff;
+    border-radius: 14px;
+    padding: 18px;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.videoclass-tab-panel {
+    display: none;
+}
+
+.videoclass-tabs > input:nth-of-type(1):checked ~ .videoclass-tab-panels > .videoclass-tab-panel:nth-of-type(1),
+.videoclass-tabs > input:nth-of-type(2):checked ~ .videoclass-tab-panels > .videoclass-tab-panel:nth-of-type(2),
+.videoclass-tabs > input:nth-of-type(3):checked ~ .videoclass-tab-panels > .videoclass-tab-panel:nth-of-type(3) {
+    display: block;
+}
+
+.videoclass-empty {
+    color: var(--vc-muted);
+    font-size: 0.95rem;
+    padding: 12px 0;
+}
+
+@media (max-width: 992px) {
+    .videoclass-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .videoclass-video {
+        order: -1;
+    }
+
+    .videoclass-tabs {
+        grid-template-columns: 1fr;
+    }
+
+    .videoclass-tab-label {
+        text-align: left;
+    }
+}

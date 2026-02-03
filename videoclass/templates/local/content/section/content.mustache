@@ -1,0 +1,87 @@
+{{!
+    @template format_videoclass/local/content/section/content
+}}
+
+<div id="coursecontentcollapse{{num}}" class="content videoclass-section-content">
+    {{#availability}}
+        <div class="videoclass-availability">
+            {{$ core_courseformat/local/content/section/availability }}
+                {{> core_courseformat/local/content/section/availability }}
+            {{/ core_courseformat/local/content/section/availability }}
+        </div>
+    {{/availability}}
+    <div class="videoclass-layout">
+        <aside class="videoclass-sidebar">
+            <div class="videoclass-sidebar-header">Lecciones</div>
+            {{#videoclass.lessons}}
+                {{$ core_courseformat/local/content/section/cmlist }}
+                    {{> core_courseformat/local/content/section/cmlist }}
+                {{/ core_courseformat/local/content/section/cmlist }}
+            {{/videoclass.lessons}}
+            {{^videoclass.lessons.hascms}}
+                <div class="videoclass-empty">Aun no hay lecciones en este tema.</div>
+            {{/videoclass.lessons.hascms}}
+        </aside>
+
+        <div class="videoclass-video">
+            {{#videoclass.hasvideo}}
+                <div class="videoclass-video-embed">
+                    {{{summary.summarytext}}}
+                </div>
+            {{/videoclass.hasvideo}}
+            {{^videoclass.hasvideo}}
+                <div class="videoclass-video-placeholder">
+                    Agrega el video en el resumen del tema para que aparezca aqui.
+                </div>
+            {{/videoclass.hasvideo}}
+        </div>
+    </div>
+
+    <div class="videoclass-tabs" role="tablist" aria-label="Recursos del tema">
+        <input class="videoclass-tab-toggle" type="radio" name="videoclass-tabs-{{id}}" id="videoclass-tab-{{id}}-resources" checked>
+        <label class="videoclass-tab-label" for="videoclass-tab-{{id}}-resources">Recursos</label>
+
+        <input class="videoclass-tab-toggle" type="radio" name="videoclass-tabs-{{id}}" id="videoclass-tab-{{id}}-notes">
+        <label class="videoclass-tab-label" for="videoclass-tab-{{id}}-notes">Notas</label>
+
+        <input class="videoclass-tab-toggle" type="radio" name="videoclass-tabs-{{id}}" id="videoclass-tab-{{id}}-qa">
+        <label class="videoclass-tab-label" for="videoclass-tab-{{id}}-qa">Q&A</label>
+
+        <div class="videoclass-tab-panels">
+            <section class="videoclass-tab-panel" role="tabpanel" aria-labelledby="videoclass-tab-{{id}}-resources">
+                {{#videoclass.resources}}
+                    {{$ core_courseformat/local/content/section/cmlist }}
+                        {{> core_courseformat/local/content/section/cmlist }}
+                    {{/ core_courseformat/local/content/section/cmlist }}
+                {{/videoclass.resources}}
+                {{^videoclass.resources.hascms}}
+                    <div class="videoclass-empty">No hay recursos asignados a este tema.</div>
+                {{/videoclass.resources.hascms}}
+            </section>
+
+            <section class="videoclass-tab-panel" role="tabpanel" aria-labelledby="videoclass-tab-{{id}}-notes">
+                {{#videoclass.notes}}
+                    {{$ core_courseformat/local/content/section/cmlist }}
+                        {{> core_courseformat/local/content/section/cmlist }}
+                    {{/ core_courseformat/local/content/section/cmlist }}
+                {{/videoclass.notes}}
+                {{^videoclass.notes.hascms}}
+                    <div class="videoclass-empty">Agrega actividades con el prefijo [Notas] para mostrarlas aqui.</div>
+                {{/videoclass.notes.hascms}}
+            </section>
+
+            <section class="videoclass-tab-panel" role="tabpanel" aria-labelledby="videoclass-tab-{{id}}-qa">
+                {{#videoclass.qa}}
+                    {{$ core_courseformat/local/content/section/cmlist }}
+                        {{> core_courseformat/local/content/section/cmlist }}
+                    {{/ core_courseformat/local/content/section/cmlist }}
+                {{/videoclass.qa}}
+                {{^videoclass.qa.hascms}}
+                    <div class="videoclass-empty">Agrega actividades con el prefijo [Q&A] o foros para mostrarlas aqui.</div>
+                {{/videoclass.qa.hascms}}
+            </section>
+        </div>
+    </div>
+
+    {{{cmcontrols}}}
+</div>
