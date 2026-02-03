@@ -65,6 +65,35 @@
     margin-bottom: 12px;
 }
 
+.videoclass-sections-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.videoclass-section-link {
+    display: block;
+    padding: 10px 12px;
+    border-radius: 12px;
+    color: var(--vc-ink);
+    text-decoration: none;
+    background: #f8fafc;
+    border: 1px solid transparent;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.videoclass-section-link:hover {
+    border-color: rgba(15, 23, 42, 0.16);
+    background: #eef2ff;
+}
+
+.videoclass-section-link.is-current {
+    background: var(--vc-accent-soft);
+    border-color: rgba(249, 115, 22, 0.35);
+    box-shadow: 0 6px 16px rgba(249, 115, 22, 0.2);
+}
+
 .videoclass-video {
     background: radial-gradient(circle at top left, #1e293b 0%, #0f172a 55%, #020617 100%);
     border-radius: 22px;
@@ -192,4 +221,15 @@
     .videoclass-tab-label {
         text-align: left;
     }
+}
+
+/* Hide default Moodle course index drawer for this format. */
+.format-videoclass #courseindex,
+.format-videoclass [data-region="courseindex"],
+.format-videoclass .courseindexdrawer {
+    display: none !important;
+}
+
+.format-videoclass [data-action="toggle-courseindex"] {
+    display: none !important;
 }

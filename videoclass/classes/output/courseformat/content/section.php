@@ -70,7 +70,7 @@ class section extends section_base
         [$resources, $notes, $qa] = $this->split_cms($cms);
 
         $data->videoclass = (object) [
-            'lessons' => $this->wrap_cmlist($cms),
+            'sectionsnav' => $this->build_sections_nav(),
             'resources' => $this->wrap_cmlist($resources),
             'notes' => $this->wrap_cmlist($notes),
             'qa' => $this->wrap_cmlist($qa),
@@ -194,5 +194,50 @@ class section extends section_base
             'cms' => $cms,
             'hascms' => !empty($cms),
         ];
+    }
+
+    /**
+     * Build navigation items for all visible sections.
+     *
+     * @return array
+     */
+    private function build_sections_nav(): array
+    {
+        $format = $this->format;
+        $course = $format->get_course();
+        $modinfo = $format->get_modinfo();
+
+        $current = $format->get_sectionnum();
+        if ($current === null || $current < 0) {
+            $current = 0;
+        }
+
+        $last = $format->get_last_section_number();
+        $items = [];
+
+        foreach ($modinfo->get_section_info_all() as $section) {
+            if (!$section) {
+                continue;
+            }
+
+            if ($section->section > $last) {
+                continue;
+            }
+
+            if (!$format->is_section_visible($section)) {
+                continue;
+            }
+
+            $name = get_section_name($course, $section);
+            $url = $format->get_view_url($section->section);
+
+            $items[] = (object) [
+                'name' => $name,
+                'url' => $url ? $url->out(false) : '',
+                'current' => ((int) $section->section === (int) $current),
+            ];
+        }
+
+        return $items;
     }
 }

@@ -12,15 +12,17 @@
     {{/availability}}
     <div class="videoclass-layout">
         <aside class="videoclass-sidebar">
-            <div class="videoclass-sidebar-header">Lecciones</div>
-            {{#videoclass.lessons}}
-                {{$ core_courseformat/local/content/section/cmlist }}
-                    {{> core_courseformat/local/content/section/cmlist }}
-                {{/ core_courseformat/local/content/section/cmlist }}
-            {{/videoclass.lessons}}
-            {{^videoclass.lessons.hascms}}
-                <div class="videoclass-empty">Aun no hay lecciones en este tema.</div>
-            {{/videoclass.lessons.hascms}}
+            <div class="videoclass-sidebar-header">Temas</div>
+            <nav class="videoclass-sections-nav" aria-label="Temas del curso">
+                {{#videoclass.sectionsnav}}
+                    <a class="videoclass-section-link {{#current}}is-current{{/current}}" href="{{url}}">
+                        {{name}}
+                    </a>
+                {{/videoclass.sectionsnav}}
+                {{^videoclass.sectionsnav}}
+                    <div class="videoclass-empty">No hay temas disponibles.</div>
+                {{/videoclass.sectionsnav}}
+            </nav>
         </aside>
 
         <div class="videoclass-video">
