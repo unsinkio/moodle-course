@@ -75,6 +75,7 @@ class section extends section_base
             'notes' => $this->wrap_cmlist($notes),
             'qa' => $this->wrap_cmlist($qa),
             'hasvideo' => $this->summary_has_video($data),
+            'editurl' => (new \moodle_url('/course/editsection.php', ['id' => $data->id]))->out(false),
         ];
 
         return $data;

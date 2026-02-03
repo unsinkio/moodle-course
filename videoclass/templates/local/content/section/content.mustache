@@ -26,6 +26,11 @@
         </aside>
 
         <div class="videoclass-video">
+            {{#editing}}
+                <div class="videoclass-edit-row">
+                    <a class="videoclass-edit-button" href="{{videoclass.editurl}}">Editar este tema</a>
+                </div>
+            {{/editing}}
             {{#videoclass.hasvideo}}
                 <div class="videoclass-video-embed">
                     {{{summary.summarytext}}}
