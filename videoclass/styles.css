@@ -223,13 +223,24 @@
     }
 }
 
-/* Hide default Moodle course index drawer for this format. */
-.format-videoclass #courseindex,
-.format-videoclass [data-region="courseindex"],
-.format-videoclass .courseindexdrawer {
+/* Remove default Moodle course index drawer for this format. */
+body.format-videoclass .drawer-left,
+body.format-videoclass #courseindex,
+body.format-videoclass #courseindexdrawer,
+body.format-videoclass [data-region="courseindex"],
+body.format-videoclass [data-region="courseindexdrawer"],
+body.format-videoclass .courseindexdrawer {
     display: none !important;
 }
 
-.format-videoclass [data-action="toggle-courseindex"] {
+body.format-videoclass [data-action="toggle-courseindex"] {
     display: none !important;
+}
+
+body.format-videoclass.drawer-open-left {
+    padding-left: 0 !important;
+}
+
+body.format-videoclass.drawer-open-left #page {
+    margin-left: 0 !important;
 }
