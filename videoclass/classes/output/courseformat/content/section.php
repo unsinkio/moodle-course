@@ -229,11 +229,14 @@ class section extends section_base
             }
 
             $name = get_section_name($course, $section);
-            $url = $format->get_view_url($section->section);
+            $url = new \moodle_url('/course/view.php', [
+                'id' => $course->id,
+                'section' => $section->section,
+            ]);
 
             $items[] = (object) [
                 'name' => $name,
-                'url' => $url ? $url->out(false) : '',
+                'url' => $url->out(false),
                 'current' => ((int) $section->section === (int) $current),
             ];
         }
