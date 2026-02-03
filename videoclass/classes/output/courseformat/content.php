@@ -28,14 +28,16 @@ use core_courseformat\output\local\content as content_base;
 use core_courseformat\base as course_format;
 use course_modinfo;
 
-class content extends content_base {
+class content extends content_base
+{
     /**
      * Returns the output class template path.
      *
      * @param \renderer_base $renderer
      * @return string
      */
-    public function get_template_name(\renderer_base $renderer): string {
+    public function get_template_name(\renderer_base $renderer): string
+    {
         return 'format_videoclass/local/content';
     }
 
@@ -45,7 +47,8 @@ class content extends content_base {
      * @param \renderer_base $output
      * @return \stdClass
      */
-    public function export_for_template(\renderer_base $output) {
+    public function export_for_template(\renderer_base $output)
+    {
         $format = $this->format;
         $course = $format->get_course();
         $context = \context_course::instance($course->id);
@@ -57,7 +60,7 @@ class content extends content_base {
             $announcement = format_text($course->summary, $course->summaryformat, ['context' => $context]);
         }
 
-        $data = (object)[
+        $data = (object) [
             'title' => $format->page_title(),
             'sections' => $sections,
             'format' => $format->get_format(),
@@ -81,7 +84,8 @@ class content extends content_base {
      * @param \renderer_base $output
      * @return array
      */
-    protected function export_sections(\renderer_base $output): array {
+    protected function export_sections(\renderer_base $output): array
+    {
         $format = $this->format;
         $modinfo = $this->format->get_modinfo();
 
@@ -108,9 +112,17 @@ class content extends content_base {
      * @param course_modinfo $modinfo
      * @return \section_info[]
      */
-    protected function get_sections_to_display(course_modinfo $modinfo): array {
+    protected function get_sections_to_display(course_modinfo $modinfo): array
+    {
         $sections = [];
         $singlesection = $this->format->get_sectionnum();
+
+        // If course format instance is not tied to a specific section (e.g. course home),
+        // default to section 0 (General).
+        if ($singlesection === null) {
+            $singlesection = 0;
+        }
+
         $sections[] = $modinfo->get_section_info($singlesection);
         return $sections;
     }
