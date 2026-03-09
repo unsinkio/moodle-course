@@ -70,5 +70,15 @@ function xmldb_format_videoclass_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026030902, 'format', 'videoclass');
     }
 
+    if ($oldversion < 2026030903) {
+        // Add timeshared column if missing (table may have been created by v1 without it).
+        $table = new xmldb_table('format_videoclass_note_recipients');
+        $field = new xmldb_field('timeshared', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'userid');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        upgrade_plugin_savepoint(true, 2026030903, 'format', 'videoclass');
+    }
+
     return true;
 }
