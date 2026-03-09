@@ -60,6 +60,8 @@ class section extends section_base
 
     public function export_for_template(\renderer_base $output): stdClass
     {
+        global $DB, $USER;
+
         $data = parent::export_for_template($output);
 
         $cms = [];
@@ -69,13 +71,27 @@ class section extends section_base
 
         [$resources, $notes, $qa] = $this->split_cms($cms);
 
+        $format = $this->format;
+        $course = $format->get_course();
+        $context = \context_course::instance($course->id);
+        $sectioninfo = $this->section;
+        $sectionid = $sectioninfo->id;
+
+        // Load shared notes for this section.
+        $sharednotes = $this->load_shared_notes($course->id, $sectionid, $context);
+
         $data->videoclass = (object) [
-            'sectionsnav' => $this->build_sections_nav(),
-            'resources' => $this->wrap_cmlist($resources),
-            'notes' => $this->wrap_cmlist($notes),
-            'qa' => $this->wrap_cmlist($qa),
-            'hasvideo' => $this->summary_has_video($data),
-            'editurl' => (new \moodle_url('/course/editsection.php', ['id' => $data->id]))->out(false),
+            'sectionsnav'  => $this->build_sections_nav(),
+            'resources'    => $this->wrap_cmlist($resources),
+            'notes'        => $this->wrap_cmlist($notes),
+            'qa'           => $this->wrap_cmlist($qa),
+            'hasvideo'     => $this->summary_has_video($data),
+            'editurl'      => (new \moodle_url('/course/editsection.php', ['id' => $data->id]))->out(false),
+            'sharednotes'  => $sharednotes,
+            'courseid'     => $course->id,
+            'sectionid'    => $sectionid,
+            'userid'       => $USER->id,
+            'sesskey'      => sesskey(),
         ];
 
         return $data;
@@ -243,5 +259,43 @@ class section extends section_base
         }
 
         return $items;
+    }
+
+    /**
+     * Load shared notes for a section.
+     *
+     * @param int $courseid
+     * @param int $sectionid
+     * @param \context_course $context
+     * @return array
+     */
+    private function load_shared_notes(int $courseid, int $sectionid, \context_course $context): array
+    {
+        global $DB, $USER;
+
+        $sql = "SELECT n.*, u.firstname, u.lastname, u.firstnamephonetic, u.lastnamephonetic, u.middlename, u.alternatename
+                  FROM {format_videoclass_shared_notes} n
+                  JOIN {user} u ON u.id = n.userid
+                 WHERE n.courseid = :courseid AND n.sectionid = :sectionid
+              ORDER BY n.timecreated DESC";
+
+        $records = $DB->get_records_sql($sql, [
+            'courseid'  => $courseid,
+            'sectionid' => $sectionid,
+        ]);
+
+        $isadmin = has_capability('moodle/course:update', $context);
+        $notes = [];
+        foreach ($records as $r) {
+            $notes[] = (object) [
+                'id'             => (int) $r->id,
+                'content'        => format_string($r->content),
+                'authorfullname' => fullname($r),
+                'timecreated'    => userdate($r->timecreated, get_string('strftimedatetimeshort', 'langconfig')),
+                'candelete'      => ($isadmin || (int) $r->userid === (int) $USER->id),
+            ];
+        }
+
+        return $notes;
     }
 }

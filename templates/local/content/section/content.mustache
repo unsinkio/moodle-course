@@ -12,15 +12,15 @@
     {{/availability}}
     <div class="videoclass-layout">
         <aside class="videoclass-sidebar">
-            <div class="videoclass-sidebar-header">Temas</div>
-            <nav class="videoclass-sections-nav" aria-label="Temas del curso">
+            <div class="videoclass-sidebar-header">{{#str}}sidebarheader, format_videoclass{{/str}}</div>
+            <nav class="videoclass-sections-nav" aria-label="{{#str}}sidebarnavlabel, format_videoclass{{/str}}">
                 {{#videoclass.sectionsnav}}
                     <a class="videoclass-section-link {{#current}}is-current{{/current}}" href="{{url}}">
                         {{name}}
                     </a>
                 {{/videoclass.sectionsnav}}
                 {{^videoclass.sectionsnav}}
-                    <div class="videoclass-empty">No hay temas disponibles.</div>
+                    <div class="videoclass-empty">{{#str}}sidebarempty, format_videoclass{{/str}}</div>
                 {{/videoclass.sectionsnav}}
             </nav>
         </aside>
@@ -28,7 +28,7 @@
         <div class="videoclass-video">
             {{#editing}}
                 <div class="videoclass-edit-row">
-                    <a class="videoclass-edit-button" href="{{videoclass.editurl}}">Editar este tema</a>
+                    <a class="videoclass-edit-button" href="{{videoclass.editurl}}">{{#str}}editsection, format_videoclass{{/str}}</a>
                 </div>
             {{/editing}}
             {{#videoclass.hasvideo}}
@@ -38,21 +38,24 @@
             {{/videoclass.hasvideo}}
             {{^videoclass.hasvideo}}
                 <div class="videoclass-video-placeholder">
-                    Agrega el video en el resumen del tema para que aparezca aqui.
+                    {{#str}}videoplaceholder, format_videoclass{{/str}}
                 </div>
             {{/videoclass.hasvideo}}
         </div>
     </div>
 
-    <div class="videoclass-tabs" role="tablist" aria-label="Recursos del tema">
+    <div class="videoclass-tabs" role="tablist" aria-label="{{#str}}tabslabel, format_videoclass{{/str}}">
         <input class="videoclass-tab-toggle" type="radio" name="videoclass-tabs-{{id}}" id="videoclass-tab-{{id}}-resources" checked>
-        <label class="videoclass-tab-label" for="videoclass-tab-{{id}}-resources">Recursos</label>
+        <label class="videoclass-tab-label" for="videoclass-tab-{{id}}-resources">{{#str}}tabresources, format_videoclass{{/str}}</label>
 
         <input class="videoclass-tab-toggle" type="radio" name="videoclass-tabs-{{id}}" id="videoclass-tab-{{id}}-notes">
-        <label class="videoclass-tab-label" for="videoclass-tab-{{id}}-notes">Notas</label>
+        <label class="videoclass-tab-label" for="videoclass-tab-{{id}}-notes">{{#str}}tabnotes, format_videoclass{{/str}}</label>
 
         <input class="videoclass-tab-toggle" type="radio" name="videoclass-tabs-{{id}}" id="videoclass-tab-{{id}}-qa">
-        <label class="videoclass-tab-label" for="videoclass-tab-{{id}}-qa">Q&A</label>
+        <label class="videoclass-tab-label" for="videoclass-tab-{{id}}-qa">{{#str}}tabqa, format_videoclass{{/str}}</label>
+
+        <input class="videoclass-tab-toggle" type="radio" name="videoclass-tabs-{{id}}" id="videoclass-tab-{{id}}-sharednotes">
+        <label class="videoclass-tab-label" for="videoclass-tab-{{id}}-sharednotes">{{#str}}tabsharednotes, format_videoclass{{/str}}</label>
 
         <div class="videoclass-tab-panels">
             <section class="videoclass-tab-panel" role="tabpanel" aria-labelledby="videoclass-tab-{{id}}-resources">
@@ -62,7 +65,7 @@
                     {{/ core_courseformat/local/content/section/cmlist }}
                 {{/videoclass.resources}}
                 {{^videoclass.resources.hascms}}
-                    <div class="videoclass-empty">No hay recursos asignados a este tema.</div>
+                    <div class="videoclass-empty">{{#str}}noresources, format_videoclass{{/str}}</div>
                 {{/videoclass.resources.hascms}}
             </section>
 
@@ -73,7 +76,7 @@
                     {{/ core_courseformat/local/content/section/cmlist }}
                 {{/videoclass.notes}}
                 {{^videoclass.notes.hascms}}
-                    <div class="videoclass-empty">Agrega actividades con el prefijo [Notas] para mostrarlas aqui.</div>
+                    <div class="videoclass-empty">{{#str}}nonotesprefix, format_videoclass{{/str}}</div>
                 {{/videoclass.notes.hascms}}
             </section>
 
@@ -84,11 +87,139 @@
                     {{/ core_courseformat/local/content/section/cmlist }}
                 {{/videoclass.qa}}
                 {{^videoclass.qa.hascms}}
-                    <div class="videoclass-empty">Agrega actividades con el prefijo [Q&A] o foros para mostrarlas aqui.</div>
+                    <div class="videoclass-empty">{{#str}}noqaprefix, format_videoclass{{/str}}</div>
                 {{/videoclass.qa.hascms}}
+            </section>
+
+            <section class="videoclass-tab-panel" role="tabpanel" aria-labelledby="videoclass-tab-{{id}}-sharednotes">
+                <div class="videoclass-sharednotes" id="videoclass-sharednotes-{{id}}"
+                     data-courseid="{{videoclass.courseid}}"
+                     data-sectionid="{{videoclass.sectionid}}"
+                     data-userid="{{videoclass.userid}}"
+                     data-sesskey="{{videoclass.sesskey}}">
+                    <div class="videoclass-sharednotes-form">
+                        <textarea class="videoclass-sharednotes-input"
+                                  id="videoclass-sharednotes-input-{{id}}"
+                                  placeholder="{{#str}}sharenoteplaceholder, format_videoclass{{/str}}"
+                                  rows="3"></textarea>
+                        <button type="button" class="videoclass-sharednotes-submit"
+                                id="videoclass-sharednotes-submit-{{id}}">
+                            {{#str}}sharenote, format_videoclass{{/str}}
+                        </button>
+                    </div>
+                    <div class="videoclass-sharednotes-list" id="videoclass-sharednotes-list-{{id}}">
+                        {{#videoclass.sharednotes}}
+                            <div class="videoclass-sharednote-card" data-noteid="{{id}}">
+                                <div class="videoclass-sharednote-header">
+                                    <span class="videoclass-sharednote-author">{{authorfullname}}</span>
+                                    <span class="videoclass-sharednote-time">{{timecreated}}</span>
+                                    {{#candelete}}
+                                        <button type="button" class="videoclass-sharednote-delete"
+                                                data-noteid="{{id}}" title="{{#str}}deletenote, format_videoclass{{/str}}">
+                                            &times;
+                                        </button>
+                                    {{/candelete}}
+                                </div>
+                                <div class="videoclass-sharednote-content">{{content}}</div>
+                            </div>
+                        {{/videoclass.sharednotes}}
+                        {{^videoclass.sharednotes}}
+                            <div class="videoclass-empty videoclass-sharednotes-empty">{{#str}}nosharednotes, format_videoclass{{/str}}</div>
+                        {{/videoclass.sharednotes}}
+                    </div>
+                </div>
             </section>
         </div>
     </div>
 
     {{{cmcontrols}}}
 </div>
+{{#js}}
+(function() {
+    var containers = document.querySelectorAll('.videoclass-sharednotes');
+    containers.forEach(function(container) {
+        var courseid = container.dataset.courseid;
+        var sectionid = container.dataset.sectionid;
+        var sesskey = container.dataset.sesskey;
+        var userid = container.dataset.userid;
+        var cid = container.id.replace('videoclass-sharednotes-', '');
+        var input = document.getElementById('videoclass-sharednotes-input-' + cid);
+        var submitBtn = document.getElementById('videoclass-sharednotes-submit-' + cid);
+        var listEl = document.getElementById('videoclass-sharednotes-list-' + cid);
+
+        if (!submitBtn || !input || !listEl) return;
+
+        submitBtn.addEventListener('click', function() {
+            var content = input.value.trim();
+            if (!content) return;
+            submitBtn.disabled = true;
+
+            var args = JSON.stringify([{
+                methodname: 'format_videoclass_share_note',
+                args: { courseid: parseInt(courseid), sectionid: parseInt(sectionid), content: content }
+            }]);
+
+            fetch(M.cfg.wwwroot + '/lib/ajax/service.php?sesskey=' + sesskey, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: args
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(results) {
+                if (results[0] && !results[0].error) {
+                    var note = results[0].data;
+                    var emptyMsg = listEl.querySelector('.videoclass-sharednotes-empty');
+                    if (emptyMsg) emptyMsg.remove();
+                    var card = document.createElement('div');
+                    card.className = 'videoclass-sharednote-card';
+                    card.dataset.noteid = note.id;
+                    card.innerHTML =
+                        '<div class="videoclass-sharednote-header">' +
+                            '<span class="videoclass-sharednote-author">' + note.authorfullname + '</span>' +
+                            '<span class="videoclass-sharednote-time">' + note.timecreated + '</span>' +
+                            '<button type="button" class="videoclass-sharednote-delete" data-noteid="' + note.id + '" title="Delete">&times;</button>' +
+                        '</div>' +
+                        '<div class="videoclass-sharednote-content">' + note.content + '</div>';
+                    listEl.prepend(card);
+                    input.value = '';
+                } else {
+                    alert(results[0].exception ? results[0].exception.message : 'Error');
+                }
+                submitBtn.disabled = false;
+            })
+            .catch(function() { submitBtn.disabled = false; });
+        });
+
+        listEl.addEventListener('click', function(e) {
+            var btn = e.target.closest('.videoclass-sharednote-delete');
+            if (!btn) return;
+            if (!confirm('{{#str}}deleteconfirm, format_videoclass{{/str}}')) return;
+            var noteid = btn.dataset.noteid;
+
+            var args = JSON.stringify([{
+                methodname: 'format_videoclass_delete_note',
+                args: { noteid: parseInt(noteid) }
+            }]);
+
+            fetch(M.cfg.wwwroot + '/lib/ajax/service.php?sesskey=' + sesskey, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: args
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(results) {
+                if (results[0] && !results[0].error) {
+                    var card = listEl.querySelector('[data-noteid="' + noteid + '"]');
+                    if (card) card.remove();
+                    if (!listEl.querySelector('.videoclass-sharednote-card')) {
+                        var empty = document.createElement('div');
+                        empty.className = 'videoclass-empty videoclass-sharednotes-empty';
+                        empty.textContent = '{{#str}}nosharednotes, format_videoclass{{/str}}';
+                        listEl.appendChild(empty);
+                    }
+                }
+            });
+        });
+    });
+})();
+{{/js}}

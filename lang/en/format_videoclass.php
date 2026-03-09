@@ -28,3 +28,32 @@ $string['coursedescription'] = 'Course Description';
 $string['sectionname'] = 'Topic';
 $string['section0name'] = 'General';
 $string['section1name'] = 'Topic 1';
+
+// Sidebar.
+$string['sidebarheader'] = 'Topics';
+$string['sidebarempty'] = 'No topics available.';
+$string['sidebarnavlabel'] = 'Course topics';
+
+// Tabs.
+$string['tabresources'] = 'Resources';
+$string['tabnotes'] = 'Notes';
+$string['tabqa'] = 'Q&A';
+$string['tabsharednotes'] = 'Shared Notes';
+$string['tabslabel'] = 'Section resources';
+
+// Section content.
+$string['editsection'] = 'Edit this topic';
+$string['videoplaceholder'] = 'Add a video to the topic summary to display it here.';
+$string['noresources'] = 'No resources assigned to this topic.';
+$string['nonotesprefix'] = 'Add activities with the [Notes] prefix to show them here.';
+$string['noqaprefix'] = 'Add activities with the [Q&A] prefix or forums to show them here.';
+
+// Shared notes.
+$string['nosharednotes'] = 'No shared notes yet for this topic.';
+$string['sharenote'] = 'Share';
+$string['sharenoteplaceholder'] = 'Write a note to share with your classmates...';
+$string['sharednotesby'] = 'Shared by {$a}';
+$string['deleteconfirm'] = 'Are you sure you want to delete this note?';
+$string['deletenote'] = 'Delete';
+$string['noteshared'] = 'Note shared successfully.';
+$string['notedeleted'] = 'Note deleted successfully.';
