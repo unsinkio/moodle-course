@@ -6,8 +6,23 @@
         <div class="videoclass-availability">{{{availability}}}</div>
     {{/availability}}
 
-    {{! ── Section layout: video left, tabs right ── }}
+    {{! ── Section layout: sidebar left, video right ── }}
     <div class="videoclass-layout" data-section-id="{{id}}">
+        {{! ── Sidebar: section navigation ── }}
+        <aside class="videoclass-sidebar">
+            <div class="videoclass-sidebar-header">{{#str}}tabresources, format_videoclass{{/str}}</div>
+            <nav class="videoclass-sections-nav" aria-label="Course sections">
+                {{#videoclass.sectionsnav}}
+                    <a class="videoclass-section-link {{#current}}is-current{{/current}}" href="{{url}}">
+                        {{name}}
+                    </a>
+                {{/videoclass.sectionsnav}}
+                {{^videoclass.sectionsnav}}
+                    <div class="videoclass-empty">{{#str}}noresources, format_videoclass{{/str}}</div>
+                {{/videoclass.sectionsnav}}
+            </nav>
+        </aside>
+
         {{! ── Video column ── }}
         <div class="videoclass-video" id="videoclass-video-{{id}}">
             {{#videoclass.hasvideo}}
@@ -21,9 +36,10 @@
                 </div>
             {{/videoclass.hasvideo}}
         </div>
+    </div>
 
-        {{! ── Tabs column ── }}
-        <div class="videoclass-tabs" role="tablist">
+    {{! ── Tabs below layout ── }}
+    <div class="videoclass-tabs" role="tablist">
             {{! Tab radios (hidden) }}
             <input type="radio" name="videoclass-tabs-{{id}}" id="videoclass-tab-{{id}}-resources"
                    class="videoclass-tab-radio" checked aria-controls="videoclass-panel-{{id}}-resources">
