@@ -381,20 +381,24 @@
             var resultsEl = picker.querySelector('.videoclass-recipient-results');
             var chipsEl = picker.querySelector('.videoclass-recipient-chips');
             var q = searchInput.value.trim();
+            console.log('[VC Search] Input event, query:', q, 'length:', q.length);
             if (q.length < 2) { resultsEl.innerHTML = ''; return; }
 
             searchTimeout = setTimeout(function() {
+                console.log('[VC Search] Calling AJAX search_students, courseid:', courseid, 'query:', q);
                 ajaxCall('format_videoclass_search_students', {
                     courseid: parseInt(courseid),
                     query: q
                 }).then(function(results) {
+                    console.log('[VC Search] Raw AJAX response:', JSON.stringify(results));
                     resultsEl.innerHTML = '';
                     var res = results[0];
                     if (res && res.error) {
-                        console.error('Search error:', res.exception ? res.exception.message : res);
+                        console.error('[VC Search] Error:', res.exception ? res.exception.message : res);
                         return;
                     }
                     var users = Array.isArray(res) ? res : [];
+                    console.log('[VC Search] Users found:', users.length, users);
                     var existingIds = [];
                     chipsEl.querySelectorAll('.videoclass-recipient-chip').forEach(function(c) {
                         existingIds.push(parseInt(c.dataset.userid));
@@ -421,7 +425,7 @@
                         });
                         resultsEl.appendChild(item);
                     });
-                }).catch(function(err) { console.error('Search fetch error:', err); });
+                }).catch(function(err) { console.error('[VC Search] Fetch error:', err); });
             }, 300);
         });
 
