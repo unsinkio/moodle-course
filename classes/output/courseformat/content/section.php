@@ -64,6 +64,77 @@ class section extends section_base
 
         $data = parent::export_for_template($output);
 
+        // ── Pre-render any renderable / stdClass properties into plain strings ──
+        // Moodle's parent export may return renderable objects for these;
+        // our custom template outputs them with {{{...}}} which requires strings.
+
+        // availability → string.
+        if (isset($data->availability) && is_object($data->availability)) {
+            try {
+                $data->availability = $output->render($data->availability);
+            } catch (\Throwable $e) {
+                $data->availability = '';
+            }
+        }
+
+        // summary.summarytext → string.
+        if (isset($data->summary) && is_object($data->summary)) {
+            if (isset($data->summary->summarytext) && is_object($data->summary->summarytext)) {
+                try {
+                    $data->summary->summarytext = $output->render($data->summary->summarytext);
+                } catch (\Throwable $e) {
+                    $data->summary->summarytext = '';
+                }
+            }
+        }
+
+        // cmcontrols → string.
+        if (isset($data->cmcontrols) && is_object($data->cmcontrols)) {
+            try {
+                $data->cmcontrols = $output->render($data->cmcontrols);
+            } catch (\Throwable $e) {
+                $data->cmcontrols = '';
+            }
+        }
+
+        // cmlist items may also contain renderables — sanitize recursively.
+        if (isset($data->cmlist) && is_object($data->cmlist) && !empty($data->cmlist->cms)) {
+            foreach ($data->cmlist->cms as $cmwrapper) {
+                if (isset($cmwrapper->cmitem) && is_object($cmwrapper->cmitem)) {
+                    $cmitem = $cmwrapper->cmitem;
+                    // cmformat → cmname
+                    if (isset($cmitem->cmformat) && is_object($cmitem->cmformat)) {
+                        if (isset($cmitem->cmformat->cmname) && is_object($cmitem->cmformat->cmname)) {
+                            try {
+                                $cmitem->cmformat->cmname = $output->render($cmitem->cmformat->cmname);
+                            } catch (\Throwable $e) {
+                                $cmitem->cmformat->cmname = '';
+                            }
+                        }
+                        if (isset($cmitem->cmformat->cmicon) && is_object($cmitem->cmformat->cmicon)) {
+                            try {
+                                $cmitem->cmformat->cmicon = $output->render($cmitem->cmformat->cmicon);
+                            } catch (\Throwable $e) {
+                                $cmitem->cmformat->cmicon = '';
+                            }
+                        }
+                    }
+                    // url → string
+                    if (isset($cmitem->url) && $cmitem->url instanceof \moodle_url) {
+                        $cmitem->url = $cmitem->url->out(false);
+                    }
+                }
+                // cmcontrols on wrapper
+                if (isset($cmwrapper->cmcontrols) && is_object($cmwrapper->cmcontrols)) {
+                    try {
+                        $cmwrapper->cmcontrols = $output->render($cmwrapper->cmcontrols);
+                    } catch (\Throwable $e) {
+                        $cmwrapper->cmcontrols = '';
+                    }
+                }
+            }
+        }
+
         $cms = [];
         if (!empty($data->cmlist) && !empty($data->cmlist->cms)) {
             $cms = $data->cmlist->cms;
