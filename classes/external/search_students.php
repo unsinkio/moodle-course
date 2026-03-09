@@ -65,6 +65,13 @@ class search_students extends external_api {
 
         error_log("[VC search_students] courseid={$params['courseid']} query={$query} enrolled_count=" . count($enrolled) . " current_user={$USER->id}");
 
+        // Temp debug: log all enrolled user names.
+        $allnames = [];
+        foreach ($enrolled as $u) {
+            $allnames[] = $u->id . ':' . fullname($u) . ' (' . $u->email . ')';
+        }
+        error_log("[VC search_students] enrolled_users: " . implode(' | ', $allnames));
+
         $results = [];
         $search = \core_text::strtolower($query);
 
