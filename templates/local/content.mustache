@@ -1,0 +1,57 @@
+{{!
+    @template format_videoclass/local/content
+}}
+
+<div class="videoclass-course {{sectionclasses}}">
+    {{#announcement}}
+        <div class="videoclass-banner" id="videoclass-banner">
+            <button type="button" class="videoclass-banner-toggle" id="videoclass-banner-toggle"
+                    aria-expanded="true" aria-controls="videoclass-banner-body">
+                <span>{{#str}}coursedescription, format_videoclass{{/str}}</span>
+                <span class="videoclass-banner-toggle-icon">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </span>
+            </button>
+            <div class="videoclass-banner-body" id="videoclass-banner-body">
+                {{{announcement}}}
+            </div>
+        </div>
+        {{#js}}
+            (function() {
+                var KEY = 'videoclass-banner-collapsed';
+                var banner = document.getElementById('videoclass-banner');
+                var toggle = document.getElementById('videoclass-banner-toggle');
+                if (!banner || !toggle) return;
+                // Restore state.
+                if (localStorage.getItem(KEY) === '1') {
+                    banner.classList.add('is-collapsed');
+                    toggle.setAttribute('aria-expanded', 'false');
+                }
+                toggle.addEventListener('click', function() {
+                    var collapsed = banner.classList.toggle('is-collapsed');
+                    toggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+                    localStorage.setItem(KEY, collapsed ? '1' : '0');
+                });
+            })();
+        {{/js}}
+    {{/announcement}}
+
+    <div class="videoclass-course-body">
+        <ul class="{{format}}">
+            {{#singlesection}}
+                {{$ format_videoclass/local/content/section }}
+                    {{> format_videoclass/local/content/section }}
+                {{/ format_videoclass/local/content/section }}
+            {{/singlesection}}
+        </ul>
+    </div>
+
+    {{#bulkedittools}}
+        {{$ core_courseformat/local/content/bulkedittools}}
+            {{> core_courseformat/local/content/bulkedittools}}
+        {{/ core_courseformat/local/content/bulkedittools}}
+    {{/bulkedittools}}
+</div>

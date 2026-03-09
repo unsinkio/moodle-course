@@ -7,15 +7,71 @@
     --vc-accent-soft: #ffedd5;
     --vc-border: rgba(15, 23, 42, 0.12);
     font-family: "Space Grotesk", "Figtree", "Segoe UI", sans-serif;
+    max-width: 1400px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 24px;
+    padding-right: 24px;
 }
 
 .videoclass-banner {
     background: linear-gradient(135deg, #111827 0%, #1f2937 55%, #0f172a 100%);
     color: #f8fafc;
     border-radius: 18px;
-    padding: 18px 22px;
     margin-bottom: 24px;
     box-shadow: 0 18px 40px rgba(15, 23, 42, 0.18);
+    overflow: hidden;
+}
+
+.videoclass-banner-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 16px 22px;
+    background: none;
+    border: none;
+    color: #f8fafc;
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.videoclass-banner-toggle:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.videoclass-banner-toggle-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    transition: transform 0.3s ease;
+    flex-shrink: 0;
+}
+
+.videoclass-banner.is-collapsed .videoclass-banner-toggle-icon {
+    transform: rotate(-90deg);
+}
+
+.videoclass-banner-body {
+    padding: 0 22px 18px;
+    max-height: 600px;
+    overflow: hidden;
+    transition: max-height 0.4s ease, padding 0.3s ease, opacity 0.3s ease;
+    opacity: 1;
+}
+
+.videoclass-banner.is-collapsed .videoclass-banner-body {
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    opacity: 0;
 }
 
 .videoclass-banner a {

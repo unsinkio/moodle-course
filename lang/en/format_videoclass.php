@@ -24,6 +24,7 @@
 
 $string['pluginname'] = 'VideoClass';
 $string['pluginname_help'] = 'A structured, media-driven format where short instructional videos serve as the primary content delivery method for each section.';
+$string['coursedescription'] = 'Course Description';
 $string['sectionname'] = 'Topic';
 $string['section0name'] = 'General';
 $string['section1name'] = 'Topic 1';
