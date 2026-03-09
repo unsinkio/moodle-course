@@ -384,12 +384,13 @@
                     query: q
                 }).then(function(results) {
                     resultsEl.innerHTML = '';
-                    if (results[0] && !results[0].error && results[0].data) {
+                    var users = results[0] && !results[0].error ? (results[0].data || results[0]) : [];
+                    if (!Array.isArray(users)) users = [];
                         var existingIds = [];
                         chipsEl.querySelectorAll('.videoclass-recipient-chip').forEach(function(c) {
                             existingIds.push(parseInt(c.dataset.userid));
                         });
-                        results[0].data.forEach(function(user) {
+                        users.forEach(function(user) {
                             if (existingIds.indexOf(user.id) !== -1) return;
                             var item = document.createElement('div');
                             item.className = 'videoclass-recipient-result';
@@ -411,7 +412,6 @@
                             });
                             resultsEl.appendChild(item);
                         });
-                    }
                 });
             }, 300);
         });

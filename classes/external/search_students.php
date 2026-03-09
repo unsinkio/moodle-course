@@ -66,7 +66,7 @@ class search_students extends external_api {
         $enrolled = get_enrolled_users($context, '', 0, 'u.*', 'u.lastname, u.firstname', 0, 0, true);
 
         $results = [];
-        $search = core_text::strtolower($query);
+        $search = \core_text::strtolower($query);
 
         foreach ($enrolled as $user) {
             if ((int) $user->id === (int) $USER->id) {
@@ -74,8 +74,8 @@ class search_students extends external_api {
             }
 
             $name = fullname($user);
-            if (strpos(core_text::strtolower($name), $search) !== false ||
-                strpos(core_text::strtolower($user->email), $search) !== false) {
+            if (strpos(\core_text::strtolower($name), $search) !== false ||
+                strpos(\core_text::strtolower($user->email), $search) !== false) {
                 $results[] = [
                     'id'       => (int) $user->id,
                     'fullname' => $name,
