@@ -50,7 +50,7 @@ $string['noassessments'] = 'No assessments assigned to this topic.';
 $string['noqaprefix'] = 'Add activities with the [Q&A] prefix or forums to show them here.';
 
 // My Notes.
-$string['nomynotes'] = 'You haven\'t written any notes for this topic yet.';
+$string['nomynotes'] = 'No notes for this topic yet. Write one above!';
 $string['savenote'] = 'Save';
 $string['mynoteplaceholder'] = 'Write a personal note...';
 $string['deletemynote'] = 'Delete';
