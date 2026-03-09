@@ -25,26 +25,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $functions = [
-    // Shared notes.
-    'format_videoclass_share_note' => [
-        'classname'   => 'format_videoclass\external\share_note',
-        'description' => 'Share a note with classmates in a course section.',
-        'type'        => 'write',
-        'ajax'        => true,
-    ],
-    'format_videoclass_get_shared_notes' => [
-        'classname'   => 'format_videoclass\external\get_shared_notes',
-        'description' => 'Get shared notes for a course section.',
-        'type'        => 'read',
-        'ajax'        => true,
-    ],
-    'format_videoclass_delete_note' => [
-        'classname'   => 'format_videoclass\external\delete_note',
-        'description' => 'Delete a shared note.',
-        'type'        => 'write',
-        'ajax'        => true,
-    ],
-    // Personal notes.
+    // Personal notes (My Notes tab).
     'format_videoclass_save_personal_note' => [
         'classname'   => 'format_videoclass\external\save_personal_note',
         'description' => 'Save or update a personal note for a section.',
@@ -53,17 +34,40 @@ $functions = [
     ],
     'format_videoclass_get_personal_notes' => [
         'classname'   => 'format_videoclass\external\get_personal_notes',
-        'description' => 'Get personal notes for a section.',
+        'description' => 'Get personal notes for a section (with sharing info).',
         'type'        => 'read',
         'ajax'        => true,
     ],
     'format_videoclass_delete_personal_note' => [
         'classname'   => 'format_videoclass\external\delete_personal_note',
-        'description' => 'Delete a personal note.',
+        'description' => 'Delete a personal note (cascades recipients).',
         'type'        => 'write',
         'ajax'        => true,
     ],
-    // Student search.
+
+    // Sharing (from My Notes tab).
+    'format_videoclass_share_note' => [
+        'classname'   => 'format_videoclass\external\share_note',
+        'description' => 'Share a saved personal note with selected classmates.',
+        'type'        => 'write',
+        'ajax'        => true,
+    ],
+    'format_videoclass_unshare_note' => [
+        'classname'   => 'format_videoclass\external\unshare_note',
+        'description' => 'Remove all sharing from a note.',
+        'type'        => 'write',
+        'ajax'        => true,
+    ],
+
+    // Shared with me (Shared Notes tab).
+    'format_videoclass_get_shared_with_me' => [
+        'classname'   => 'format_videoclass\external\get_shared_with_me',
+        'description' => 'Get notes shared with the current user.',
+        'type'        => 'read',
+        'ajax'        => true,
+    ],
+
+    // Student search for recipient picker.
     'format_videoclass_search_students' => [
         'classname'   => 'format_videoclass\external\search_students',
         'description' => 'Search enrolled students in a course.',

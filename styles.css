@@ -410,64 +410,87 @@
     line-height: 1.55;
 }
 
-/* ── Shared Notes ── */
-.videoclass-sharednotes-form {
+/* ── My Notes: Actions Row ── */
+.videoclass-mynote-actions {
     display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-bottom: 18px;
+    align-items: center;
+    gap: 4px;
 }
 
-.videoclass-sharednotes-input {
-    width: 100%;
-    padding: 12px 14px;
-    border: 1px solid var(--vc-border);
-    border-radius: 12px;
-    font-family: inherit;
-    font-size: 0.92rem;
-    resize: vertical;
-    min-height: 48px;
-    transition: border-color 0.2s ease;
-    box-sizing: border-box;
-}
-
-.videoclass-sharednotes-input:focus {
-    outline: none;
-    border-color: var(--vc-accent);
-    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.12);
-}
-
-.videoclass-sharednotes-submit {
-    padding: 10px 20px;
-    background: var(--vc-accent);
-    color: #fff;
+.videoclass-mynote-share,
+.videoclass-mynote-unshare {
+    background: none;
     border: none;
-    border-radius: 12px;
-    font-family: inherit;
-    font-size: 0.9rem;
-    font-weight: 700;
     cursor: pointer;
-    transition: background 0.2s ease, transform 0.15s ease;
-    white-space: nowrap;
-    align-self: flex-end;
+    font-size: 1rem;
+    padding: 2px 6px;
+    border-radius: 6px;
+    transition: background 0.2s ease;
 }
 
-.videoclass-sharednotes-submit:hover {
-    background: #ea6c0b;
-    transform: translateY(-1px);
+.videoclass-mynote-share:hover {
+    background: rgba(249, 115, 22, 0.1);
 }
 
-.videoclass-sharednotes-submit:disabled {
-    opacity: 0.55;
-    cursor: not-allowed;
-    transform: none;
+.videoclass-mynote-unshare:hover {
+    background: rgba(100, 116, 139, 0.1);
 }
 
-/* ── Recipient Picker ── */
-.videoclass-recipient-picker {
+.videoclass-mynote-badge-shared {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: rgba(16, 185, 129, 0.12);
+    color: #059669;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.videoclass-mynote-shared-info {
+    font-size: 0.78rem;
+    color: var(--vc-muted);
+    margin-bottom: 6px;
+    font-style: italic;
+}
+
+/* ── Inline Share Picker ── */
+.videoclass-share-picker {
+    margin-top: 12px;
+    padding: 12px;
+    background: #f1f5f9;
+    border-radius: 12px;
+    border: 1px solid var(--vc-border);
     position: relative;
 }
 
+.videoclass-share-picker-label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--vc-ink);
+    margin-bottom: 8px;
+}
+
+.videoclass-share-confirm {
+    margin-top: 10px;
+    padding: 8px 16px;
+    background: var(--vc-accent);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.videoclass-share-confirm:hover {
+    background: #ea6c0b;
+}
+
+/* ── Recipient Search & Chips (shared) ── */
 .videoclass-recipient-search {
     width: 100%;
     padding: 10px 14px;
@@ -487,9 +510,8 @@
 
 .videoclass-recipient-results {
     position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
+    left: 12px;
+    right: 12px;
     z-index: 100;
     background: #fff;
     border-radius: 10px;
@@ -529,11 +551,6 @@
     font-weight: 500;
 }
 
-.videoclass-recipient-chip.is-active {
-    background: var(--vc-accent-soft);
-    border: 1px solid rgba(249, 115, 22, 0.3);
-}
-
 .videoclass-chip-remove {
     background: none;
     border: none;
@@ -548,68 +565,45 @@
     color: #dc2626;
 }
 
-/* ── Shared Note Cards ── */
-.videoclass-sharednotes-list {
+/* ── Shared With Me (read-only cards) ── */
+.videoclass-sharedwithme-list {
     display: flex;
     flex-direction: column;
     gap: 10px;
 }
 
-.videoclass-sharednote-card {
+.videoclass-sharedwithme-card {
     background: #f8fafc;
     border: 1px solid var(--vc-border);
+    border-left: 4px solid rgba(249, 115, 22, 0.5);
     border-radius: 14px;
     padding: 14px 16px;
     transition: box-shadow 0.2s ease;
 }
 
-.videoclass-sharednote-card:hover {
+.videoclass-sharedwithme-card:hover {
     box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
 }
 
-.videoclass-sharednote-header {
+.videoclass-sharedwithme-header {
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-bottom: 4px;
+    margin-bottom: 6px;
     font-size: 0.82rem;
 }
 
-.videoclass-sharednote-author {
+.videoclass-sharedwithme-author {
     font-weight: 700;
     color: var(--vc-ink);
 }
 
-.videoclass-sharednote-time {
+.videoclass-sharedwithme-time {
     color: var(--vc-muted);
     flex: 1;
 }
 
-.videoclass-sharednote-delete {
-    background: none;
-    border: none;
-    color: var(--vc-muted);
-    font-size: 1.2rem;
-    cursor: pointer;
-    padding: 0 4px;
-    line-height: 1;
-    border-radius: 6px;
-    transition: color 0.2s ease, background 0.2s ease;
-}
-
-.videoclass-sharednote-delete:hover {
-    color: #dc2626;
-    background: rgba(220, 38, 38, 0.08);
-}
-
-.videoclass-sharednote-audience {
-    font-size: 0.78rem;
-    color: var(--vc-muted);
-    margin-bottom: 6px;
-    font-style: italic;
-}
-
-.videoclass-sharednote-content {
+.videoclass-sharedwithme-content {
     font-size: 0.92rem;
     color: var(--vc-ink);
     line-height: 1.55;

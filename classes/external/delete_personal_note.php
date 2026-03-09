@@ -26,11 +26,9 @@ use external_single_structure;
 use external_value;
 
 /**
- * Delete a personal note.
+ * Delete a personal note (cascades recipients).
  *
  * @package   format_videoclass
- * @copyright 2026 Atlantis University
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class delete_personal_note extends external_api {
 
@@ -52,10 +50,13 @@ class delete_personal_note extends external_api {
         $context = \context_course::instance($note->courseid);
         self::validate_context($context);
 
-        if ((int) $note->userid !== (int) $USER->id) {
+        $isadmin = has_capability('moodle/course:update', $context);
+        if (!$isadmin && (int) $note->userid !== (int) $USER->id) {
             throw new \moodle_exception('nopermissions', 'error', '', 'delete this note');
         }
 
+        // Cascade: delete recipients first, then the note.
+        $DB->delete_records('format_videoclass_note_recipients', ['noteid' => $note->id]);
         $DB->delete_records('format_videoclass_notes', ['id' => $note->id]);
 
         return ['success' => true];

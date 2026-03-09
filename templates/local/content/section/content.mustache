@@ -97,12 +97,13 @@
                 {{/videoclass.qa.hascms}}
             </section>
 
-            {{! ── Tab 4: My Notes (personal) ── }}
+            {{! ── Tab 4: My Notes ── }}
             <section class="videoclass-tab-panel" role="tabpanel" aria-labelledby="videoclass-tab-{{id}}-mynotes">
                 <div class="videoclass-mynotes" id="videoclass-mynotes-{{id}}"
                      data-courseid="{{videoclass.courseid}}"
                      data-sectionid="{{videoclass.sectionid}}"
                      data-sesskey="{{videoclass.sesskey}}">
+                    {{! Write new note }}
                     <div class="videoclass-mynotes-form">
                         <textarea class="videoclass-mynotes-input"
                                   id="videoclass-mynotes-input-{{id}}"
@@ -113,17 +114,49 @@
                             {{#str}}savenote, format_videoclass{{/str}}
                         </button>
                     </div>
+                    {{! Saved notes list }}
                     <div class="videoclass-mynotes-list" id="videoclass-mynotes-list-{{id}}">
                         {{#videoclass.personalnotes}}
                             <div class="videoclass-mynote-card" data-noteid="{{id}}">
                                 <div class="videoclass-mynote-header">
                                     <span class="videoclass-mynote-time">{{timemodified}}</span>
-                                    <button type="button" class="videoclass-mynote-delete"
-                                            data-noteid="{{id}}" title="{{#str}}deletemynote, format_videoclass{{/str}}">
-                                        &times;
-                                    </button>
+                                    {{#isshared}}
+                                        <span class="videoclass-mynote-badge-shared"
+                                              title="{{recipientnames}}">{{#str}}sharedbadge, format_videoclass{{/str}}</span>
+                                    {{/isshared}}
+                                    <div class="videoclass-mynote-actions">
+                                        {{^isshared}}
+                                            <button type="button" class="videoclass-mynote-share"
+                                                    data-noteid="{{id}}" title="{{#str}}sharethistnote, format_videoclass{{/str}}">
+                                                &#x1f4e4;
+                                            </button>
+                                        {{/isshared}}
+                                        {{#isshared}}
+                                            <button type="button" class="videoclass-mynote-unshare"
+                                                    data-noteid="{{id}}" title="{{#str}}unsharenote, format_videoclass{{/str}}">
+                                                &#x1f512;
+                                            </button>
+                                        {{/isshared}}
+                                        <button type="button" class="videoclass-mynote-delete"
+                                                data-noteid="{{id}}" title="{{#str}}deletemynote, format_videoclass{{/str}}">
+                                            &times;
+                                        </button>
+                                    </div>
                                 </div>
+                                {{#isshared}}
+                                    <div class="videoclass-mynote-shared-info">&#x1f465; {{recipientnames}}</div>
+                                {{/isshared}}
                                 <div class="videoclass-mynote-content">{{content}}</div>
+                                {{! Inline recipient picker (hidden by default) }}
+                                <div class="videoclass-share-picker" id="videoclass-share-picker-{{id}}" style="display:none;">
+                                    <div class="videoclass-share-picker-label">{{#str}}sharenoteprompt, format_videoclass{{/str}}</div>
+                                    <input type="text" class="videoclass-recipient-search"
+                                           placeholder="{{#str}}searchstudents, format_videoclass{{/str}}"
+                                           autocomplete="off">
+                                    <div class="videoclass-recipient-results"></div>
+                                    <div class="videoclass-recipient-chips"></div>
+                                    <button type="button" class="videoclass-share-confirm">{{#str}}sharethistnote, format_videoclass{{/str}}</button>
+                                </div>
                             </div>
                         {{/videoclass.personalnotes}}
                         {{^videoclass.personalnotes}}
@@ -133,61 +166,24 @@
                 </div>
             </section>
 
-            {{! ── Tab 5: Shared Notes ── }}
+            {{! ── Tab 5: Shared Notes (Shared with me) ── }}
             <section class="videoclass-tab-panel" role="tabpanel" aria-labelledby="videoclass-tab-{{id}}-sharednotes">
-                <div class="videoclass-sharednotes" id="videoclass-sharednotes-{{id}}"
+                <div class="videoclass-sharedwithme" id="videoclass-sharedwithme-{{id}}"
                      data-courseid="{{videoclass.courseid}}"
-                     data-sectionid="{{videoclass.sectionid}}"
-                     data-userid="{{videoclass.userid}}"
-                     data-sesskey="{{videoclass.sesskey}}">
-                    <div class="videoclass-sharednotes-form">
-                        <textarea class="videoclass-sharednotes-input"
-                                  id="videoclass-sharednotes-input-{{id}}"
-                                  placeholder="{{#str}}sharenoteplaceholder, format_videoclass{{/str}}"
-                                  rows="3"></textarea>
-                        <div class="videoclass-recipient-picker" id="videoclass-recipient-picker-{{id}}">
-                            <input type="text" class="videoclass-recipient-search"
-                                   id="videoclass-recipient-search-{{id}}"
-                                   placeholder="{{#str}}searchstudents, format_videoclass{{/str}}"
-                                   autocomplete="off">
-                            <div class="videoclass-recipient-results" id="videoclass-recipient-results-{{id}}"></div>
-                            <div class="videoclass-recipient-chips" id="videoclass-recipient-chips-{{id}}">
-                                <span class="videoclass-recipient-chip videoclass-recipient-chip-all is-active"
-                                      data-userid="0" id="videoclass-recipient-all-{{id}}">
-                                    {{#str}}sharenotewithall, format_videoclass{{/str}}
-                                </span>
-                            </div>
-                        </div>
-                        <button type="button" class="videoclass-sharednotes-submit"
-                                id="videoclass-sharednotes-submit-{{id}}">
-                            {{#str}}sharenote, format_videoclass{{/str}}
-                        </button>
-                    </div>
-                    <div class="videoclass-sharednotes-list" id="videoclass-sharednotes-list-{{id}}">
-                        {{#videoclass.sharednotes}}
-                            <div class="videoclass-sharednote-card" data-noteid="{{id}}">
-                                <div class="videoclass-sharednote-header">
-                                    <span class="videoclass-sharednote-author">{{authorfullname}}</span>
-                                    <span class="videoclass-sharednote-time">{{timecreated}}</span>
-                                    {{#candelete}}
-                                        <button type="button" class="videoclass-sharednote-delete"
-                                                data-noteid="{{id}}" title="{{#str}}deletenote, format_videoclass{{/str}}">
-                                            &times;
-                                        </button>
-                                    {{/candelete}}
+                     data-sectionid="{{videoclass.sectionid}}">
+                    <div class="videoclass-sharedwithme-list" id="videoclass-sharedwithme-list-{{id}}">
+                        {{#videoclass.sharedwithme}}
+                            <div class="videoclass-sharedwithme-card" data-noteid="{{id}}">
+                                <div class="videoclass-sharedwithme-header">
+                                    <span class="videoclass-sharedwithme-author">{{authorfullname}}</span>
+                                    <span class="videoclass-sharedwithme-time">{{timeshared}}</span>
                                 </div>
-                                {{#isbroadcast}}
-                                    <div class="videoclass-sharednote-audience">{{#str}}sharedwithall, format_videoclass{{/str}}</div>
-                                {{/isbroadcast}}
-                                {{^isbroadcast}}
-                                    <div class="videoclass-sharednote-audience">&#x1f465; {{recipientnames}}</div>
-                                {{/isbroadcast}}
-                                <div class="videoclass-sharednote-content">{{content}}</div>
+                                <div class="videoclass-sharedwithme-content">{{content}}</div>
                             </div>
-                        {{/videoclass.sharednotes}}
-                        {{^videoclass.sharednotes}}
-                            <div class="videoclass-empty videoclass-sharednotes-empty">{{#str}}nosharednotes, format_videoclass{{/str}}</div>
-                        {{/videoclass.sharednotes}}
+                        {{/videoclass.sharedwithme}}
+                        {{^videoclass.sharedwithme}}
+                            <div class="videoclass-empty videoclass-sharedwithme-empty">{{#str}}nosharednotes, format_videoclass{{/str}}</div>
+                        {{/videoclass.sharedwithme}}
                     </div>
                 </div>
             </section>
@@ -199,7 +195,7 @@
 {{#js}}
 (function() {
     /* ────────────────────────────────────────────
-       Personal Notes (My Notes tab)
+       My Notes: save, delete, share, unshare
        ──────────────────────────────────────────── */
     var myContainers = document.querySelectorAll('.videoclass-mynotes');
     myContainers.forEach(function(container) {
@@ -221,6 +217,31 @@
             }).then(function(r) { return r.json(); });
         }
 
+        /* Build a note card element */
+        function buildCard(note) {
+            var card = document.createElement('div');
+            card.className = 'videoclass-mynote-card';
+            card.dataset.noteid = note.id;
+            card.innerHTML =
+                '<div class="videoclass-mynote-header">' +
+                    '<span class="videoclass-mynote-time">' + note.timemodified + '</span>' +
+                    '<div class="videoclass-mynote-actions">' +
+                        '<button type="button" class="videoclass-mynote-share" data-noteid="' + note.id + '" title="Share">&#x1f4e4;</button>' +
+                        '<button type="button" class="videoclass-mynote-delete" data-noteid="' + note.id + '" title="Delete">&times;</button>' +
+                    '</div>' +
+                '</div>' +
+                '<div class="videoclass-mynote-content">' + note.content + '</div>' +
+                '<div class="videoclass-share-picker" style="display:none;">' +
+                    '<div class="videoclass-share-picker-label">{{#str}}sharenoteprompt, format_videoclass{{/str}}</div>' +
+                    '<input type="text" class="videoclass-recipient-search" placeholder="{{#str}}searchstudents, format_videoclass{{/str}}" autocomplete="off">' +
+                    '<div class="videoclass-recipient-results"></div>' +
+                    '<div class="videoclass-recipient-chips"></div>' +
+                    '<button type="button" class="videoclass-share-confirm">{{#str}}sharethistnote, format_videoclass{{/str}}</button>' +
+                '</div>';
+            return card;
+        }
+
+        /* Save new note */
         submitBtn.addEventListener('click', function() {
             var content = input.value.trim();
             if (!content) return;
@@ -235,16 +256,7 @@
                     var note = results[0].data;
                     var emptyMsg = listEl.querySelector('.videoclass-mynotes-empty');
                     if (emptyMsg) emptyMsg.remove();
-                    var card = document.createElement('div');
-                    card.className = 'videoclass-mynote-card';
-                    card.dataset.noteid = note.id;
-                    card.innerHTML =
-                        '<div class="videoclass-mynote-header">' +
-                            '<span class="videoclass-mynote-time">' + note.timemodified + '</span>' +
-                            '<button type="button" class="videoclass-mynote-delete" data-noteid="' + note.id + '" title="Delete">&times;</button>' +
-                        '</div>' +
-                        '<div class="videoclass-mynote-content">' + note.content + '</div>';
-                    listEl.prepend(card);
+                    listEl.prepend(buildCard(note));
                     input.value = '';
                 } else {
                     alert(results[0].exception ? results[0].exception.message : 'Error');
@@ -253,188 +265,180 @@
             }).catch(function() { submitBtn.disabled = false; });
         });
 
+        /* Delegate clicks on note cards */
         listEl.addEventListener('click', function(e) {
-            var btn = e.target.closest('.videoclass-mynote-delete');
-            if (!btn) return;
-            if (!confirm('{{#str}}deletemynoteconfirm, format_videoclass{{/str}}')) return;
-            var noteid = btn.dataset.noteid;
+            var card = e.target.closest('.videoclass-mynote-card');
+            if (!card) return;
+            var noteid = card.dataset.noteid;
 
-            ajaxCall('format_videoclass_delete_personal_note', {
-                noteid: parseInt(noteid)
-            }).then(function(results) {
-                if (results[0] && !results[0].error) {
-                    var card = listEl.querySelector('[data-noteid="' + noteid + '"]');
-                    if (card) card.remove();
-                    if (!listEl.querySelector('.videoclass-mynote-card')) {
-                        var empty = document.createElement('div');
-                        empty.className = 'videoclass-empty videoclass-mynotes-empty';
-                        empty.textContent = '{{#str}}nomynotes, format_videoclass{{/str}}';
-                        listEl.appendChild(empty);
-                    }
-                }
-            });
-        });
-    });
-
-    /* ────────────────────────────────────────────
-       Shared Notes (with recipient picker)
-       ──────────────────────────────────────────── */
-    var sharedContainers = document.querySelectorAll('.videoclass-sharednotes');
-    sharedContainers.forEach(function(container) {
-        var courseid = container.dataset.courseid;
-        var sectionid = container.dataset.sectionid;
-        var sesskey = container.dataset.sesskey;
-        var userid = container.dataset.userid;
-        var cid = container.id.replace('videoclass-sharednotes-', '');
-        var input = document.getElementById('videoclass-sharednotes-input-' + cid);
-        var submitBtn = document.getElementById('videoclass-sharednotes-submit-' + cid);
-        var listEl = document.getElementById('videoclass-sharednotes-list-' + cid);
-        var searchInput = document.getElementById('videoclass-recipient-search-' + cid);
-        var resultsEl = document.getElementById('videoclass-recipient-results-' + cid);
-        var chipsEl = document.getElementById('videoclass-recipient-chips-' + cid);
-        var allChip = document.getElementById('videoclass-recipient-all-' + cid);
-
-        if (!submitBtn || !input || !listEl) return;
-
-        var selectedRecipients = [];
-        var searchTimeout = null;
-
-        function ajaxCall(method, args) {
-            return fetch(M.cfg.wwwroot + '/lib/ajax/service.php?sesskey=' + sesskey, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify([{ methodname: method, args: args }])
-            }).then(function(r) { return r.json(); });
-        }
-
-        function updateAllChip() {
-            if (selectedRecipients.length === 0) {
-                allChip.classList.add('is-active');
-            } else {
-                allChip.classList.remove('is-active');
-            }
-        }
-
-        /* Recipient search */
-        if (searchInput) {
-            searchInput.addEventListener('input', function() {
-                clearTimeout(searchTimeout);
-                var q = searchInput.value.trim();
-                if (q.length < 2) { resultsEl.innerHTML = ''; return; }
-                searchTimeout = setTimeout(function() {
-                    ajaxCall('format_videoclass_search_students', {
-                        courseid: parseInt(courseid),
-                        query: q
-                    }).then(function(results) {
-                        resultsEl.innerHTML = '';
-                        if (results[0] && !results[0].error && results[0].data) {
-                            results[0].data.forEach(function(user) {
-                                if (selectedRecipients.some(function(r) { return r.id === user.id; })) return;
-                                var item = document.createElement('div');
-                                item.className = 'videoclass-recipient-result';
-                                item.textContent = user.fullname;
-                                item.dataset.userid = user.id;
-                                item.dataset.fullname = user.fullname;
-                                item.addEventListener('click', function() {
-                                    selectedRecipients.push({ id: user.id, fullname: user.fullname });
-                                    var chip = document.createElement('span');
-                                    chip.className = 'videoclass-recipient-chip';
-                                    chip.dataset.userid = user.id;
-                                    chip.innerHTML = user.fullname + ' <button type="button" class="videoclass-chip-remove">&times;</button>';
-                                    chip.querySelector('.videoclass-chip-remove').addEventListener('click', function() {
-                                        selectedRecipients = selectedRecipients.filter(function(r) { return r.id !== user.id; });
-                                        chip.remove();
-                                        updateAllChip();
-                                    });
-                                    chipsEl.appendChild(chip);
-                                    resultsEl.innerHTML = '';
-                                    searchInput.value = '';
-                                    updateAllChip();
-                                });
-                                resultsEl.appendChild(item);
-                            });
+            /* Delete */
+            if (e.target.closest('.videoclass-mynote-delete')) {
+                if (!confirm('{{#str}}deletemynoteconfirm, format_videoclass{{/str}}')) return;
+                ajaxCall('format_videoclass_delete_personal_note', {
+                    noteid: parseInt(noteid)
+                }).then(function(results) {
+                    if (results[0] && !results[0].error) {
+                        card.remove();
+                        if (!listEl.querySelector('.videoclass-mynote-card')) {
+                            var empty = document.createElement('div');
+                            empty.className = 'videoclass-empty videoclass-mynotes-empty';
+                            empty.textContent = '{{#str}}nomynotes, format_videoclass{{/str}}';
+                            listEl.appendChild(empty);
                         }
-                    });
-                }, 300);
-            });
+                    }
+                });
+                return;
+            }
 
-            document.addEventListener('click', function(e) {
-                if (!resultsEl.contains(e.target) && e.target !== searchInput) {
-                    resultsEl.innerHTML = '';
+            /* Unshare */
+            if (e.target.closest('.videoclass-mynote-unshare')) {
+                ajaxCall('format_videoclass_unshare_note', {
+                    noteid: parseInt(noteid)
+                }).then(function(results) {
+                    if (results[0] && !results[0].error) {
+                        /* Remove badge + shared info, swap unshare→share button */
+                        var badge = card.querySelector('.videoclass-mynote-badge-shared');
+                        if (badge) badge.remove();
+                        var info = card.querySelector('.videoclass-mynote-shared-info');
+                        if (info) info.remove();
+                        var unsBtn = card.querySelector('.videoclass-mynote-unshare');
+                        if (unsBtn) {
+                            var shareBtn = document.createElement('button');
+                            shareBtn.type = 'button';
+                            shareBtn.className = 'videoclass-mynote-share';
+                            shareBtn.dataset.noteid = noteid;
+                            shareBtn.title = 'Share';
+                            shareBtn.innerHTML = '&#x1f4e4;';
+                            unsBtn.replaceWith(shareBtn);
+                        }
+                    }
+                });
+                return;
+            }
+
+            /* Toggle share picker */
+            if (e.target.closest('.videoclass-mynote-share')) {
+                var picker = card.querySelector('.videoclass-share-picker');
+                if (picker) {
+                    picker.style.display = picker.style.display === 'none' ? 'block' : 'none';
                 }
-            });
-        }
+                return;
+            }
 
-        /* Share note */
-        submitBtn.addEventListener('click', function() {
-            var content = input.value.trim();
-            if (!content) return;
-            submitBtn.disabled = true;
+            /* Confirm share */
+            if (e.target.closest('.videoclass-share-confirm')) {
+                var picker = card.querySelector('.videoclass-share-picker');
+                var chips = picker.querySelectorAll('.videoclass-recipient-chip');
+                var recipientIds = [];
+                var recipientNames = [];
+                chips.forEach(function(c) {
+                    recipientIds.push(parseInt(c.dataset.userid));
+                    recipientNames.push(c.dataset.fullname);
+                });
+                if (recipientIds.length === 0) return;
 
-            var recipientIds = selectedRecipients.map(function(r) { return r.id; });
-            var recipientNames = selectedRecipients.map(function(r) { return r.fullname; }).join(', ');
-
-            ajaxCall('format_videoclass_share_note', {
-                courseid: parseInt(courseid),
-                sectionid: parseInt(sectionid),
-                content: content,
-                recipients: recipientIds
-            }).then(function(results) {
-                if (results[0] && !results[0].error) {
-                    var note = results[0].data;
-                    var emptyMsg = listEl.querySelector('.videoclass-sharednotes-empty');
-                    if (emptyMsg) emptyMsg.remove();
-
-                    var audienceHtml = note.isbroadcast
-                        ? '<div class="videoclass-sharednote-audience">{{#str}}sharedwithall, format_videoclass{{/str}}</div>'
-                        : '<div class="videoclass-sharednote-audience">Shared with: ' + recipientNames + '</div>';
-
-                    var card = document.createElement('div');
-                    card.className = 'videoclass-sharednote-card';
-                    card.dataset.noteid = note.id;
-                    card.innerHTML =
-                        '<div class="videoclass-sharednote-header">' +
-                            '<span class="videoclass-sharednote-author">' + note.authorfullname + '</span>' +
-                            '<span class="videoclass-sharednote-time">' + note.timecreated + '</span>' +
-                            '<button type="button" class="videoclass-sharednote-delete" data-noteid="' + note.id + '" title="Delete">&times;</button>' +
-                        '</div>' +
-                        audienceHtml +
-                        '<div class="videoclass-sharednote-content">' + note.content + '</div>';
-                    listEl.prepend(card);
-                    input.value = '';
-
-                    /* Clear recipients */
-                    selectedRecipients = [];
-                    chipsEl.querySelectorAll('.videoclass-recipient-chip:not(.videoclass-recipient-chip-all)').forEach(function(c) { c.remove(); });
-                    updateAllChip();
-                } else {
-                    alert(results[0].exception ? results[0].exception.message : 'Error');
-                }
-                submitBtn.disabled = false;
-            }).catch(function() { submitBtn.disabled = false; });
+                ajaxCall('format_videoclass_share_note', {
+                    noteid: parseInt(noteid),
+                    recipients: recipientIds
+                }).then(function(results) {
+                    if (results[0] && !results[0].error) {
+                        picker.style.display = 'none';
+                        /* Add badge */
+                        var header = card.querySelector('.videoclass-mynote-header');
+                        var existingBadge = header.querySelector('.videoclass-mynote-badge-shared');
+                        if (!existingBadge) {
+                            var badge = document.createElement('span');
+                            badge.className = 'videoclass-mynote-badge-shared';
+                            badge.title = recipientNames.join(', ');
+                            badge.textContent = '{{#str}}sharedbadge, format_videoclass{{/str}}';
+                            header.querySelector('.videoclass-mynote-time').after(badge);
+                        }
+                        /* Add shared info */
+                        var existingInfo = card.querySelector('.videoclass-mynote-shared-info');
+                        if (existingInfo) {
+                            existingInfo.innerHTML = '&#x1f465; ' + recipientNames.join(', ');
+                        } else {
+                            var info = document.createElement('div');
+                            info.className = 'videoclass-mynote-shared-info';
+                            info.innerHTML = '&#x1f465; ' + recipientNames.join(', ');
+                            header.after(info);
+                        }
+                        /* Swap share→unshare button */
+                        var shareBtn = card.querySelector('.videoclass-mynote-share');
+                        if (shareBtn) {
+                            var unsBtn = document.createElement('button');
+                            unsBtn.type = 'button';
+                            unsBtn.className = 'videoclass-mynote-unshare';
+                            unsBtn.dataset.noteid = noteid;
+                            unsBtn.title = 'Unshare';
+                            unsBtn.innerHTML = '&#x1f512;';
+                            shareBtn.replaceWith(unsBtn);
+                        }
+                        /* Clear picker chips */
+                        picker.querySelector('.videoclass-recipient-chips').innerHTML = '';
+                    }
+                });
+                return;
+            }
         });
 
-        /* Delete shared note */
-        listEl.addEventListener('click', function(e) {
-            var btn = e.target.closest('.videoclass-sharednote-delete');
-            if (!btn) return;
-            if (!confirm('{{#str}}deleteconfirm, format_videoclass{{/str}}')) return;
-            var noteid = btn.dataset.noteid;
+        /* Recipient search (delegated) */
+        var searchTimeout = null;
+        listEl.addEventListener('input', function(e) {
+            if (!e.target.classList.contains('videoclass-recipient-search')) return;
+            clearTimeout(searchTimeout);
+            var searchInput = e.target;
+            var picker = searchInput.closest('.videoclass-share-picker');
+            var resultsEl = picker.querySelector('.videoclass-recipient-results');
+            var chipsEl = picker.querySelector('.videoclass-recipient-chips');
+            var q = searchInput.value.trim();
+            if (q.length < 2) { resultsEl.innerHTML = ''; return; }
 
-            ajaxCall('format_videoclass_delete_note', {
-                noteid: parseInt(noteid)
-            }).then(function(results) {
-                if (results[0] && !results[0].error) {
-                    var card = listEl.querySelector('[data-noteid="' + noteid + '"]');
-                    if (card) card.remove();
-                    if (!listEl.querySelector('.videoclass-sharednote-card')) {
-                        var empty = document.createElement('div');
-                        empty.className = 'videoclass-empty videoclass-sharednotes-empty';
-                        empty.textContent = '{{#str}}nosharednotes, format_videoclass{{/str}}';
-                        listEl.appendChild(empty);
+            searchTimeout = setTimeout(function() {
+                ajaxCall('format_videoclass_search_students', {
+                    courseid: parseInt(courseid),
+                    query: q
+                }).then(function(results) {
+                    resultsEl.innerHTML = '';
+                    if (results[0] && !results[0].error && results[0].data) {
+                        var existingIds = [];
+                        chipsEl.querySelectorAll('.videoclass-recipient-chip').forEach(function(c) {
+                            existingIds.push(parseInt(c.dataset.userid));
+                        });
+                        results[0].data.forEach(function(user) {
+                            if (existingIds.indexOf(user.id) !== -1) return;
+                            var item = document.createElement('div');
+                            item.className = 'videoclass-recipient-result';
+                            item.textContent = user.fullname;
+                            item.dataset.userid = user.id;
+                            item.dataset.fullname = user.fullname;
+                            item.addEventListener('click', function() {
+                                var chip = document.createElement('span');
+                                chip.className = 'videoclass-recipient-chip';
+                                chip.dataset.userid = user.id;
+                                chip.dataset.fullname = user.fullname;
+                                chip.innerHTML = user.fullname + ' <button type="button" class="videoclass-chip-remove">&times;</button>';
+                                chip.querySelector('.videoclass-chip-remove').addEventListener('click', function() {
+                                    chip.remove();
+                                });
+                                chipsEl.appendChild(chip);
+                                resultsEl.innerHTML = '';
+                                searchInput.value = '';
+                            });
+                            resultsEl.appendChild(item);
+                        });
                     }
-                }
-            });
+                });
+            }, 300);
+        });
+
+        /* Close search results on outside click */
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.videoclass-share-picker')) {
+                listEl.querySelectorAll('.videoclass-recipient-results').forEach(function(r) {
+                    r.innerHTML = '';
+                });
+            }
         });
     });
 })();

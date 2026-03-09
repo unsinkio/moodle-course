@@ -49,24 +49,19 @@ $string['noresources'] = 'No resources assigned to this topic.';
 $string['noassessments'] = 'No assessments assigned to this topic.';
 $string['noqaprefix'] = 'Add activities with the [Q&A] prefix or forums to show them here.';
 
-// Personal notes.
+// My Notes.
 $string['nomynotes'] = 'You haven\'t written any notes for this topic yet.';
 $string['savenote'] = 'Save';
 $string['mynoteplaceholder'] = 'Write a personal note...';
-$string['notesaved'] = 'Note saved.';
 $string['deletemynote'] = 'Delete';
 $string['deletemynoteconfirm'] = 'Are you sure you want to delete this note?';
-
-// Shared notes.
-$string['nosharednotes'] = 'No shared notes yet for this topic.';
-$string['sharenote'] = 'Share';
-$string['sharenoteplaceholder'] = 'Write a note to share with your classmates...';
-$string['sharednotesby'] = 'Shared by {$a}';
-$string['deleteconfirm'] = 'Are you sure you want to delete this note?';
-$string['deletenote'] = 'Delete';
-$string['noteshared'] = 'Note shared successfully.';
-$string['notedeleted'] = 'Note deleted successfully.';
+$string['sharethistnote'] = 'Share';
+$string['unsharenote'] = 'Unshare';
+$string['sharedbadge'] = 'Shared';
+$string['sharedwith'] = 'Shared with: ';
 $string['searchstudents'] = 'Search classmates...';
-$string['sharenotewithall'] = 'Everyone';
-$string['sharedwith'] = 'Shared with: {$a}';
-$string['sharedwithall'] = 'Shared with everyone';
+$string['sharenoteprompt'] = 'Select classmates to share this note with:';
+
+// Shared Notes (Shared with me).
+$string['nosharednotes'] = 'No classmates have shared notes with you for this topic yet.';
+$string['sharedby'] = 'Shared by';

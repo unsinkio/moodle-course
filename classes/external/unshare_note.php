@@ -14,14 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * External function: delete a shared note (cascades recipients).
- *
- * @package   format_videoclass
- * @copyright 2026 Atlantis University
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace format_videoclass\external;
 
 defined('MOODLE_INTERNAL') || die();
@@ -33,11 +25,16 @@ use external_function_parameters;
 use external_single_structure;
 use external_value;
 
-class delete_note extends external_api {
+/**
+ * Remove all sharing from a note (unshare).
+ *
+ * @package   format_videoclass
+ */
+class unshare_note extends external_api {
 
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters([
-            'noteid' => new external_value(PARAM_INT, 'Note ID to delete'),
+            'noteid' => new external_value(PARAM_INT, 'Note ID to unshare'),
         ]);
     }
 
@@ -48,26 +45,22 @@ class delete_note extends external_api {
             'noteid' => $noteid,
         ]);
 
-        $note = $DB->get_record('format_videoclass_shared_notes', ['id' => $params['noteid']], '*', MUST_EXIST);
+        $note = $DB->get_record('format_videoclass_notes', [
+            'id'     => $params['noteid'],
+            'userid' => $USER->id,
+        ], '*', MUST_EXIST);
 
         $context = \context_course::instance($note->courseid);
         self::validate_context($context);
 
-        $isadmin = has_capability('moodle/course:update', $context);
-        if (!$isadmin && (int) $note->userid !== (int) $USER->id) {
-            throw new \moodle_exception('nopermissions', 'error', '', 'delete this note');
-        }
-
-        // Delete recipients first, then the note.
         $DB->delete_records('format_videoclass_note_recipients', ['noteid' => $note->id]);
-        $DB->delete_records('format_videoclass_shared_notes', ['id' => $note->id]);
 
         return ['success' => true];
     }
 
     public static function execute_returns(): external_single_structure {
         return new external_single_structure([
-            'success' => new external_value(PARAM_BOOL, 'Whether deletion succeeded'),
+            'success' => new external_value(PARAM_BOOL, 'Whether unsharing succeeded'),
         ]);
     }
 }

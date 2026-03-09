@@ -77,11 +77,11 @@ class section extends section_base
         $sectioninfo = $this->section;
         $sectionid = $sectioninfo->id;
 
-        // Load shared notes for this section (with recipient filtering).
-        $sharednotes = $this->load_shared_notes($course->id, $sectionid, $context);
-
-        // Load personal notes for this user.
+        // Load personal notes for this user (with sharing info).
         $personalnotes = $this->load_personal_notes($course->id, $sectionid);
+
+        // Load notes shared with the current user.
+        $sharedwithme = $this->load_shared_with_me($course->id, $sectionid);
 
         $data->videoclass = (object) [
             'sectionsnav'    => $this->build_sections_nav(),
@@ -90,8 +90,8 @@ class section extends section_base
             'qa'             => $this->wrap_cmlist($qa),
             'hasvideo'       => $this->summary_has_video($data),
             'editurl'        => (new \moodle_url('/course/editsection.php', ['id' => $data->id]))->out(false),
-            'sharednotes'    => $sharednotes,
             'personalnotes'  => $personalnotes,
+            'sharedwithme'   => $sharedwithme,
             'courseid'       => $course->id,
             'sectionid'      => $sectionid,
             'userid'         => $USER->id,
@@ -266,83 +266,7 @@ class section extends section_base
     }
 
     /**
-     * Load shared notes for a section (filtered by recipient visibility).
-     *
-     * @param int $courseid
-     * @param int $sectionid
-     * @param \context_course $context
-     * @return array
-     */
-    private function load_shared_notes(int $courseid, int $sectionid, \context_course $context): array
-    {
-        global $DB, $USER;
-
-        $isadmin = has_capability('moodle/course:update', $context);
-
-        if ($isadmin) {
-            $sql = "SELECT n.*, u.firstname, u.lastname, u.firstnamephonetic, u.lastnamephonetic, u.middlename, u.alternatename
-                      FROM {format_videoclass_shared_notes} n
-                      JOIN {user} u ON u.id = n.userid
-                     WHERE n.courseid = :courseid AND n.sectionid = :sectionid
-                  ORDER BY n.timecreated DESC";
-            $sqlparams = ['courseid' => $courseid, 'sectionid' => $sectionid];
-        } else {
-            $sql = "SELECT DISTINCT n.*, u.firstname, u.lastname, u.firstnamephonetic,
-                           u.lastnamephonetic, u.middlename, u.alternatename
-                      FROM {format_videoclass_shared_notes} n
-                      JOIN {user} u ON u.id = n.userid
-                 LEFT JOIN {format_videoclass_note_recipients} r ON r.noteid = n.id
-                     WHERE n.courseid = :courseid
-                       AND n.sectionid = :sectionid
-                       AND (
-                           n.userid = :myid1
-                           OR r.userid = :myid2
-                           OR NOT EXISTS (
-                               SELECT 1 FROM {format_videoclass_note_recipients} r2 WHERE r2.noteid = n.id
-                           )
-                       )
-                  ORDER BY n.timecreated DESC";
-            $sqlparams = [
-                'courseid'  => $courseid,
-                'sectionid' => $sectionid,
-                'myid1'     => $USER->id,
-                'myid2'     => $USER->id,
-            ];
-        }
-
-        $records = $DB->get_records_sql($sql, $sqlparams);
-
-        $notes = [];
-        foreach ($records as $r) {
-            // Get recipient names.
-            $recipients = $DB->get_records_sql(
-                "SELECT u.id, u.firstname, u.lastname, u.firstnamephonetic, u.lastnamephonetic, u.middlename, u.alternatename
-                   FROM {format_videoclass_note_recipients} nr
-                   JOIN {user} u ON u.id = nr.userid
-                  WHERE nr.noteid = :noteid",
-                ['noteid' => $r->id]
-            );
-            $recipientnames = [];
-            foreach ($recipients as $recip) {
-                $recipientnames[] = fullname($recip);
-            }
-
-            $notes[] = (object) [
-                'id'             => (int) $r->id,
-                'content'        => format_string($r->content),
-                'authorfullname' => fullname($r),
-                'timecreated'    => userdate($r->timecreated, get_string('strftimedatetimeshort', 'langconfig')),
-                'candelete'      => ($isadmin || (int) $r->userid === (int) $USER->id),
-                'recipientnames' => implode(', ', $recipientnames),
-                'isbroadcast'    => empty($recipientnames),
-            ];
-        }
-
-        return $notes;
-    }
-
-    /**
-     * Load personal notes for the current user in a section.
+     * Load personal notes for the current user in a section (with sharing info).
      *
      * @param int $courseid
      * @param int $sectionid
@@ -360,11 +284,68 @@ class section extends section_base
 
         $notes = [];
         foreach ($records as $r) {
+            // Fetch recipients for this note.
+            $recipients = $DB->get_records_sql(
+                "SELECT u.id, u.firstname, u.lastname, u.firstnamephonetic,
+                        u.lastnamephonetic, u.middlename, u.alternatename
+                   FROM {format_videoclass_note_recipients} nr
+                   JOIN {user} u ON u.id = nr.userid
+                  WHERE nr.noteid = :noteid",
+                ['noteid' => $r->id]
+            );
+            $recipientnames = [];
+            foreach ($recipients as $recip) {
+                $recipientnames[] = fullname($recip);
+            }
+
             $notes[] = (object) [
-                'id'           => (int) $r->id,
-                'content'      => format_string($r->content),
-                'timecreated'  => userdate($r->timecreated, get_string('strftimedatetimeshort', 'langconfig')),
-                'timemodified' => userdate($r->timemodified, get_string('strftimedatetimeshort', 'langconfig')),
+                'id'             => (int) $r->id,
+                'content'        => format_string($r->content),
+                'timecreated'    => userdate($r->timecreated, get_string('strftimedatetimeshort', 'langconfig')),
+                'timemodified'   => userdate($r->timemodified, get_string('strftimedatetimeshort', 'langconfig')),
+                'isshared'       => !empty($recipientnames),
+                'recipientnames' => implode(', ', $recipientnames),
+            ];
+        }
+
+        return $notes;
+    }
+
+    /**
+     * Load notes shared with the current user in a section.
+     *
+     * @param int $courseid
+     * @param int $sectionid
+     * @return array
+     */
+    private function load_shared_with_me(int $courseid, int $sectionid): array
+    {
+        global $DB, $USER;
+
+        $sql = "SELECT n.*, u.firstname, u.lastname, u.firstnamephonetic,
+                       u.lastnamephonetic, u.middlename, u.alternatename,
+                       nr.timeshared
+                  FROM {format_videoclass_note_recipients} nr
+                  JOIN {format_videoclass_notes} n ON n.id = nr.noteid
+                  JOIN {user} u ON u.id = n.userid
+                 WHERE nr.userid = :myid
+                   AND n.courseid = :courseid
+                   AND n.sectionid = :sectionid
+              ORDER BY nr.timeshared DESC";
+
+        $records = $DB->get_records_sql($sql, [
+            'myid'      => $USER->id,
+            'courseid'  => $courseid,
+            'sectionid' => $sectionid,
+        ]);
+
+        $notes = [];
+        foreach ($records as $r) {
+            $notes[] = (object) [
+                'id'             => (int) $r->id,
+                'content'        => format_string($r->content),
+                'authorfullname' => fullname($r),
+                'timeshared'     => userdate($r->timeshared, get_string('strftimedatetimeshort', 'langconfig')),
             ];
         }
 

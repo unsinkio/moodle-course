@@ -14,14 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * External function: share a note with optional recipients.
- *
- * @package   format_videoclass
- * @copyright 2026 Atlantis University
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace format_videoclass\external;
 
 defined('MOODLE_INTERNAL') || die();
@@ -34,87 +26,78 @@ use external_multiple_structure;
 use external_single_structure;
 use external_value;
 
+/**
+ * Share a saved personal note with selected classmates.
+ *
+ * @package   format_videoclass
+ */
 class share_note extends external_api {
 
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters([
-            'courseid'   => new external_value(PARAM_INT, 'Course ID'),
-            'sectionid'  => new external_value(PARAM_INT, 'Section ID'),
-            'content'    => new external_value(PARAM_TEXT, 'Note content'),
+            'noteid'     => new external_value(PARAM_INT, 'Note ID to share'),
             'recipients' => new external_multiple_structure(
                 new external_value(PARAM_INT, 'User ID of a recipient'),
-                'List of recipient user IDs (empty = share with everyone)',
-                VALUE_DEFAULT,
-                []
+                'List of recipient user IDs'
             ),
         ]);
     }
 
-    public static function execute(int $courseid, int $sectionid, string $content, array $recipients = []): array {
+    public static function execute(int $noteid, array $recipients): array {
         global $DB, $USER;
 
         $params = self::validate_parameters(self::execute_parameters(), [
-            'courseid'   => $courseid,
-            'sectionid'  => $sectionid,
-            'content'    => $content,
+            'noteid'     => $noteid,
             'recipients' => $recipients,
         ]);
 
-        $context = \context_course::instance($params['courseid']);
+        $note = $DB->get_record('format_videoclass_notes', [
+            'id'     => $params['noteid'],
+            'userid' => $USER->id,
+        ], '*', MUST_EXIST);
+
+        $context = \context_course::instance($note->courseid);
         self::validate_context($context);
 
-        if (!is_enrolled($context, $USER, '', true)) {
-            throw new \moodle_exception('notenrolled', 'error');
+        if (empty($params['recipients'])) {
+            throw new \invalid_parameter_exception('At least one recipient is required.');
         }
 
-        $content = clean_param(trim($params['content']), PARAM_TEXT);
-        if (empty($content)) {
-            throw new \invalid_parameter_exception('Content cannot be empty.');
-        }
-
-        $record = (object) [
-            'courseid'    => $params['courseid'],
-            'sectionid'   => $params['sectionid'],
-            'userid'      => $USER->id,
-            'content'     => $content,
-            'timecreated' => time(),
-        ];
-
-        $record->id = $DB->insert_record('format_videoclass_shared_notes', $record);
-
-        // Insert recipients if specified.
+        $now = time();
         $recipientnames = [];
-        if (!empty($params['recipients'])) {
-            foreach ($params['recipients'] as $recipientid) {
-                $DB->insert_record('format_videoclass_note_recipients', (object) [
-                    'noteid' => $record->id,
-                    'userid' => $recipientid,
-                ]);
-                $ruser = $DB->get_record('user', ['id' => $recipientid], 'id, firstname, lastname, firstnamephonetic, lastnamephonetic, middlename, alternatename');
-                if ($ruser) {
-                    $recipientnames[] = fullname($ruser);
-                }
+
+        foreach ($params['recipients'] as $recipientid) {
+            // Skip if already shared with this user.
+            if ($DB->record_exists('format_videoclass_note_recipients', [
+                'noteid' => $note->id,
+                'userid' => $recipientid,
+            ])) {
+                continue;
+            }
+
+            $DB->insert_record('format_videoclass_note_recipients', (object) [
+                'noteid'    => $note->id,
+                'userid'    => $recipientid,
+                'timeshared' => $now,
+            ]);
+
+            $ruser = $DB->get_record('user', ['id' => $recipientid],
+                'id,firstname,lastname,firstnamephonetic,lastnamephonetic,middlename,alternatename');
+            if ($ruser) {
+                $recipientnames[] = fullname($ruser);
             }
         }
 
         return [
-            'id'             => $record->id,
-            'content'        => $record->content,
-            'authorfullname' => fullname($USER),
-            'timecreated'    => userdate($record->timecreated, get_string('strftimedatetimeshort', 'langconfig')),
+            'success'        => true,
             'recipientnames' => implode(', ', $recipientnames),
-            'isbroadcast'    => empty($params['recipients']),
         ];
     }
 
     public static function execute_returns(): external_single_structure {
         return new external_single_structure([
-            'id'             => new external_value(PARAM_INT, 'Note ID'),
-            'content'        => new external_value(PARAM_TEXT, 'Note content'),
-            'authorfullname' => new external_value(PARAM_TEXT, 'Author full name'),
-            'timecreated'    => new external_value(PARAM_TEXT, 'Formatted creation time'),
+            'success'        => new external_value(PARAM_BOOL, 'Whether sharing succeeded'),
             'recipientnames' => new external_value(PARAM_TEXT, 'Comma-separated recipient names'),
-            'isbroadcast'    => new external_value(PARAM_BOOL, 'Whether shared with everyone'),
         ]);
     }
 }

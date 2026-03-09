@@ -27,11 +27,11 @@ use external_single_structure;
 use external_value;
 
 /**
- * Get personal notes for a section (with sharing info).
+ * Get notes shared with the current user (Shared Notes tab).
  *
  * @package   format_videoclass
  */
-class get_personal_notes extends external_api {
+class get_shared_with_me extends external_api {
 
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters([
@@ -55,36 +55,30 @@ class get_personal_notes extends external_api {
             throw new \moodle_exception('notenrolled', 'error');
         }
 
-        $records = $DB->get_records('format_videoclass_notes', [
+        $sql = "SELECT n.*, u.firstname, u.lastname, u.firstnamephonetic,
+                       u.lastnamephonetic, u.middlename, u.alternatename,
+                       nr.timeshared
+                  FROM {format_videoclass_note_recipients} nr
+                  JOIN {format_videoclass_notes} n ON n.id = nr.noteid
+                  JOIN {user} u ON u.id = n.userid
+                 WHERE nr.userid = :myid
+                   AND n.courseid = :courseid
+                   AND n.sectionid = :sectionid
+              ORDER BY nr.timeshared DESC";
+
+        $records = $DB->get_records_sql($sql, [
+            'myid'      => $USER->id,
             'courseid'  => $params['courseid'],
             'sectionid' => $params['sectionid'],
-            'userid'    => $USER->id,
-        ], 'timemodified DESC');
+        ]);
 
         $notes = [];
         foreach ($records as $r) {
-            // Check for recipients (sharing info).
-            $recipients = $DB->get_records_sql(
-                "SELECT u.id, u.firstname, u.lastname, u.firstnamephonetic,
-                        u.lastnamephonetic, u.middlename, u.alternatename
-                   FROM {format_videoclass_note_recipients} nr
-                   JOIN {user} u ON u.id = nr.userid
-                  WHERE nr.noteid = :noteid",
-                ['noteid' => $r->id]
-            );
-
-            $recipientnames = [];
-            foreach ($recipients as $recip) {
-                $recipientnames[] = fullname($recip);
-            }
-
             $notes[] = [
                 'id'             => (int) $r->id,
-                'content'        => $r->content,
-                'timecreated'    => userdate($r->timecreated, get_string('strftimedatetimeshort', 'langconfig')),
-                'timemodified'   => userdate($r->timemodified, get_string('strftimedatetimeshort', 'langconfig')),
-                'isshared'       => !empty($recipientnames),
-                'recipientnames' => implode(', ', $recipientnames),
+                'content'        => format_string($r->content),
+                'authorfullname' => fullname($r),
+                'timeshared'     => userdate($r->timeshared, get_string('strftimedatetimeshort', 'langconfig')),
             ];
         }
 
@@ -96,10 +90,8 @@ class get_personal_notes extends external_api {
             new external_single_structure([
                 'id'             => new external_value(PARAM_INT, 'Note ID'),
                 'content'        => new external_value(PARAM_TEXT, 'Note content'),
-                'timecreated'    => new external_value(PARAM_TEXT, 'Created time'),
-                'timemodified'   => new external_value(PARAM_TEXT, 'Modified time'),
-                'isshared'       => new external_value(PARAM_BOOL, 'Whether note is shared'),
-                'recipientnames' => new external_value(PARAM_TEXT, 'Comma-separated recipient names'),
+                'authorfullname' => new external_value(PARAM_TEXT, 'Author full name'),
+                'timeshared'     => new external_value(PARAM_TEXT, 'When it was shared'),
             ])
         );
     }

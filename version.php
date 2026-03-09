@@ -24,9 +24,9 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version = 2026030901; // Date-based version.
+$plugin->version = 2026030902; // Date-based version.
 $plugin->requires = 2024100700; // Moodle 4.5.0.
 $plugin->component = 'format_videoclass';
 $plugin->maturity = MATURITY_ALPHA;
-$plugin->release = '0.3.0';
+$plugin->release = '0.4.0';
 $plugin->supported = [405, 500];

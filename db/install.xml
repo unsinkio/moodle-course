@@ -1,40 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <XMLDB PATH="course/format/videoclass/db" VERSION="20260309" COMMENT="XMLDB file for format_videoclass">
   <TABLES>
-    <TABLE NAME="format_videoclass_shared_notes" COMMENT="Shared notes between students in VideoClass sections">
-      <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="FK to course.id"/>
-        <FIELD NAME="sectionid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="FK to course_sections.id"/>
-        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="FK to user.id (author)"/>
-        <FIELD NAME="content" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="Note content"/>
-        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
-      </FIELDS>
-      <KEYS>
-        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="courseid_fk" TYPE="foreign" FIELDS="courseid" REFTABLE="course" REFFIELDS="id"/>
-        <KEY NAME="userid_fk" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
-      </KEYS>
-      <INDEXES>
-        <INDEX NAME="courseid_sectionid_idx" UNIQUE="false" FIELDS="courseid, sectionid"/>
-      </INDEXES>
-    </TABLE>
-    <TABLE NAME="format_videoclass_note_recipients" COMMENT="Recipients for shared notes (empty = broadcast to all)">
-      <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-        <FIELD NAME="noteid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="FK to shared_notes.id"/>
-        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="FK to user.id (recipient)"/>
-      </FIELDS>
-      <KEYS>
-        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="noteid_fk" TYPE="foreign" FIELDS="noteid" REFTABLE="format_videoclass_shared_notes" REFFIELDS="id"/>
-        <KEY NAME="userid_fk" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
-      </KEYS>
-      <INDEXES>
-        <INDEX NAME="noteid_userid_idx" UNIQUE="true" FIELDS="noteid, userid"/>
-      </INDEXES>
-    </TABLE>
-    <TABLE NAME="format_videoclass_notes" COMMENT="Personal private notes per section">
+    <TABLE NAME="format_videoclass_notes" COMMENT="Personal notes per section (can be shared)">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="FK to course.id"/>
@@ -51,6 +18,22 @@
       </KEYS>
       <INDEXES>
         <INDEX NAME="courseid_sectionid_userid_idx" UNIQUE="false" FIELDS="courseid, sectionid, userid"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="format_videoclass_note_recipients" COMMENT="Sharing links: who a note has been shared with">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="noteid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="FK to format_videoclass_notes.id"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="FK to user.id (recipient)"/>
+        <FIELD NAME="timeshared" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="noteid_fk" TYPE="foreign" FIELDS="noteid" REFTABLE="format_videoclass_notes" REFFIELDS="id"/>
+        <KEY NAME="userid_fk" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="noteid_userid_idx" UNIQUE="true" FIELDS="noteid, userid"/>
       </INDEXES>
     </TABLE>
   </TABLES>
