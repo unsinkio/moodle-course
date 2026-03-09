@@ -85,9 +85,9 @@ class section extends section_base
 
         $data->videoclass = (object) [
             'sectionsnav'    => $this->build_sections_nav(),
-            'resources'      => $this->wrap_cmlist($resources),
-            'assessments'    => $this->wrap_cmlist($assessments),
-            'qa'             => $this->wrap_cmlist($qa),
+            'resources'      => $this->flatten_cmlist($resources, $output),
+            'assessments'    => $this->flatten_cmlist($assessments, $output),
+            'qa'             => $this->flatten_cmlist($qa, $output),
             'hasvideo'       => $this->summary_has_video($data),
             'editurl'        => (new \moodle_url('/course/editsection.php', ['id' => $data->id]))->out(false),
             'personalnotes'  => $personalnotes,
@@ -204,17 +204,57 @@ class section extends section_base
     }
 
     /**
-     * Wrap a cms list in the expected structure for the cmlist template.
+     * Flatten cm renderables into simple arrays the template can iterate.
      *
-     * @param array $cms
-     * @return stdClass
+     * @param array $cms  Array of cm wrapper objects from parent export.
+     * @param \renderer_base $output
+     * @return array  Flat list of objects with id, icon, url, name, editing, cmcontrols.
      */
-    private function wrap_cmlist(array $cms): stdClass
+    private function flatten_cmlist(array $cms, \renderer_base $output): array
     {
-        return (object) [
-            'cms' => $cms,
-            'hascms' => !empty($cms),
-        ];
+        $flat = [];
+        foreach ($cms as $cmwrapper) {
+            $cmitem = $cmwrapper->cmitem ?? null;
+            if (!$cmitem) {
+                continue;
+            }
+
+            $url = '';
+            if (!empty($cmitem->url)) {
+                $url = ($cmitem->url instanceof \moodle_url)
+                    ? $cmitem->url->out(false)
+                    : (string) $cmitem->url;
+            }
+
+            $name = '';
+            if (!empty($cmitem->cmformat) && !empty($cmitem->cmformat->cmname)) {
+                $cmname = $cmitem->cmformat->cmname;
+                $name = is_object($cmname) ? strip_tags($output->render($cmname)) : (string) $cmname;
+            }
+
+            $icon = '';
+            if (!empty($cmitem->cmformat) && !empty($cmitem->cmformat->cmicon)) {
+                $cmicon = $cmitem->cmformat->cmicon;
+                $icon = is_object($cmicon) ? $output->render($cmicon) : (string) $cmicon;
+            }
+
+            $cmcontrols = '';
+            if (!empty($cmwrapper->cmcontrols)) {
+                $cmcontrols = is_object($cmwrapper->cmcontrols)
+                    ? $output->render($cmwrapper->cmcontrols)
+                    : (string) $cmwrapper->cmcontrols;
+            }
+
+            $flat[] = (object) [
+                'id'         => $cmitem->id ?? 0,
+                'url'        => $url,
+                'name'       => $name,
+                'icon'       => $icon,
+                'editing'    => !empty($cmwrapper->editing),
+                'cmcontrols' => $cmcontrols,
+            ];
+        }
+        return $flat;
     }
 
     /**
