@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * External function: get shared notes for a section.
+ * External function: get shared notes visible to the current user.
  *
  * @package   format_videoclass
  * @copyright 2026 Atlantis University
@@ -58,26 +58,75 @@ class get_shared_notes extends external_api {
             throw new \moodle_exception('notenrolled', 'error');
         }
 
-        $sql = "SELECT n.*, u.firstname, u.lastname, u.firstnamephonetic, u.lastnamephonetic, u.middlename, u.alternatename
+        $isadmin = has_capability('moodle/course:update', $context);
+
+        // Get notes that are either:
+        // 1. Broadcast (no recipients) → visible to all
+        // 2. Targeted to this user
+        // 3. Created by this user
+        // 4. Admin sees all
+        $sql = "SELECT DISTINCT n.*, u.firstname, u.lastname, u.firstnamephonetic,
+                       u.lastnamephonetic, u.middlename, u.alternatename
                   FROM {format_videoclass_shared_notes} n
                   JOIN {user} u ON u.id = n.userid
-                 WHERE n.courseid = :courseid AND n.sectionid = :sectionid
+             LEFT JOIN {format_videoclass_note_recipients} r ON r.noteid = n.id
+                 WHERE n.courseid = :courseid
+                   AND n.sectionid = :sectionid
+                   AND (
+                       n.userid = :myid1
+                       OR r.userid = :myid2
+                       OR NOT EXISTS (
+                           SELECT 1 FROM {format_videoclass_note_recipients} r2 WHERE r2.noteid = n.id
+                       )
+                   )
               ORDER BY n.timecreated DESC";
 
-        $records = $DB->get_records_sql($sql, [
-            'courseid'  => $params['courseid'],
-            'sectionid' => $params['sectionid'],
-        ]);
+        if ($isadmin) {
+            // Admins see all notes.
+            $sql = "SELECT n.*, u.firstname, u.lastname, u.firstnamephonetic,
+                           u.lastnamephonetic, u.middlename, u.alternatename
+                      FROM {format_videoclass_shared_notes} n
+                      JOIN {user} u ON u.id = n.userid
+                     WHERE n.courseid = :courseid AND n.sectionid = :sectionid
+                  ORDER BY n.timecreated DESC";
+            $sqlparams = [
+                'courseid'  => $params['courseid'],
+                'sectionid' => $params['sectionid'],
+            ];
+        } else {
+            $sqlparams = [
+                'courseid'  => $params['courseid'],
+                'sectionid' => $params['sectionid'],
+                'myid1'     => $USER->id,
+                'myid2'     => $USER->id,
+            ];
+        }
 
-        $isadmin = has_capability('moodle/course:update', $context);
+        $records = $DB->get_records_sql($sql, $sqlparams);
+
         $notes = [];
         foreach ($records as $r) {
+            // Get recipient names for display.
+            $recipients = $DB->get_records_sql(
+                "SELECT u.id, u.firstname, u.lastname, u.firstnamephonetic, u.lastnamephonetic, u.middlename, u.alternatename
+                   FROM {format_videoclass_note_recipients} nr
+                   JOIN {user} u ON u.id = nr.userid
+                  WHERE nr.noteid = :noteid",
+                ['noteid' => $r->id]
+            );
+            $recipientnames = [];
+            foreach ($recipients as $recip) {
+                $recipientnames[] = fullname($recip);
+            }
+
             $notes[] = [
                 'id'             => (int) $r->id,
                 'content'        => $r->content,
                 'authorfullname' => fullname($r),
                 'timecreated'    => userdate($r->timecreated, get_string('strftimedatetimeshort', 'langconfig')),
                 'candelete'      => ($isadmin || (int) $r->userid === (int) $USER->id),
+                'recipientnames' => implode(', ', $recipientnames),
+                'isbroadcast'    => empty($recipientnames),
             ];
         }
 
@@ -92,6 +141,8 @@ class get_shared_notes extends external_api {
                 'authorfullname' => new external_value(PARAM_TEXT, 'Author full name'),
                 'timecreated'    => new external_value(PARAM_TEXT, 'Formatted creation time'),
                 'candelete'      => new external_value(PARAM_BOOL, 'Whether current user can delete'),
+                'recipientnames' => new external_value(PARAM_TEXT, 'Comma-separated recipient names'),
+                'isbroadcast'    => new external_value(PARAM_BOOL, 'Whether shared with everyone'),
             ])
         );
     }

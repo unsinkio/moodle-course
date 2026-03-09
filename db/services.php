@@ -25,25 +25,49 @@
 defined('MOODLE_INTERNAL') || die();
 
 $functions = [
+    // Shared notes.
     'format_videoclass_share_note' => [
         'classname'   => 'format_videoclass\external\share_note',
         'description' => 'Share a note with classmates in a course section.',
         'type'        => 'write',
         'ajax'        => true,
-        'capabilities' => '',
     ],
     'format_videoclass_get_shared_notes' => [
         'classname'   => 'format_videoclass\external\get_shared_notes',
         'description' => 'Get shared notes for a course section.',
         'type'        => 'read',
         'ajax'        => true,
-        'capabilities' => '',
     ],
     'format_videoclass_delete_note' => [
         'classname'   => 'format_videoclass\external\delete_note',
         'description' => 'Delete a shared note.',
         'type'        => 'write',
         'ajax'        => true,
-        'capabilities' => '',
+    ],
+    // Personal notes.
+    'format_videoclass_save_personal_note' => [
+        'classname'   => 'format_videoclass\external\save_personal_note',
+        'description' => 'Save or update a personal note for a section.',
+        'type'        => 'write',
+        'ajax'        => true,
+    ],
+    'format_videoclass_get_personal_notes' => [
+        'classname'   => 'format_videoclass\external\get_personal_notes',
+        'description' => 'Get personal notes for a section.',
+        'type'        => 'read',
+        'ajax'        => true,
+    ],
+    'format_videoclass_delete_personal_note' => [
+        'classname'   => 'format_videoclass\external\delete_personal_note',
+        'description' => 'Delete a personal note.',
+        'type'        => 'write',
+        'ajax'        => true,
+    ],
+    // Student search.
+    'format_videoclass_search_students' => [
+        'classname'   => 'format_videoclass\external\search_students',
+        'description' => 'Search enrolled students in a course.',
+        'type'        => 'read',
+        'ajax'        => true,
     ],
 ];

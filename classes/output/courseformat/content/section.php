@@ -41,7 +41,7 @@ class section extends section_base
         'h5pactivity'
     ];
 
-    private const NOTES_MODULES = [
+    private const ASSESSMENT_MODULES = [
         'assign',
         'quiz',
         'lesson',
@@ -69,7 +69,7 @@ class section extends section_base
             $cms = $data->cmlist->cms;
         }
 
-        [$resources, $notes, $qa] = $this->split_cms($cms);
+        [$resources, $assessments, $qa] = $this->split_cms($cms);
 
         $format = $this->format;
         $course = $format->get_course();
@@ -77,21 +77,25 @@ class section extends section_base
         $sectioninfo = $this->section;
         $sectionid = $sectioninfo->id;
 
-        // Load shared notes for this section.
+        // Load shared notes for this section (with recipient filtering).
         $sharednotes = $this->load_shared_notes($course->id, $sectionid, $context);
 
+        // Load personal notes for this user.
+        $personalnotes = $this->load_personal_notes($course->id, $sectionid);
+
         $data->videoclass = (object) [
-            'sectionsnav'  => $this->build_sections_nav(),
-            'resources'    => $this->wrap_cmlist($resources),
-            'notes'        => $this->wrap_cmlist($notes),
-            'qa'           => $this->wrap_cmlist($qa),
-            'hasvideo'     => $this->summary_has_video($data),
-            'editurl'      => (new \moodle_url('/course/editsection.php', ['id' => $data->id]))->out(false),
-            'sharednotes'  => $sharednotes,
-            'courseid'     => $course->id,
-            'sectionid'    => $sectionid,
-            'userid'       => $USER->id,
-            'sesskey'      => sesskey(),
+            'sectionsnav'    => $this->build_sections_nav(),
+            'resources'      => $this->wrap_cmlist($resources),
+            'assessments'    => $this->wrap_cmlist($assessments),
+            'qa'             => $this->wrap_cmlist($qa),
+            'hasvideo'       => $this->summary_has_video($data),
+            'editurl'        => (new \moodle_url('/course/editsection.php', ['id' => $data->id]))->out(false),
+            'sharednotes'    => $sharednotes,
+            'personalnotes'  => $personalnotes,
+            'courseid'       => $course->id,
+            'sectionid'      => $sectionid,
+            'userid'         => $USER->id,
+            'sesskey'        => sesskey(),
         ];
 
         return $data;
@@ -118,7 +122,7 @@ class section extends section_base
     }
 
     /**
-     * Split course modules into resources, notes, and Q&A buckets.
+     * Split course modules into resources, assessments, and Q&A buckets.
      *
      * @param array $cms
      * @return array
@@ -126,7 +130,7 @@ class section extends section_base
     private function split_cms(array $cms): array
     {
         $resources = [];
-        $notes = [];
+        $assessments = [];
         $qa = [];
 
         foreach ($cms as $cmwrapper) {
@@ -146,8 +150,8 @@ class section extends section_base
                 $module = $cmitem->module ?? '';
                 if (in_array($module, self::QA_MODULES, true)) {
                     $bucket = 'qa';
-                } else if (in_array($module, self::NOTES_MODULES, true)) {
-                    $bucket = 'notes';
+                } else if (in_array($module, self::ASSESSMENT_MODULES, true)) {
+                    $bucket = 'assessments';
                 } else if (in_array($module, self::RESOURCE_MODULES, true)) {
                     $bucket = 'resources';
                 } else {
@@ -159,8 +163,8 @@ class section extends section_base
                 case 'qa':
                     $qa[] = $cmwrapper;
                     break;
-                case 'notes':
-                    $notes[] = $cmwrapper;
+                case 'assessments':
+                    $assessments[] = $cmwrapper;
                     break;
                 default:
                     $resources[] = $cmwrapper;
@@ -168,7 +172,7 @@ class section extends section_base
             }
         }
 
-        return [$resources, $notes, $qa];
+        return [$resources, $assessments, $qa];
     }
 
     /**
@@ -188,8 +192,8 @@ class section extends section_base
             return 'qa';
         }
 
-        if (preg_match('/^\[(nota|notas|notes?)\]/i', $label)) {
-            return 'notes';
+        if (preg_match('/^\[(nota|notas|notes?|assessment|assessments?|tarea|tareas|quiz|examen)\]/i', $label)) {
+            return 'assessments';
         }
 
         if (preg_match('/^\[(recurso|recursos|resource|material)\]/i', $label)) {
@@ -262,7 +266,7 @@ class section extends section_base
     }
 
     /**
-     * Load shared notes for a section.
+     * Load shared notes for a section (filtered by recipient visibility).
      *
      * @param int $courseid
      * @param int $sectionid
@@ -273,26 +277,94 @@ class section extends section_base
     {
         global $DB, $USER;
 
-        $sql = "SELECT n.*, u.firstname, u.lastname, u.firstnamephonetic, u.lastnamephonetic, u.middlename, u.alternatename
-                  FROM {format_videoclass_shared_notes} n
-                  JOIN {user} u ON u.id = n.userid
-                 WHERE n.courseid = :courseid AND n.sectionid = :sectionid
-              ORDER BY n.timecreated DESC";
-
-        $records = $DB->get_records_sql($sql, [
-            'courseid'  => $courseid,
-            'sectionid' => $sectionid,
-        ]);
-
         $isadmin = has_capability('moodle/course:update', $context);
+
+        if ($isadmin) {
+            $sql = "SELECT n.*, u.firstname, u.lastname, u.firstnamephonetic, u.lastnamephonetic, u.middlename, u.alternatename
+                      FROM {format_videoclass_shared_notes} n
+                      JOIN {user} u ON u.id = n.userid
+                     WHERE n.courseid = :courseid AND n.sectionid = :sectionid
+                  ORDER BY n.timecreated DESC";
+            $sqlparams = ['courseid' => $courseid, 'sectionid' => $sectionid];
+        } else {
+            $sql = "SELECT DISTINCT n.*, u.firstname, u.lastname, u.firstnamephonetic,
+                           u.lastnamephonetic, u.middlename, u.alternatename
+                      FROM {format_videoclass_shared_notes} n
+                      JOIN {user} u ON u.id = n.userid
+                 LEFT JOIN {format_videoclass_note_recipients} r ON r.noteid = n.id
+                     WHERE n.courseid = :courseid
+                       AND n.sectionid = :sectionid
+                       AND (
+                           n.userid = :myid1
+                           OR r.userid = :myid2
+                           OR NOT EXISTS (
+                               SELECT 1 FROM {format_videoclass_note_recipients} r2 WHERE r2.noteid = n.id
+                           )
+                       )
+                  ORDER BY n.timecreated DESC";
+            $sqlparams = [
+                'courseid'  => $courseid,
+                'sectionid' => $sectionid,
+                'myid1'     => $USER->id,
+                'myid2'     => $USER->id,
+            ];
+        }
+
+        $records = $DB->get_records_sql($sql, $sqlparams);
+
         $notes = [];
         foreach ($records as $r) {
+            // Get recipient names.
+            $recipients = $DB->get_records_sql(
+                "SELECT u.id, u.firstname, u.lastname, u.firstnamephonetic, u.lastnamephonetic, u.middlename, u.alternatename
+                   FROM {format_videoclass_note_recipients} nr
+                   JOIN {user} u ON u.id = nr.userid
+                  WHERE nr.noteid = :noteid",
+                ['noteid' => $r->id]
+            );
+            $recipientnames = [];
+            foreach ($recipients as $recip) {
+                $recipientnames[] = fullname($recip);
+            }
+
             $notes[] = (object) [
                 'id'             => (int) $r->id,
                 'content'        => format_string($r->content),
                 'authorfullname' => fullname($r),
                 'timecreated'    => userdate($r->timecreated, get_string('strftimedatetimeshort', 'langconfig')),
                 'candelete'      => ($isadmin || (int) $r->userid === (int) $USER->id),
+                'recipientnames' => implode(', ', $recipientnames),
+                'isbroadcast'    => empty($recipientnames),
+            ];
+        }
+
+        return $notes;
+    }
+
+    /**
+     * Load personal notes for the current user in a section.
+     *
+     * @param int $courseid
+     * @param int $sectionid
+     * @return array
+     */
+    private function load_personal_notes(int $courseid, int $sectionid): array
+    {
+        global $DB, $USER;
+
+        $records = $DB->get_records('format_videoclass_notes', [
+            'courseid'  => $courseid,
+            'sectionid' => $sectionid,
+            'userid'    => $USER->id,
+        ], 'timemodified DESC');
+
+        $notes = [];
+        foreach ($records as $r) {
+            $notes[] = (object) [
+                'id'           => (int) $r->id,
+                'content'      => format_string($r->content),
+                'timecreated'  => userdate($r->timecreated, get_string('strftimedatetimeshort', 'langconfig')),
+                'timemodified' => userdate($r->timemodified, get_string('strftimedatetimeshort', 'langconfig')),
             ];
         }
 

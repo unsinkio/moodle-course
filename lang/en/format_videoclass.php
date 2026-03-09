@@ -36,8 +36,9 @@ $string['sidebarnavlabel'] = 'Course topics';
 
 // Tabs.
 $string['tabresources'] = 'Resources';
-$string['tabnotes'] = 'Notes';
+$string['tabassessments'] = 'Assessments';
 $string['tabqa'] = 'Q&A';
+$string['tabmynotes'] = 'My Notes';
 $string['tabsharednotes'] = 'Shared Notes';
 $string['tabslabel'] = 'Section resources';
 
@@ -45,8 +46,16 @@ $string['tabslabel'] = 'Section resources';
 $string['editsection'] = 'Edit this topic';
 $string['videoplaceholder'] = 'Add a video to the topic summary to display it here.';
 $string['noresources'] = 'No resources assigned to this topic.';
-$string['nonotesprefix'] = 'Add activities with the [Notes] prefix to show them here.';
+$string['noassessments'] = 'No assessments assigned to this topic.';
 $string['noqaprefix'] = 'Add activities with the [Q&A] prefix or forums to show them here.';
+
+// Personal notes.
+$string['nomynotes'] = 'You haven\'t written any notes for this topic yet.';
+$string['savenote'] = 'Save';
+$string['mynoteplaceholder'] = 'Write a personal note...';
+$string['notesaved'] = 'Note saved.';
+$string['deletemynote'] = 'Delete';
+$string['deletemynoteconfirm'] = 'Are you sure you want to delete this note?';
 
 // Shared notes.
 $string['nosharednotes'] = 'No shared notes yet for this topic.';
@@ -57,3 +66,7 @@ $string['deleteconfirm'] = 'Are you sure you want to delete this note?';
 $string['deletenote'] = 'Delete';
 $string['noteshared'] = 'Note shared successfully.';
 $string['notedeleted'] = 'Note deleted successfully.';
+$string['searchstudents'] = 'Search classmates...';
+$string['sharenotewithall'] = 'Everyone';
+$string['sharedwith'] = 'Shared with: {$a}';
+$string['sharedwithall'] = 'Shared with everyone';
