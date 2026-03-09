@@ -109,16 +109,28 @@ class section extends section_base
      */
     private function summary_has_video(stdClass $data): bool
     {
-        if (empty($data->summary) || empty($data->summary->summarytext)) {
+        if (empty($data->summary)) {
             return false;
         }
 
-        $html = (string) $data->summary->summarytext;
-        if (preg_match('/<(iframe|video|embed|source)\b/i', $html)) {
+        // summary might be a renderable or a stdClass — extract text safely.
+        $summarytext = '';
+        if (is_string($data->summary)) {
+            $summarytext = $data->summary;
+        } elseif (is_object($data->summary) && isset($data->summary->summarytext)) {
+            $st = $data->summary->summarytext;
+            $summarytext = is_string($st) ? $st : '';
+        }
+
+        if ($summarytext === '') {
+            return false;
+        }
+
+        if (preg_match('/<(iframe|video|embed|source)\b/i', $summarytext)) {
             return true;
         }
 
-        return trim(strip_tags($html)) !== '';
+        return trim(strip_tags($summarytext)) !== '';
     }
 
     /**
@@ -142,7 +154,15 @@ class section extends section_base
             $cmitem = $cmwrapper->cmitem;
             $label = '';
             if (!empty($cmitem->cmformat) && !empty($cmitem->cmformat->cmname)) {
-                $label = strip_tags((string) $cmitem->cmformat->cmname);
+                $cmname = $cmitem->cmformat->cmname;
+                // cmname can be a renderable object — safely extract text.
+                if (is_string($cmname)) {
+                    $label = strip_tags($cmname);
+                } elseif (is_object($cmname) && method_exists($cmname, 'get_displayvalue')) {
+                    $label = strip_tags($cmname->get_displayvalue());
+                } elseif (is_object($cmname) && isset($cmname->displayvalue)) {
+                    $label = strip_tags($cmname->displayvalue);
+                }
             }
 
             $bucket = $this->bucket_from_label($label);
@@ -219,30 +239,63 @@ class section extends section_base
                 continue;
             }
 
+            // Safely extract URL.
             $url = '';
             if (!empty($cmitem->url)) {
-                $url = ($cmitem->url instanceof \moodle_url)
-                    ? $cmitem->url->out(false)
-                    : (string) $cmitem->url;
+                if ($cmitem->url instanceof \moodle_url) {
+                    $url = $cmitem->url->out(false);
+                } elseif (is_string($cmitem->url)) {
+                    $url = $cmitem->url;
+                }
             }
 
+            // Safely extract name.
             $name = '';
             if (!empty($cmitem->cmformat) && !empty($cmitem->cmformat->cmname)) {
                 $cmname = $cmitem->cmformat->cmname;
-                $name = is_object($cmname) ? strip_tags($output->render($cmname)) : (string) $cmname;
+                if (is_string($cmname)) {
+                    $name = strip_tags($cmname);
+                } else {
+                    try {
+                        $name = strip_tags($output->render($cmname));
+                    } catch (\Throwable $e) {
+                        // Fallback: try common properties.
+                        if (isset($cmname->displayvalue)) {
+                            $name = strip_tags(is_string($cmname->displayvalue) ? $cmname->displayvalue : '');
+                        } elseif (isset($cmname->name)) {
+                            $name = strip_tags(is_string($cmname->name) ? $cmname->name : '');
+                        }
+                    }
+                }
             }
 
+            // Safely extract icon.
             $icon = '';
             if (!empty($cmitem->cmformat) && !empty($cmitem->cmformat->cmicon)) {
                 $cmicon = $cmitem->cmformat->cmicon;
-                $icon = is_object($cmicon) ? $output->render($cmicon) : (string) $cmicon;
+                if (is_string($cmicon)) {
+                    $icon = $cmicon;
+                } else {
+                    try {
+                        $icon = $output->render($cmicon);
+                    } catch (\Throwable $e) {
+                        $icon = '';
+                    }
+                }
             }
 
+            // Safely extract controls.
             $cmcontrols = '';
             if (!empty($cmwrapper->cmcontrols)) {
-                $cmcontrols = is_object($cmwrapper->cmcontrols)
-                    ? $output->render($cmwrapper->cmcontrols)
-                    : (string) $cmwrapper->cmcontrols;
+                if (is_string($cmwrapper->cmcontrols)) {
+                    $cmcontrols = $cmwrapper->cmcontrols;
+                } else {
+                    try {
+                        $cmcontrols = $output->render($cmwrapper->cmcontrols);
+                    } catch (\Throwable $e) {
+                        $cmcontrols = '';
+                    }
+                }
             }
 
             $flat[] = (object) [
