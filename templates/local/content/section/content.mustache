@@ -194,9 +194,6 @@
 </div>
 {{#js}}
 (function() {
-    /* ────────────────────────────────────────────
-       My Notes: save, delete, share, unshare
-       ──────────────────────────────────────────── */
     var myContainers = document.querySelectorAll('.videoclass-mynotes');
     myContainers.forEach(function(container) {
         var courseid = container.dataset.courseid;
@@ -217,7 +214,6 @@
             }).then(function(r) { return r.json(); });
         }
 
-        /* Build a note card element */
         function buildCard(note) {
             var card = document.createElement('div');
             card.className = 'videoclass-mynote-card';
@@ -232,16 +228,15 @@
                 '</div>' +
                 '<div class="videoclass-mynote-content">' + note.content + '</div>' +
                 '<div class="videoclass-share-picker" style="display:none;">' +
-                    '<div class="videoclass-share-picker-label">{{#str}}sharenoteprompt, format_videoclass{{/str}}</div>' +
-                    '<input type="text" class="videoclass-recipient-search" placeholder="{{#str}}searchstudents, format_videoclass{{/str}}" autocomplete="off">' +
+                    '<div class="videoclass-share-picker-label">Select classmates to share this note with:</div>' +
+                    '<input type="text" class="videoclass-recipient-search" placeholder="Search classmates..." autocomplete="off">' +
                     '<div class="videoclass-recipient-results"></div>' +
                     '<div class="videoclass-recipient-chips"></div>' +
-                    '<button type="button" class="videoclass-share-confirm">{{#str}}sharethistnote, format_videoclass{{/str}}</button>' +
+                    '<button type="button" class="videoclass-share-confirm">Share</button>' +
                 '</div>';
             return card;
         }
 
-        /* Save new note */
         submitBtn.addEventListener('click', function() {
             var content = input.value.trim();
             if (!content) return;
@@ -265,15 +260,13 @@
             }).catch(function() { submitBtn.disabled = false; });
         });
 
-        /* Delegate clicks on note cards */
         listEl.addEventListener('click', function(e) {
             var card = e.target.closest('.videoclass-mynote-card');
             if (!card) return;
             var noteid = card.dataset.noteid;
 
-            /* Delete */
             if (e.target.closest('.videoclass-mynote-delete')) {
-                if (!confirm('{{#str}}deletemynoteconfirm, format_videoclass{{/str}}')) return;
+                if (!confirm('Are you sure you want to delete this note?')) return;
                 ajaxCall('format_videoclass_delete_personal_note', {
                     noteid: parseInt(noteid)
                 }).then(function(results) {
@@ -282,7 +275,7 @@
                         if (!listEl.querySelector('.videoclass-mynote-card')) {
                             var empty = document.createElement('div');
                             empty.className = 'videoclass-empty videoclass-mynotes-empty';
-                            empty.textContent = '{{#str}}nomynotes, format_videoclass{{/str}}';
+                            empty.textContent = 'No notes for this topic yet. Write one above!';
                             listEl.appendChild(empty);
                         }
                     }
@@ -290,13 +283,11 @@
                 return;
             }
 
-            /* Unshare */
             if (e.target.closest('.videoclass-mynote-unshare')) {
                 ajaxCall('format_videoclass_unshare_note', {
                     noteid: parseInt(noteid)
                 }).then(function(results) {
                     if (results[0] && !results[0].error) {
-                        /* Remove badge + shared info, swap unshare→share button */
                         var badge = card.querySelector('.videoclass-mynote-badge-shared');
                         if (badge) badge.remove();
                         var info = card.querySelector('.videoclass-mynote-shared-info');
@@ -316,7 +307,6 @@
                 return;
             }
 
-            /* Toggle share picker */
             if (e.target.closest('.videoclass-mynote-share')) {
                 var picker = card.querySelector('.videoclass-share-picker');
                 if (picker) {
@@ -325,7 +315,6 @@
                 return;
             }
 
-            /* Confirm share */
             if (e.target.closest('.videoclass-share-confirm')) {
                 var picker = card.querySelector('.videoclass-share-picker');
                 var chips = picker.querySelectorAll('.videoclass-recipient-chip');
@@ -343,17 +332,15 @@
                 }).then(function(results) {
                     if (results[0] && !results[0].error) {
                         picker.style.display = 'none';
-                        /* Add badge */
                         var header = card.querySelector('.videoclass-mynote-header');
                         var existingBadge = header.querySelector('.videoclass-mynote-badge-shared');
                         if (!existingBadge) {
                             var badge = document.createElement('span');
                             badge.className = 'videoclass-mynote-badge-shared';
                             badge.title = recipientNames.join(', ');
-                            badge.textContent = '{{#str}}sharedbadge, format_videoclass{{/str}}';
+                            badge.textContent = 'Shared';
                             header.querySelector('.videoclass-mynote-time').after(badge);
                         }
-                        /* Add shared info */
                         var existingInfo = card.querySelector('.videoclass-mynote-shared-info');
                         if (existingInfo) {
                             existingInfo.innerHTML = '&#x1f465; ' + recipientNames.join(', ');
@@ -363,7 +350,6 @@
                             info.innerHTML = '&#x1f465; ' + recipientNames.join(', ');
                             header.after(info);
                         }
-                        /* Swap share→unshare button */
                         var shareBtn = card.querySelector('.videoclass-mynote-share');
                         if (shareBtn) {
                             var unsBtn = document.createElement('button');
@@ -374,7 +360,6 @@
                             unsBtn.innerHTML = '&#x1f512;';
                             shareBtn.replaceWith(unsBtn);
                         }
-                        /* Clear picker chips */
                         picker.querySelector('.videoclass-recipient-chips').innerHTML = '';
                     }
                 });
@@ -382,7 +367,6 @@
             }
         });
 
-        /* Recipient search (delegated) */
         var searchTimeout = null;
         listEl.addEventListener('input', function(e) {
             if (!e.target.classList.contains('videoclass-recipient-search')) return;
@@ -432,7 +416,6 @@
             }, 300);
         });
 
-        /* Close search results on outside click */
         document.addEventListener('click', function(e) {
             if (!e.target.closest('.videoclass-share-picker')) {
                 listEl.querySelectorAll('.videoclass-recipient-results').forEach(function(r) {
@@ -443,3 +426,4 @@
     });
 })();
 {{/js}}
+
