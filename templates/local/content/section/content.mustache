@@ -25,6 +25,11 @@
 
         {{! ── Video column ── }}
         <div class="videoclass-video" id="videoclass-video-{{id}}">
+            {{#editing}}
+                <div class="videoclass-edit-row">
+                    <a class="videoclass-edit-button" href="{{videoclass.editurl}}">{{#str}}editsection, format_videoclass{{/str}}</a>
+                </div>
+            {{/editing}}
             {{#videoclass.hasvideo}}
                 <div class="videoclass-video-embed">
                     {{{summary.summarytext}}}
