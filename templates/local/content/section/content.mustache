@@ -266,6 +266,16 @@
 
         if (!submitBtn || !input || !listEl) return;
 
+        // Listen for notes saved from AI Tutor chat.
+        document.addEventListener('vc-note-saved', function(e) {
+            var note = e.detail;
+            if (note && note.id) {
+                var emptyMsg = listEl.querySelector('.videoclass-mynotes-empty');
+                if (emptyMsg) emptyMsg.remove();
+                listEl.prepend(buildCard(note));
+            }
+        });
+
         function ajaxCall(method, args) {
             return fetch(M.cfg.wwwroot + '/lib/ajax/service.php?sesskey=' + sesskey, {
                 method: 'POST',
@@ -546,9 +556,11 @@
                 Ajax.call([{
                     methodname: 'format_videoclass_save_personal_note',
                     args: { courseid: parseInt(courseid), sectionid: parseInt(sectionid), content: content }
-                }])[0].then(function() {
+                }])[0].then(function(result) {
                     btn.textContent = '\u2705 Saved!';
                     btn.classList.add('videoclass-tutor-save-done');
+                    // Notify My Notes tab to refresh.
+                    document.dispatchEvent(new CustomEvent('vc-note-saved', { detail: result }));
                 }).catch(function(err) {
                     console.error('[VC Tutor] Save error:', err);
                     btn.textContent = '\uD83D\uDCDD Save to Notes';
