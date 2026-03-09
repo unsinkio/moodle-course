@@ -1,201 +1,178 @@
 {{!
     @template format_videoclass/local/content/section/content
 }}
-<div class="videoclass-section-content">
+
+<div id="coursecontentcollapse{{num}}" class="content videoclass-section-content">
     {{#availability}}
-        <div class="videoclass-availability">{{{availability}}}</div>
-    {{/availability}}
-
-    {{! ── Section layout: video left, tabs right ── }}
-    <div class="videoclass-layout" data-section-id="{{id}}">
-        {{! ── Video column ── }}
-        <div class="videoclass-video" id="videoclass-video-{{id}}">
-            {{#videoclass.videourl}}
-                <div class="videoclass-video-wrap">
-                    <iframe src="{{videoclass.videourl}}" frameborder="0"
-                            allowfullscreen allow="autoplay; encrypted-media"
-                            class="videoclass-video-frame"></iframe>
-                </div>
-            {{/videoclass.videourl}}
-            {{^videoclass.videourl}}
-                <div class="videoclass-video-empty">
-                    <span>No video assigned to this topic.</span>
-                </div>
-            {{/videoclass.videourl}}
+        <div class="videoclass-availability">
+            {{$ core_courseformat/local/content/section/availability }}
+                {{> core_courseformat/local/content/section/availability }}
+            {{/ core_courseformat/local/content/section/availability }}
         </div>
+    {{/availability}}
+    <div class="videoclass-layout">
+        <div class="videoclass-video">
+            {{#editing}}
+                <div class="videoclass-edit-row">
+                    <a class="videoclass-edit-button" href="{{videoclass.editurl}}">{{#str}}editsection, format_videoclass{{/str}}</a>
+                </div>
+            {{/editing}}
+            {{#videoclass.hasvideo}}
+                <div class="videoclass-video-embed">
+                    {{{summary.summarytext}}}
+                </div>
+            {{/videoclass.hasvideo}}
+            {{^videoclass.hasvideo}}
+                <div class="videoclass-video-placeholder">
+                    {{#str}}videoplaceholder, format_videoclass{{/str}}
+                </div>
+            {{/videoclass.hasvideo}}
+        </div>
+    </div>
 
-        {{! ── Tabs column ── }}
-        <div class="videoclass-tabs" role="tablist">
-            {{! Tab radios (hidden) }}
-            <input type="radio" name="videoclass-tabs-{{id}}" id="videoclass-tab-{{id}}-resources"
-                   class="videoclass-tab-radio" checked aria-controls="videoclass-panel-{{id}}-resources">
-            <input type="radio" name="videoclass-tabs-{{id}}" id="videoclass-tab-{{id}}-assessments"
-                   class="videoclass-tab-radio" aria-controls="videoclass-panel-{{id}}-assessments">
-            <input type="radio" name="videoclass-tabs-{{id}}" id="videoclass-tab-{{id}}-qa"
-                   class="videoclass-tab-radio" aria-controls="videoclass-panel-{{id}}-qa">
-            <input type="radio" name="videoclass-tabs-{{id}}" id="videoclass-tab-{{id}}-mynotes"
-                   class="videoclass-tab-radio" aria-controls="videoclass-panel-{{id}}-mynotes">
-            <input type="radio" name="videoclass-tabs-{{id}}" id="videoclass-tab-{{id}}-sharednotes"
-                   class="videoclass-tab-radio" aria-controls="videoclass-panel-{{id}}-sharednotes">
+    <div class="videoclass-tabs" role="tablist" aria-label="{{#str}}tabslabel, format_videoclass{{/str}}">
+        <input class="videoclass-tab-toggle" type="radio" name="videoclass-tabs-{{id}}" id="videoclass-tab-{{id}}-resources" checked>
+        <label class="videoclass-tab-label" for="videoclass-tab-{{id}}-resources">{{#str}}tabresources, format_videoclass{{/str}}</label>
 
-            {{! Tab labels }}
-            <label for="videoclass-tab-{{id}}-resources" class="videoclass-tab-label" role="tab">
-                {{#str}}tabresources, format_videoclass{{/str}}
-            </label>
-            <label for="videoclass-tab-{{id}}-assessments" class="videoclass-tab-label" role="tab">
-                {{#str}}tabassessments, format_videoclass{{/str}}
-            </label>
-            <label for="videoclass-tab-{{id}}-qa" class="videoclass-tab-label" role="tab">
-                {{#str}}tabqa, format_videoclass{{/str}}
-            </label>
-            <label for="videoclass-tab-{{id}}-mynotes" class="videoclass-tab-label" role="tab">
-                {{#str}}tabmynotes, format_videoclass{{/str}}
-            </label>
-            <label for="videoclass-tab-{{id}}-sharednotes" class="videoclass-tab-label" role="tab">
-                {{#str}}tabsharednotes, format_videoclass{{/str}}
-            </label>
+        <input class="videoclass-tab-toggle" type="radio" name="videoclass-tabs-{{id}}" id="videoclass-tab-{{id}}-assessments">
+        <label class="videoclass-tab-label" for="videoclass-tab-{{id}}-assessments">{{#str}}tabassessments, format_videoclass{{/str}}</label>
 
-            {{! Tab panels }}
-            <div class="videoclass-tab-panels">
-                {{! ── Tab 1: Resources ── }}
-                <section class="videoclass-tab-panel" role="tabpanel" aria-labelledby="videoclass-tab-{{id}}-resources">
-                    {{#videoclass.resources}}
-                        <div class="videoclass-activity" data-activity-id="{{id}}">
-                            <div class="videoclass-activity-icon">{{{icon}}}</div>
-                            <a href="{{url}}" class="videoclass-activity-link">{{name}}</a>
-                            {{#editing}}
-                                <div class="videoclass-edit-row">{{{cmcontrols}}}</div>
-                            {{/editing}}
-                        </div>
-                    {{/videoclass.resources}}
-                    {{^videoclass.resources}}
-                        <div class="videoclass-empty">{{#str}}noresources, format_videoclass{{/str}}</div>
-                    {{/videoclass.resources}}
-                </section>
+        <input class="videoclass-tab-toggle" type="radio" name="videoclass-tabs-{{id}}" id="videoclass-tab-{{id}}-qa">
+        <label class="videoclass-tab-label" for="videoclass-tab-{{id}}-qa">{{#str}}tabqa, format_videoclass{{/str}}</label>
 
-                {{! ── Tab 2: Assessments ── }}
-                <section class="videoclass-tab-panel" role="tabpanel" aria-labelledby="videoclass-tab-{{id}}-assessments">
-                    {{#videoclass.assessments}}
-                        <div class="videoclass-activity" data-activity-id="{{id}}">
-                            <div class="videoclass-activity-icon">{{{icon}}}</div>
-                            <a href="{{url}}" class="videoclass-activity-link">{{name}}</a>
-                            {{#editing}}
-                                <div class="videoclass-edit-row">{{{cmcontrols}}}</div>
-                            {{/editing}}
-                        </div>
-                    {{/videoclass.assessments}}
-                    {{^videoclass.assessments}}
-                        <div class="videoclass-empty">{{#str}}noassessments, format_videoclass{{/str}}</div>
-                    {{/videoclass.assessments}}
-                </section>
+        <input class="videoclass-tab-toggle" type="radio" name="videoclass-tabs-{{id}}" id="videoclass-tab-{{id}}-mynotes">
+        <label class="videoclass-tab-label" for="videoclass-tab-{{id}}-mynotes">{{#str}}tabmynotes, format_videoclass{{/str}}</label>
 
-                {{! ── Tab 3: Q&A ── }}
-                <section class="videoclass-tab-panel" role="tabpanel" aria-labelledby="videoclass-tab-{{id}}-qa">
-                    {{#videoclass.qa}}
-                        <div class="videoclass-activity" data-activity-id="{{id}}">
-                            <div class="videoclass-activity-icon">{{{icon}}}</div>
-                            <a href="{{url}}" class="videoclass-activity-link">{{name}}</a>
-                            {{#editing}}
-                                <div class="videoclass-edit-row">{{{cmcontrols}}}</div>
-                            {{/editing}}
-                        </div>
-                    {{/videoclass.qa}}
-                    {{^videoclass.qa}}
-                        <div class="videoclass-empty">{{#str}}noqaprefix, format_videoclass{{/str}}</div>
-                    {{/videoclass.qa}}
-                </section>
+        <input class="videoclass-tab-toggle" type="radio" name="videoclass-tabs-{{id}}" id="videoclass-tab-{{id}}-sharednotes">
+        <label class="videoclass-tab-label" for="videoclass-tab-{{id}}-sharednotes">{{#str}}tabsharednotes, format_videoclass{{/str}}</label>
 
-                {{! ── Tab 4: My Notes ── }}
-                <section class="videoclass-tab-panel" role="tabpanel" aria-labelledby="videoclass-tab-{{id}}-mynotes">
-                    <div class="videoclass-mynotes" id="videoclass-mynotes-{{id}}"
-                         data-courseid="{{videoclass.courseid}}"
-                         data-sectionid="{{videoclass.sectionid}}"
-                         data-sesskey="{{videoclass.sesskey}}">
-                        {{! Write new note }}
-                        <div class="videoclass-mynotes-form">
-                            <textarea class="videoclass-mynotes-input"
-                                      id="videoclass-mynotes-input-{{id}}"
-                                      placeholder="{{#str}}mynoteplaceholder, format_videoclass{{/str}}"
-                                      rows="3"></textarea>
-                            <button type="button" class="videoclass-mynotes-submit"
-                                    id="videoclass-mynotes-submit-{{id}}">
-                                {{#str}}savenote, format_videoclass{{/str}}
-                            </button>
-                        </div>
-                        {{! Saved notes list }}
-                        <div class="videoclass-mynotes-list" id="videoclass-mynotes-list-{{id}}">
-                            {{#videoclass.personalnotes}}
-                                <div class="videoclass-mynote-card" data-noteid="{{id}}">
-                                    <div class="videoclass-mynote-header">
-                                        <span class="videoclass-mynote-time">{{timemodified}}</span>
-                                        {{#isshared}}
-                                            <span class="videoclass-mynote-badge-shared"
-                                                  title="{{recipientnames}}">{{#str}}sharedbadge, format_videoclass{{/str}}</span>
-                                        {{/isshared}}
-                                        <div class="videoclass-mynote-actions">
-                                            {{^isshared}}
-                                                <button type="button" class="videoclass-mynote-share"
-                                                        data-noteid="{{id}}" title="{{#str}}sharethistnote, format_videoclass{{/str}}">
-                                                    &#x1f4e4;
-                                                </button>
-                                            {{/isshared}}
-                                            {{#isshared}}
-                                                <button type="button" class="videoclass-mynote-unshare"
-                                                        data-noteid="{{id}}" title="{{#str}}unsharenote, format_videoclass{{/str}}">
-                                                    &#x1f512;
-                                                </button>
-                                            {{/isshared}}
-                                            <button type="button" class="videoclass-mynote-delete"
-                                                    data-noteid="{{id}}" title="{{#str}}deletemynote, format_videoclass{{/str}}">
-                                                &times;
-                                            </button>
-                                        </div>
-                                    </div>
+        <div class="videoclass-tab-panels">
+            {{! ── Tab 1: Resources ── }}
+            <section class="videoclass-tab-panel" role="tabpanel" aria-labelledby="videoclass-tab-{{id}}-resources">
+                {{#videoclass.resources}}
+                    {{$ core_courseformat/local/content/section/cmlist }}
+                        {{> core_courseformat/local/content/section/cmlist }}
+                    {{/ core_courseformat/local/content/section/cmlist }}
+                {{/videoclass.resources}}
+                {{^videoclass.resources.hascms}}
+                    <div class="videoclass-empty">{{#str}}noresources, format_videoclass{{/str}}</div>
+                {{/videoclass.resources.hascms}}
+            </section>
+
+            {{! ── Tab 2: Assessments ── }}
+            <section class="videoclass-tab-panel" role="tabpanel" aria-labelledby="videoclass-tab-{{id}}-assessments">
+                {{#videoclass.assessments}}
+                    {{$ core_courseformat/local/content/section/cmlist }}
+                        {{> core_courseformat/local/content/section/cmlist }}
+                    {{/ core_courseformat/local/content/section/cmlist }}
+                {{/videoclass.assessments}}
+                {{^videoclass.assessments.hascms}}
+                    <div class="videoclass-empty">{{#str}}noassessments, format_videoclass{{/str}}</div>
+                {{/videoclass.assessments.hascms}}
+            </section>
+
+            {{! ── Tab 3: Q&A ── }}
+            <section class="videoclass-tab-panel" role="tabpanel" aria-labelledby="videoclass-tab-{{id}}-qa">
+                {{#videoclass.qa}}
+                    {{$ core_courseformat/local/content/section/cmlist }}
+                        {{> core_courseformat/local/content/section/cmlist }}
+                    {{/ core_courseformat/local/content/section/cmlist }}
+                {{/videoclass.qa}}
+                {{^videoclass.qa.hascms}}
+                    <div class="videoclass-empty">{{#str}}noqaprefix, format_videoclass{{/str}}</div>
+                {{/videoclass.qa.hascms}}
+            </section>
+
+            {{! ── Tab 4: My Notes ── }}
+            <section class="videoclass-tab-panel" role="tabpanel" aria-labelledby="videoclass-tab-{{id}}-mynotes">
+                <div class="videoclass-mynotes" id="videoclass-mynotes-{{id}}"
+                     data-courseid="{{videoclass.courseid}}"
+                     data-sectionid="{{videoclass.sectionid}}"
+                     data-sesskey="{{videoclass.sesskey}}">
+                    {{! Write new note }}
+                    <div class="videoclass-mynotes-form">
+                        <textarea class="videoclass-mynotes-input"
+                                  id="videoclass-mynotes-input-{{id}}"
+                                  placeholder="{{#str}}mynoteplaceholder, format_videoclass{{/str}}"
+                                  rows="3"></textarea>
+                        <button type="button" class="videoclass-mynotes-submit"
+                                id="videoclass-mynotes-submit-{{id}}">
+                            {{#str}}savenote, format_videoclass{{/str}}
+                        </button>
+                    </div>
+                    {{! Saved notes list }}
+                    <div class="videoclass-mynotes-list" id="videoclass-mynotes-list-{{id}}">
+                        {{#videoclass.personalnotes}}
+                            <div class="videoclass-mynote-card" data-noteid="{{id}}">
+                                <div class="videoclass-mynote-header">
+                                    <span class="videoclass-mynote-time">{{timemodified}}</span>
                                     {{#isshared}}
-                                        <div class="videoclass-mynote-shared-info">&#x1f465; {{recipientnames}}</div>
+                                        <span class="videoclass-mynote-badge-shared"
+                                              title="{{recipientnames}}">{{#str}}sharedbadge, format_videoclass{{/str}}</span>
                                     {{/isshared}}
-                                    <div class="videoclass-mynote-content">{{content}}</div>
-                                    {{! Inline recipient picker (hidden by default) }}
-                                    <div class="videoclass-share-picker" id="videoclass-share-picker-{{id}}" style="display:none;">
-                                        <div class="videoclass-share-picker-label">{{#str}}sharenoteprompt, format_videoclass{{/str}}</div>
-                                        <input type="text" class="videoclass-recipient-search"
-                                               placeholder="{{#str}}searchstudents, format_videoclass{{/str}}"
-                                               autocomplete="off">
-                                        <div class="videoclass-recipient-results"></div>
-                                        <div class="videoclass-recipient-chips"></div>
-                                        <button type="button" class="videoclass-share-confirm">{{#str}}sharethistnote, format_videoclass{{/str}}</button>
+                                    <div class="videoclass-mynote-actions">
+                                        {{^isshared}}
+                                            <button type="button" class="videoclass-mynote-share"
+                                                    data-noteid="{{id}}" title="{{#str}}sharethistnote, format_videoclass{{/str}}">
+                                                &#x1f4e4;
+                                            </button>
+                                        {{/isshared}}
+                                        {{#isshared}}
+                                            <button type="button" class="videoclass-mynote-unshare"
+                                                    data-noteid="{{id}}" title="{{#str}}unsharenote, format_videoclass{{/str}}">
+                                                &#x1f512;
+                                            </button>
+                                        {{/isshared}}
+                                        <button type="button" class="videoclass-mynote-delete"
+                                                data-noteid="{{id}}" title="{{#str}}deletemynote, format_videoclass{{/str}}">
+                                            &times;
+                                        </button>
                                     </div>
                                 </div>
-                            {{/videoclass.personalnotes}}
-                            {{^videoclass.personalnotes}}
-                                <div class="videoclass-empty videoclass-mynotes-empty">{{#str}}nomynotes, format_videoclass{{/str}}</div>
-                            {{/videoclass.personalnotes}}
-                        </div>
+                                {{#isshared}}
+                                    <div class="videoclass-mynote-shared-info">&#x1f465; {{recipientnames}}</div>
+                                {{/isshared}}
+                                <div class="videoclass-mynote-content">{{content}}</div>
+                                {{! Inline recipient picker (hidden by default) }}
+                                <div class="videoclass-share-picker" id="videoclass-share-picker-{{id}}" style="display:none;">
+                                    <div class="videoclass-share-picker-label">{{#str}}sharenoteprompt, format_videoclass{{/str}}</div>
+                                    <input type="text" class="videoclass-recipient-search"
+                                           placeholder="{{#str}}searchstudents, format_videoclass{{/str}}"
+                                           autocomplete="off">
+                                    <div class="videoclass-recipient-results"></div>
+                                    <div class="videoclass-recipient-chips"></div>
+                                    <button type="button" class="videoclass-share-confirm">{{#str}}sharethistnote, format_videoclass{{/str}}</button>
+                                </div>
+                            </div>
+                        {{/videoclass.personalnotes}}
+                        {{^videoclass.personalnotes}}
+                            <div class="videoclass-empty videoclass-mynotes-empty">{{#str}}nomynotes, format_videoclass{{/str}}</div>
+                        {{/videoclass.personalnotes}}
                     </div>
-                </section>
+                </div>
+            </section>
 
-                {{! ── Tab 5: Shared Notes (Shared with me) ── }}
-                <section class="videoclass-tab-panel" role="tabpanel" aria-labelledby="videoclass-tab-{{id}}-sharednotes">
-                    <div class="videoclass-sharedwithme" id="videoclass-sharedwithme-{{id}}"
-                         data-courseid="{{videoclass.courseid}}"
-                         data-sectionid="{{videoclass.sectionid}}">
-                        <div class="videoclass-sharedwithme-list" id="videoclass-sharedwithme-list-{{id}}">
-                            {{#videoclass.sharedwithme}}
-                                <div class="videoclass-sharedwithme-card" data-noteid="{{id}}">
-                                    <div class="videoclass-sharedwithme-header">
-                                        <span class="videoclass-sharedwithme-author">{{authorfullname}}</span>
-                                        <span class="videoclass-sharedwithme-time">{{timeshared}}</span>
-                                    </div>
-                                    <div class="videoclass-sharedwithme-content">{{content}}</div>
+            {{! ── Tab 5: Shared Notes (Shared with me) ── }}
+            <section class="videoclass-tab-panel" role="tabpanel" aria-labelledby="videoclass-tab-{{id}}-sharednotes">
+                <div class="videoclass-sharedwithme" id="videoclass-sharedwithme-{{id}}"
+                     data-courseid="{{videoclass.courseid}}"
+                     data-sectionid="{{videoclass.sectionid}}">
+                    <div class="videoclass-sharedwithme-list" id="videoclass-sharedwithme-list-{{id}}">
+                        {{#videoclass.sharedwithme}}
+                            <div class="videoclass-sharedwithme-card" data-noteid="{{id}}">
+                                <div class="videoclass-sharedwithme-header">
+                                    <span class="videoclass-sharedwithme-author">{{authorfullname}}</span>
+                                    <span class="videoclass-sharedwithme-time">{{timeshared}}</span>
                                 </div>
-                            {{/videoclass.sharedwithme}}
-                            {{^videoclass.sharedwithme}}
-                                <div class="videoclass-empty videoclass-sharedwithme-empty">{{#str}}nosharednotes, format_videoclass{{/str}}</div>
-                            {{/videoclass.sharedwithme}}
-                        </div>
+                                <div class="videoclass-sharedwithme-content">{{content}}</div>
+                            </div>
+                        {{/videoclass.sharedwithme}}
+                        {{^videoclass.sharedwithme}}
+                            <div class="videoclass-empty videoclass-sharedwithme-empty">{{#str}}nosharednotes, format_videoclass{{/str}}</div>
+                        {{/videoclass.sharedwithme}}
                     </div>
-                </section>
-            </div>
+                </div>
+            </section>
         </div>
     </div>
 
