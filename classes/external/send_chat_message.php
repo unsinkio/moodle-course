@@ -86,26 +86,35 @@ class send_chat_message extends external_api {
             20
         );
 
-        // 4. Build messages array for API.
-        $messages = [];
+        // 4. Build history array for CampusMCP (role + content pairs).
+        $chathistory = [];
         foreach ($history as $row) {
-            $messages[] = ['role' => $row->role, 'content' => $row->message];
+            $chathistory[] = ['role' => $row->role, 'content' => $row->message];
         }
 
-        // 5. Build system prompt.
+        // 5. Build system prompt from configurable template.
         $course = $DB->get_record('course', ['id' => $courseid], 'fullname', MUST_EXIST);
         $section = $DB->get_record('course_sections', ['id' => $sectionid], 'name, section', MUST_EXIST);
         $sectionname = !empty($section->name) ? $section->name : get_string('sectionname', 'format_videoclass') . ' ' . $section->section;
 
-        $systemprompt = "You are an AI academic tutor for the course \"{$course->fullname}\". "
-            . "The student is currently on section \"{$sectionname}\". "
-            . "Use the following section resources as context to help the student:\n\n"
-            . $resourcecontext
-            . "\n\nBe helpful, concise, and reference specific resources when relevant. "
-            . "Respond in the same language the student uses.";
+        $prompttemplate = get_config('format_videoclass', 'aitutor_prompt');
+        if (empty($prompttemplate)) {
+            $prompttemplate = 'You are an AI academic tutor for the course "{coursename}". '
+                . 'The student is currently on section "{sectionname}". '
+                . 'Use the following section resources as context to help the student:'
+                . "\n\n{resources}\n\n"
+                . 'Be helpful, concise, and reference specific resources when relevant. '
+                . 'Respond in the same language the student uses.';
+        }
+
+        $systemprompt = str_replace(
+            ['{coursename}', '{sectionname}', '{resources}'],
+            [$course->fullname, $sectionname, $resourcecontext],
+            $prompttemplate
+        );
 
         // 6. Call CampusMCP.
-        $reply = self::call_campusmcp($systemprompt, $messages);
+        $reply = self::call_campusmcp($systemprompt, $message, $chathistory, $USER->email, fullname($USER));
 
         // 7. Save assistant response to history.
         $DB->insert_record('format_videoclass_chat_history', (object) [
@@ -128,29 +137,52 @@ class send_chat_message extends external_api {
     }
 
     /**
-     * Call CampusMCP chat endpoint.
+     * Call CampusMCP /chat endpoint.
+     *
+     * Matches CampusMCP's ChatRequest:
+     *   email, message, student_name, lang, history[], system_prompt (optional override)
      */
-    private static function call_campusmcp(string $systemprompt, array $messages): string {
+    private static function call_campusmcp(
+        string $systemprompt,
+        string $usermessage,
+        array $history,
+        string $email,
+        string $studentname
+    ): string {
         // CampusMCP endpoint — configurable via plugin settings.
         $endpoint = get_config('format_videoclass', 'campusmcp_url');
         if (empty($endpoint)) {
             $endpoint = 'https://campusmcp.azurewebsites.net';
         }
 
+        $apikey = get_config('format_videoclass', 'campusmcp_apikey');
+        if (empty($apikey)) {
+            $apikey = '';
+        }
+
         $payload = json_encode([
+            'email'         => $email,
+            'message'       => $usermessage,
+            'student_name'  => $studentname,
+            'lang'          => current_language(),
+            'history'       => $history,
             'system_prompt' => $systemprompt,
-            'messages'      => $messages,
         ]);
+
+        $headers = [
+            'Content-Type: application/json',
+            'Accept: application/json',
+        ];
+        if (!empty($apikey)) {
+            $headers[] = 'Authorization: Bearer ' . $apikey;
+        }
 
         $ch = curl_init($endpoint . '/chat');
         curl_setopt_array($ch, [
             CURLOPT_POST           => true,
             CURLOPT_POSTFIELDS     => $payload,
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_HTTPHEADER     => [
-                'Content-Type: application/json',
-                'Accept: application/json',
-            ],
+            CURLOPT_HTTPHEADER     => $headers,
             CURLOPT_TIMEOUT        => 60,
             CURLOPT_CONNECTTIMEOUT => 10,
         ]);
@@ -167,7 +199,7 @@ class send_chat_message extends external_api {
 
         if ($httpcode !== 200) {
             error_log("[VC AI Tutor] HTTP {$httpcode}: {$response}");
-            return "I'm sorry, something went wrong. Please try again later.";
+            return "I'm sorry, something went wrong (HTTP {$httpcode}). Please try again later.";
         }
 
         $data = json_decode($response, true);
@@ -176,21 +208,13 @@ class send_chat_message extends external_api {
             return "I'm sorry, I received an unexpected response. Please try again.";
         }
 
-        // CampusMCP may return different response shapes — handle common ones.
+        // CampusMCP returns ChatResponse: {success, response, tool_calls}
         if (isset($data['response'])) {
             return $data['response'];
-        }
-        if (isset($data['reply'])) {
-            return $data['reply'];
-        }
-        if (isset($data['choices'][0]['message']['content'])) {
-            return $data['choices'][0]['message']['content'];
-        }
-        if (isset($data['message'])) {
-            return $data['message'];
         }
 
         error_log("[VC AI Tutor] Unexpected response shape: " . json_encode($data));
         return "I received a response but couldn't parse it. Please try again.";
     }
 }
+

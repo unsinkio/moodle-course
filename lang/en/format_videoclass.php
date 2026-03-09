@@ -79,3 +79,13 @@ $string['aitutorclearconfirm'] = 'Start a new conversation? Chat history will be
 $string['aitutorwelcome'] = 'Hi! I am your AI tutor for this section. Ask me anything about the resources and content here.';
 $string['aitutorerror'] = 'Sorry, something went wrong. Please try again.';
 $string['aitutortyping'] = 'Thinking...';
+
+// Settings.
+$string['settings_aitutor_heading'] = 'AI Tutor';
+$string['settings_aitutor_desc'] = 'Configure the AI tutor chatbot that helps students with section content.';
+$string['settings_campusmcp_url'] = 'CampusMCP URL';
+$string['settings_campusmcp_url_desc'] = 'Base URL of the CampusMCP server (without trailing slash).';
+$string['settings_campusmcp_apikey'] = 'CampusMCP API Key';
+$string['settings_campusmcp_apikey_desc'] = 'Shared secret (Bearer token) for authenticating with CampusMCP.';
+$string['settings_aitutor_prompt'] = 'System Prompt';
+$string['settings_aitutor_prompt_desc'] = 'The system prompt sent to the AI. Use placeholders: <code>{coursename}</code>, <code>{sectionname}</code>, <code>{resources}</code>';
