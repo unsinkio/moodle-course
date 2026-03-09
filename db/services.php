@@ -74,4 +74,24 @@ $functions = [
         'type'        => 'read',
         'ajax'        => true,
     ],
+
+    // AI Tutor chat.
+    'format_videoclass_send_chat_message' => [
+        'classname'   => 'format_videoclass\external\send_chat_message',
+        'description' => 'Send a message to the AI tutor and get a response.',
+        'type'        => 'write',
+        'ajax'        => true,
+    ],
+    'format_videoclass_get_chat_history' => [
+        'classname'   => 'format_videoclass\external\get_chat_history',
+        'description' => 'Get AI tutor chat history for a section.',
+        'type'        => 'read',
+        'ajax'        => true,
+    ],
+    'format_videoclass_clear_chat_history' => [
+        'classname'   => 'format_videoclass\external\clear_chat_history',
+        'description' => 'Clear AI tutor chat history for a section.',
+        'type'        => 'write',
+        'ajax'        => true,
+    ],
 ];

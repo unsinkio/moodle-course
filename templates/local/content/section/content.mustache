@@ -43,6 +43,38 @@
         </div>
     </div>
 
+    {{! ── AI Tutor (collapsible) ── }}
+    <div class="videoclass-tutor" id="videoclass-tutor-{{id}}"
+         data-courseid="{{videoclass.courseid}}"
+         data-sectionid="{{videoclass.sectionid}}"
+         data-sesskey="{{videoclass.sesskey}}">
+        <button type="button" class="videoclass-tutor-toggle" aria-expanded="false"
+                aria-controls="videoclass-tutor-body-{{id}}">
+            <span class="videoclass-tutor-icon">&#x1F916;</span>
+            <span class="videoclass-tutor-label">{{#str}}aitutorexpand, format_videoclass{{/str}}</span>
+            <span class="videoclass-tutor-chevron">&#x25BC;</span>
+        </button>
+        <div class="videoclass-tutor-body" id="videoclass-tutor-body-{{id}}" hidden>
+            <div class="videoclass-tutor-messages" id="videoclass-tutor-messages-{{id}}">
+                <div class="videoclass-tutor-msg videoclass-tutor-msg-assistant">
+                    <div class="videoclass-tutor-msg-content">{{#str}}aitutorwelcome, format_videoclass{{/str}}</div>
+                </div>
+            </div>
+            <div class="videoclass-tutor-input-row">
+                <input type="text" class="videoclass-tutor-input"
+                       id="videoclass-tutor-input-{{id}}"
+                       placeholder="{{#str}}aitutorplaceholder, format_videoclass{{/str}}"
+                       autocomplete="off">
+                <button type="button" class="videoclass-tutor-send"
+                        id="videoclass-tutor-send-{{id}}">{{#str}}aitutorsend, format_videoclass{{/str}}</button>
+            </div>
+            <div class="videoclass-tutor-actions">
+                <button type="button" class="videoclass-tutor-clear"
+                        id="videoclass-tutor-clear-{{id}}">&#x1F5D1; {{#str}}aitutorclear, format_videoclass{{/str}}</button>
+            </div>
+        </div>
+    </div>
+
     {{! ── Tabs below layout ── }}
     <div class="videoclass-tabs" role="tablist">
             {{! Tab radios (hidden) }}
@@ -462,6 +494,175 @@
                     r.innerHTML = '';
                 });
             }
+        });
+    });
+    // ── AI Tutor Chat ──
+    var tutorWidgets = document.querySelectorAll('.videoclass-tutor');
+    tutorWidgets.forEach(function(widget) {
+        var courseid = widget.dataset.courseid;
+        var sectionid = widget.dataset.sectionid;
+        var toggle = widget.querySelector('.videoclass-tutor-toggle');
+        var body = widget.querySelector('.videoclass-tutor-body');
+        var messagesEl = widget.querySelector('.videoclass-tutor-messages');
+        var inputEl = widget.querySelector('.videoclass-tutor-input');
+        var sendBtn = widget.querySelector('.videoclass-tutor-send');
+        var clearBtn = widget.querySelector('.videoclass-tutor-clear');
+        var labelEl = widget.querySelector('.videoclass-tutor-label');
+        var chevronEl = widget.querySelector('.videoclass-tutor-chevron');
+        var historyLoaded = false;
+        var sending = false;
+
+        function scrollToBottom() {
+            messagesEl.scrollTop = messagesEl.scrollHeight;
+        }
+
+        function appendMessage(role, content, msgId) {
+            var div = document.createElement('div');
+            div.className = 'videoclass-tutor-msg videoclass-tutor-msg-' + role;
+            var contentDiv = document.createElement('div');
+            contentDiv.className = 'videoclass-tutor-msg-content';
+            contentDiv.textContent = content;
+            div.appendChild(contentDiv);
+
+            if (role === 'assistant' && content) {
+                var saveBtn = document.createElement('button');
+                saveBtn.type = 'button';
+                saveBtn.className = 'videoclass-tutor-save-note';
+                saveBtn.textContent = '\uD83D\uDCDD Save to Notes';
+                saveBtn.addEventListener('click', function() {
+                    saveToNotes(content, saveBtn);
+                });
+                div.appendChild(saveBtn);
+            }
+
+            messagesEl.appendChild(div);
+            scrollToBottom();
+        }
+
+        function saveToNotes(content, btn) {
+            btn.disabled = true;
+            btn.textContent = 'Saving...';
+            require(['core/ajax'], function(Ajax) {
+                Ajax.call([{
+                    methodname: 'format_videoclass_save_personal_note',
+                    args: { courseid: parseInt(courseid), sectionid: parseInt(sectionid), content: content }
+                }])[0].then(function() {
+                    btn.textContent = '\u2705 Saved!';
+                    btn.classList.add('videoclass-tutor-save-done');
+                }).catch(function(err) {
+                    console.error('[VC Tutor] Save error:', err);
+                    btn.textContent = '\uD83D\uDCDD Save to Notes';
+                    btn.disabled = false;
+                });
+            });
+        }
+
+        function loadHistory() {
+            if (historyLoaded) return;
+            historyLoaded = true;
+            require(['core/ajax'], function(Ajax) {
+                Ajax.call([{
+                    methodname: 'format_videoclass_get_chat_history',
+                    args: { courseid: parseInt(courseid), sectionid: parseInt(sectionid) }
+                }])[0].then(function(result) {
+                    var msgs = result;
+                    if (result && result.data) msgs = result.data;
+                    if (msgs && msgs.length > 0) {
+                        // Clear welcome message and replace with history.
+                        messagesEl.innerHTML = '';
+                        msgs.forEach(function(m) {
+                            appendMessage(m.role, m.message, m.id);
+                        });
+                    }
+                    scrollToBottom();
+                }).catch(function(err) {
+                    console.error('[VC Tutor] History load error:', err);
+                });
+            });
+        }
+
+        // Toggle expand/collapse.
+        toggle.addEventListener('click', function() {
+            var expanded = toggle.getAttribute('aria-expanded') === 'true';
+            if (expanded) {
+                body.hidden = true;
+                toggle.setAttribute('aria-expanded', 'false');
+                labelEl.textContent = 'Show AI Tutor';
+                chevronEl.textContent = '\u25BC';
+            } else {
+                body.hidden = false;
+                toggle.setAttribute('aria-expanded', 'true');
+                labelEl.textContent = 'Hide tutor';
+                chevronEl.textContent = '\u25B2';
+                loadHistory();
+                scrollToBottom();
+                inputEl.focus();
+            }
+        });
+
+        function sendMessage() {
+            var text = inputEl.value.trim();
+            if (!text || sending) return;
+            sending = true;
+            inputEl.value = '';
+            sendBtn.disabled = true;
+
+            appendMessage('user', text);
+
+            // Add typing indicator.
+            var typingDiv = document.createElement('div');
+            typingDiv.className = 'videoclass-tutor-msg videoclass-tutor-msg-assistant videoclass-tutor-typing';
+            typingDiv.innerHTML = '<div class="videoclass-tutor-msg-content"><span class="videoclass-tutor-dots"><span>.</span><span>.</span><span>.</span></span> Thinking...</div>';
+            messagesEl.appendChild(typingDiv);
+            scrollToBottom();
+
+            require(['core/ajax'], function(Ajax) {
+                Ajax.call([{
+                    methodname: 'format_videoclass_send_chat_message',
+                    args: { courseid: parseInt(courseid), sectionid: parseInt(sectionid), message: text }
+                }])[0].then(function(result) {
+                    if (typingDiv.parentNode) typingDiv.parentNode.removeChild(typingDiv);
+                    var reply = result.reply || result.data?.reply || '';
+                    if (result.error && !reply) {
+                        reply = result.error;
+                    }
+                    appendMessage('assistant', reply);
+                    sending = false;
+                    sendBtn.disabled = false;
+                    inputEl.focus();
+                }).catch(function(err) {
+                    if (typingDiv.parentNode) typingDiv.parentNode.removeChild(typingDiv);
+                    console.error('[VC Tutor] Send error:', err);
+                    appendMessage('assistant', 'Sorry, something went wrong. Please try again.');
+                    sending = false;
+                    sendBtn.disabled = false;
+                });
+            });
+        }
+
+        sendBtn.addEventListener('click', sendMessage);
+        inputEl.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // Clear history.
+        clearBtn.addEventListener('click', function() {
+            if (!confirm('Start a new conversation? Chat history will be cleared.')) return;
+            require(['core/ajax'], function(Ajax) {
+                Ajax.call([{
+                    methodname: 'format_videoclass_clear_chat_history',
+                    args: { courseid: parseInt(courseid), sectionid: parseInt(sectionid) }
+                }])[0].then(function() {
+                    messagesEl.innerHTML = '';
+                    appendMessage('assistant', 'Hi! I am your AI tutor for this section. Ask me anything about the resources and content here.');
+                    historyLoaded = true;
+                }).catch(function(err) {
+                    console.error('[VC Tutor] Clear error:', err);
+                });
+            });
         });
     });
 })();

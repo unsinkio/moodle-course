@@ -65,3 +65,17 @@ $string['sharenoteprompt'] = 'Select classmates to share this note with:';
 // Shared Notes (Shared with me).
 $string['nosharednotes'] = 'No classmates have shared notes with you for this topic yet.';
 $string['sharedby'] = 'Shared by';
+
+// AI Tutor.
+$string['aitutor'] = 'AI Tutor';
+$string['aitutorplaceholder'] = 'Ask the tutor about this topic...';
+$string['aitutorsend'] = 'Send';
+$string['aitutorcollapse'] = 'Hide tutor';
+$string['aitutorexpand'] = 'Show AI Tutor';
+$string['aitutorsavetonotes'] = 'Save to Notes';
+$string['aitutorsaved'] = 'Saved!';
+$string['aitutorclear'] = 'New conversation';
+$string['aitutorclearconfirm'] = 'Start a new conversation? Chat history will be cleared.';
+$string['aitutorwelcome'] = 'Hi! I am your AI tutor for this section. Ask me anything about the resources and content here.';
+$string['aitutorerror'] = 'Sorry, something went wrong. Please try again.';
+$string['aitutortyping'] = 'Thinking...';
