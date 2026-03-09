@@ -397,7 +397,13 @@
                         console.error('[VC Search] Error:', res.exception ? res.exception.message : res);
                         return;
                     }
-                    var users = Array.isArray(res) ? res : [];
+                    // Moodle wraps external_multiple_structure returns in {error:false, data:[...]}
+                    var users = [];
+                    if (res && Array.isArray(res.data)) {
+                        users = res.data;
+                    } else if (Array.isArray(res)) {
+                        users = res;
+                    }
                     console.log('[VC Search] Users found:', users.length, users);
                     var existingIds = [];
                     chipsEl.querySelectorAll('.videoclass-recipient-chip').forEach(function(c) {

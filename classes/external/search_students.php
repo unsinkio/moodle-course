@@ -53,17 +53,17 @@ class search_students extends external_api {
         $context = \context_course::instance($params['courseid']);
         self::validate_context($context);
 
-        if (!is_enrolled($context, $USER, '', true)) {
-            throw new \moodle_exception('notenrolled', 'error');
-        }
+        // Removed is_enrolled check — the user just needs to be able to view the course context.
 
         $query = trim($params['query']);
         if (strlen($query) < 2) {
             return [];
         }
 
-        // Get enrolled users (excluding self).
-        $enrolled = get_enrolled_users($context, '', 0, 'u.*', 'u.lastname, u.firstname', 0, 0, true);
+        // Get ALL enrolled users (not just active — relaxed filter).
+        $enrolled = get_enrolled_users($context, '', 0, 'u.*', 'u.lastname, u.firstname');
+
+        error_log("[VC search_students] courseid={$params['courseid']} query={$query} enrolled_count=" . count($enrolled) . " current_user={$USER->id}");
 
         $results = [];
         $search = \core_text::strtolower($query);
@@ -85,6 +85,8 @@ class search_students extends external_api {
                 }
             }
         }
+
+        error_log("[VC search_students] results_count=" . count($results));
 
         return $results;
     }
