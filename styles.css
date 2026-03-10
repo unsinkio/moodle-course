@@ -644,7 +644,7 @@
     align-items: center;
 }
 
-.videoclass-tutor-icon-img {
+.videoclass-tutor-icon .icon {
     width: 28px;
     height: 28px;
     border-radius: 50%;
