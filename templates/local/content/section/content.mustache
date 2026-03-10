@@ -69,8 +69,16 @@
                         <div class="videoclass-tutor-conv-empty">{{#str}}aitutornoconversations, format_videoclass{{/str}}</div>
                     </div>
                 </div>
+                {{! ── Sidebar Backdrop (mobile only) ── }}
+                <div class="videoclass-tutor-sidebar-backdrop"></div>
                 {{! ── Chat Column ── }}
                 <div class="videoclass-tutor-chat-col">
+                    <div class="videoclass-tutor-chat-header">
+                        <button type="button" class="videoclass-tutor-sidebar-toggle"
+                                title="{{#str}}aitutorconversations, format_videoclass{{/str}}">&#x2630;</button>
+                        <button type="button" class="videoclass-tutor-new-conv-mobile"
+                                title="{{#str}}aitutornewconversation, format_videoclass{{/str}}">&#x2B; New</button>
+                    </div>
                     <div class="videoclass-tutor-messages" id="videoclass-tutor-messages-{{id}}">
                         <div class="videoclass-tutor-msg videoclass-tutor-msg-assistant">
                             <div class="videoclass-tutor-msg-content">{{#str}}aitutorwelcome, format_videoclass{{/str}}</div>
@@ -792,6 +800,56 @@
                 logoModal.style.display = 'none';
             });
         }
+
+        // ── Mobile Sidebar Drawer ──
+        var sidebarEl = widget.querySelector('.videoclass-tutor-sidebar');
+        var sidebarBackdrop = widget.querySelector('.videoclass-tutor-sidebar-backdrop');
+        var sidebarToggleBtn = widget.querySelector('.videoclass-tutor-sidebar-toggle');
+        var newConvMobileBtn = widget.querySelector('.videoclass-tutor-new-conv-mobile');
+
+        function openSidebarDrawer() {
+            if (sidebarEl) sidebarEl.classList.add('open');
+            if (sidebarBackdrop) sidebarBackdrop.classList.add('visible');
+        }
+
+        function closeSidebarDrawer() {
+            if (sidebarEl) sidebarEl.classList.remove('open');
+            if (sidebarBackdrop) sidebarBackdrop.classList.remove('visible');
+        }
+
+        if (sidebarToggleBtn) {
+            sidebarToggleBtn.addEventListener('click', function() {
+                if (sidebarEl && sidebarEl.classList.contains('open')) {
+                    closeSidebarDrawer();
+                } else {
+                    if (!conversationsLoaded) loadConversations();
+                    openSidebarDrawer();
+                }
+            });
+        }
+
+        if (sidebarBackdrop) {
+            sidebarBackdrop.addEventListener('click', closeSidebarDrawer);
+        }
+
+        if (newConvMobileBtn) {
+            newConvMobileBtn.addEventListener('click', function() {
+                currentConversationId = 0;
+                showWelcome();
+                convListEl.querySelectorAll('.videoclass-tutor-conv-item').forEach(function(el) {
+                    el.classList.remove('active');
+                });
+                closeSidebarDrawer();
+                inputEl.focus();
+            });
+        }
+
+        // Close drawer when a conversation is selected (on mobile).
+        var origSwitchConversation = switchConversation;
+        switchConversation = function(convId) {
+            origSwitchConversation(convId);
+            closeSidebarDrawer();
+        };
 
         // Toggle expand/collapse.
         toggle.addEventListener('click', function(e) {

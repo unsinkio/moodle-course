@@ -1001,7 +1001,14 @@
     color: #1f2937;
 }
 
+/* ── Mobile: chat header with toggle (hidden on desktop) ── */
+.videoclass-tutor-chat-header {
+    display: none;
+}
+
 /* ── Responsive ── */
+
+/* Tablet: ≤992px */
 @media (max-width: 992px) {
     .videoclass-layout {
         grid-template-columns: 1fr;
@@ -1025,21 +1032,279 @@
     }
 
     .videoclass-tutor-layout {
-        flex-direction: column;
         height: auto;
     }
 
     .videoclass-tutor-sidebar {
-        width: 100%;
-        min-width: unset;
-        max-height: 180px;
-        border-right: none;
-        border-bottom: 1px solid #e0e4ea;
-        border-radius: 0;
+        width: 200px;
+        min-width: 160px;
     }
 
     .videoclass-tutor-messages {
-        max-height: 300px;
+        max-height: 340px;
+    }
+}
+
+/* Mobile: ≤768px */
+@media (max-width: 768px) {
+
+    /* ── Page-wide spacing ── */
+    .videoclass-course {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    body.format-videoclass #page-content {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    .videoclass-layout {
+        gap: 14px;
+        margin-bottom: 16px;
+    }
+
+    /* ── Hide sections sidebar on mobile (use Moodle nav) ── */
+    .videoclass-sidebar {
+        display: none;
+    }
+
+    /* ── Video area ── */
+    .videoclass-video {
+        min-height: 220px;
+        padding: 10px;
+        border-radius: 14px;
+    }
+
+    .videoclass-video-embed iframe,
+    .videoclass-video-embed video,
+    .videoclass-video-embed embed,
+    .videoclass-video-embed img {
+        border-radius: 10px;
+    }
+
+    .videoclass-video-placeholder {
+        padding: 18px;
+        font-size: 0.88rem;
+    }
+
+    /* ── Tabs: horizontal scroll on mobile ── */
+    .videoclass-tabs {
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        gap: 6px;
+        padding: 10px;
+        border-radius: 14px;
+        scrollbar-width: none;
+    }
+
+    .videoclass-tabs::-webkit-scrollbar {
+        display: none;
+    }
+
+    .videoclass-tab-label {
+        flex: 0 0 auto;
+        white-space: nowrap;
+        padding: 10px 14px;
+        font-size: 0.82rem;
+        text-align: center;
+    }
+
+    .videoclass-tab-panels {
+        padding: 14px;
+        border-radius: 10px;
+    }
+
+    /* ── Notes form: stack on mobile ── */
+    .videoclass-mynotes-form {
+        flex-direction: column;
+    }
+
+    .videoclass-mynotes-input {
+        font-size: 1rem;
+        padding: 12px;
+    }
+
+    .videoclass-mynotes-submit {
+        align-self: flex-end;
+        padding: 12px 24px;
+        font-size: 0.95rem;
+    }
+
+    /* ── Note cards: compact ── */
+    .videoclass-mynote-card,
+    .videoclass-sharedwithme-card {
+        border-radius: 10px;
+        padding: 12px 14px;
+    }
+
+    .videoclass-mynote-content,
+    .videoclass-sharedwithme-content {
+        font-size: 0.88rem;
+    }
+
+    /* ── Share picker: full-width in cards ── */
+    .videoclass-share-picker {
+        border-radius: 8px;
+        padding: 10px;
+    }
+
+    .videoclass-recipient-search {
+        font-size: 1rem;
+        padding: 12px;
+    }
+
+    /* ── Banner: tighter on mobile ── */
+    .videoclass-banner {
+        border-radius: 12px;
+        margin-bottom: 16px;
+    }
+
+    .videoclass-banner-toggle {
+        padding: 12px 16px;
+        font-size: 0.92rem;
+    }
+
+    .videoclass-banner-body {
+        padding: 0 16px 12px;
+    }
+
+    /* ── AI Tutor: slide-over drawer ── */
+    .videoclass-tutor {
+        border-radius: 10px;
+    }
+
+    .videoclass-tutor-layout {
+        position: relative;
+        flex-direction: row;
+        height: auto;
+        overflow: visible;
+    }
+
+    .videoclass-tutor-chat-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 12px;
+        background: #f8f9fb;
+        border-bottom: 1px solid #e0e4ea;
+    }
+
+    .videoclass-tutor-sidebar-toggle {
+        background: none;
+        border: 1px solid #d0d5dd;
+        border-radius: 6px;
+        font-size: 1.15rem;
+        padding: 5px 10px;
+        cursor: pointer;
+        color: #4a5568;
+        transition: background 0.15s, color 0.15s;
+    }
+
+    .videoclass-tutor-sidebar-toggle:hover,
+    .videoclass-tutor-sidebar-toggle:active {
+        background: #e6eaf0;
+        color: #2d3748;
+    }
+
+    .videoclass-tutor-new-conv-mobile {
+        background: linear-gradient(135deg, #4a90d9 0%, #357abd 100%);
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        padding: 6px 14px;
+        cursor: pointer;
+    }
+
+    .videoclass-tutor-sidebar {
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 260px;
+        min-width: unset;
+        max-height: none;
+        z-index: 20;
+        transform: translateX(-110%);
+        transition: transform 0.25s ease;
+        border-right: 1px solid #e0e4ea;
+        border-bottom: none;
+        border-radius: 0 0 0 10px;
+        box-shadow: 4px 0 16px rgba(0, 0, 0, 0.08);
+    }
+
+    .videoclass-tutor-sidebar.open {
+        transform: translateX(0);
+    }
+
+    .videoclass-tutor-sidebar-backdrop {
+        display: none;
+        position: absolute;
+        inset: 0;
+        z-index: 19;
+        background: rgba(0, 0, 0, 0.25);
+    }
+
+    .videoclass-tutor-sidebar-backdrop.visible {
+        display: block;
+    }
+
+    .videoclass-tutor-messages {
+        max-height: 55vh;
+        min-height: 200px;
+    }
+
+    .videoclass-tutor-msg-content {
+        font-size: 0.88rem;
+    }
+
+    .videoclass-tutor-input-row {
+        padding: 10px;
+    }
+
+    .videoclass-tutor-input {
+        font-size: 1rem;
+        padding: 12px;
+        border-radius: 10px;
+    }
+
+    .videoclass-tutor-send {
+        padding: 12px 18px;
+        font-size: 0.95rem;
+        border-radius: 10px;
+    }
+
+    .videoclass-tutor-toggle {
+        padding: 10px 14px;
+    }
+
+    .videoclass-logo-modal-content {
+        padding: 16px;
+        border-radius: 12px;
+        width: 90vw;
+    }
+
+    .videoclass-logo-modal-img {
+        max-width: 80vw;
+        max-height: 60vh;
+    }
+
+    .videoclass-tutor-save-note {
+        font-size: 0.78rem;
+        padding: 5px 10px;
+    }
+
+    .videoclass-tutor-conv-item {
+        padding: 12px 14px;
+    }
+
+    .videoclass-tutor-conv-delete {
+        font-size: 1rem;
+        padding: 6px 8px;
     }
 }
 
