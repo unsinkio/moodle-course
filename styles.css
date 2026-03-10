@@ -305,6 +305,100 @@
     padding: 12px 0;
 }
 
+/* ── Activity Items (Resources / Assessments / Q&A) ── */
+.videoclass-activity {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, #fafbff 0%, #f8f9fc 100%);
+    border: 1px solid rgba(15, 23, 42, 0.06);
+    border-radius: 12px;
+    margin-bottom: 8px;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.videoclass-activity::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: linear-gradient(180deg, #f97316, #ea580c);
+    border-radius: 3px 0 0 3px;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+}
+
+.videoclass-activity:hover {
+    background: linear-gradient(135deg, #fff7ed 0%, #fef3e2 100%);
+    border-color: rgba(249, 115, 22, 0.2);
+    box-shadow: 0 4px 16px rgba(249, 115, 22, 0.1);
+    transform: translateY(-1px);
+}
+
+.videoclass-activity:hover::before {
+    opacity: 1;
+}
+
+.videoclass-activity:last-child {
+    margin-bottom: 0;
+}
+
+.videoclass-activity-icon {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #f0f4ff 0%, #e8ecf8 100%);
+    border-radius: 10px;
+    border: 1px solid rgba(74, 144, 217, 0.12);
+}
+
+.videoclass-activity-icon img.activityicon {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+}
+
+.videoclass-activity-link {
+    flex: 1;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--vc-ink, #1e293b);
+    text-decoration: none;
+    letter-spacing: -0.01em;
+    transition: color 0.2s;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.videoclass-activity:hover .videoclass-activity-link {
+    color: #ea580c;
+}
+
+.videoclass-activity-link::after {
+    content: '→';
+    margin-left: 8px;
+    font-size: 0.85rem;
+    opacity: 0;
+    transition: all 0.2s ease;
+    color: #f97316;
+}
+
+.videoclass-activity:hover .videoclass-activity-link::after {
+    opacity: 1;
+    margin-left: 12px;
+}
+
 /* ── Personal Notes (My Notes) ── */
 .videoclass-mynotes-form {
     display: flex;
