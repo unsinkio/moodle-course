@@ -566,6 +566,90 @@
         });
     });
     // ── AI Tutor Chat ──
+
+    // Lightweight Markdown → HTML converter for assistant messages.
+    function simpleMarkdown(text) {
+        if (!text) return '';
+        // Escape HTML to prevent XSS, then we selectively convert markdown.
+        var esc = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+        // Fenced code blocks: ```...```
+        esc = esc.replace(/```([\s\S]*?)```/g, function(m, code) {
+            return '<pre class="vc-md-pre"><code>' + code.trim() + '</code></pre>';
+        });
+
+        // Inline code: `...`
+        esc = esc.replace(/`([^`]+)`/g, '<code class="vc-md-code">$1</code>');
+
+        // Bold: **...**
+        esc = esc.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+
+        // Italic: *...* (bold already converted, so remaining * are italic)
+        esc = esc.replace(/\*(.+?)\*/g, '<em>$1</em>');
+
+        // Split into lines for block-level elements.
+        var lines = esc.split('\n');
+        var html = [];
+        var inUl = false, inOl = false;
+
+        for (var i = 0; i < lines.length; i++) {
+            var line = lines[i];
+
+            // Skip lines inside <pre> blocks (already handled).
+            if (line.indexOf('<pre') !== -1 || line.indexOf('</pre>') !== -1 ||
+                line.indexOf('<code>') !== -1 && line.indexOf('</code></pre>') !== -1) {
+                if (inUl) { html.push('</ul>'); inUl = false; }
+                if (inOl) { html.push('</ol>'); inOl = false; }
+                html.push(line);
+                continue;
+            }
+
+            // Headings: ### / ## / #
+            var headingMatch = line.match(/^(#{1,3})\s+(.+)$/);
+            if (headingMatch) {
+                if (inUl) { html.push('</ul>'); inUl = false; }
+                if (inOl) { html.push('</ol>'); inOl = false; }
+                var level = Math.min(headingMatch[1].length + 2, 6); // h3-h6 range for chat
+                html.push('<h' + level + ' class="vc-md-heading">' + headingMatch[2] + '</h' + level + '>');
+                continue;
+            }
+
+            // Unordered list: - item or * item
+            var ulMatch = line.match(/^\s*[-*]\s+(.+)$/);
+            if (ulMatch) {
+                if (inOl) { html.push('</ol>'); inOl = false; }
+                if (!inUl) { html.push('<ul class="vc-md-list">'); inUl = true; }
+                html.push('<li>' + ulMatch[1] + '</li>');
+                continue;
+            }
+
+            // Ordered list: 1. item
+            var olMatch = line.match(/^\s*\d+\.\s+(.+)$/);
+            if (olMatch) {
+                if (inUl) { html.push('</ul>'); inUl = false; }
+                if (!inOl) { html.push('<ol class="vc-md-list">'); inOl = true; }
+                html.push('<li>' + olMatch[1] + '</li>');
+                continue;
+            }
+
+            // Close open lists on non-list lines.
+            if (inUl) { html.push('</ul>'); inUl = false; }
+            if (inOl) { html.push('</ol>'); inOl = false; }
+
+            // Empty line → paragraph break.
+            if (line.trim() === '') {
+                html.push('<br>');
+            } else {
+                html.push('<p class="vc-md-p">' + line + '</p>');
+            }
+        }
+
+        if (inUl) html.push('</ul>');
+        if (inOl) html.push('</ol>');
+
+        return html.join('');
+    }
+
     var tutorWidgets = document.querySelectorAll('.videoclass-tutor');
     tutorWidgets.forEach(function(widget) {
         var courseid = widget.dataset.courseid;
@@ -596,7 +680,11 @@
             div.className = 'videoclass-tutor-msg videoclass-tutor-msg-' + role;
             var contentDiv = document.createElement('div');
             contentDiv.className = 'videoclass-tutor-msg-content';
-            contentDiv.textContent = content;
+            if (role === 'assistant') {
+                contentDiv.innerHTML = simpleMarkdown(content);
+            } else {
+                contentDiv.textContent = content;
+            }
             div.appendChild(contentDiv);
 
             if (role === 'assistant' && content) {
@@ -1039,7 +1127,11 @@
                             msgDiv.className = 'videoclass-tutor-msg videoclass-tutor-msg-' + m.role;
                             var content = document.createElement('div');
                             content.className = 'videoclass-tutor-msg-content';
-                            content.textContent = m.message;
+                            if (m.role === 'assistant') {
+                                content.innerHTML = simpleMarkdown(m.message);
+                            } else {
+                                content.textContent = m.message;
+                            }
                             msgDiv.appendChild(content);
                             messagesEl.appendChild(msgDiv);
                         });
