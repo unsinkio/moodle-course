@@ -74,12 +74,38 @@ class get_chat_history extends external_api {
             }
         }
 
+        // Determine the message owner: either the current user owns this conversation,
+        // or they are a recipient of a shared conversation.
+        $conv = $DB->get_record('format_videoclass_chat_conversations', ['id' => $convid]);
+        if (!$conv) {
+            return [];
+        }
+
+        $messageuser = null;
+        if ((int) $conv->userid === (int) $USER->id) {
+            // Current user owns this conversation.
+            $messageuser = $USER->id;
+        } else {
+            // Check if the current user is a recipient (shared conversation).
+            $isrecipient = $DB->record_exists('format_videoclass_chat_conv_recipients', [
+                'conversationid' => $convid,
+                'userid'         => $USER->id,
+            ]);
+            if ($isrecipient) {
+                $messageuser = (int) $conv->userid;
+            }
+        }
+
+        if (!$messageuser) {
+            return []; // Not authorized to view this conversation.
+        }
+
         $records = $DB->get_records_select(
             'format_videoclass_chat_history',
             'conversationid = :conversationid AND userid = :userid',
             [
                 'conversationid' => $convid,
-                'userid'         => $USER->id,
+                'userid'         => $messageuser,
             ],
             'timecreated ASC',
             'id, role, message, noteid, timecreated'
