@@ -18,10 +18,10 @@
  * Delete an AI tutor conversation.
  *
  * Supports "delete for me" vs "delete for everyone" for shared conversations.
- *   - Owner + deleteforall=true  → full delete (messages, recipients, conversation).
- *   - Owner + deleteforall=false → unshare only (remove sharing, keep conversation).
- *   - Recipient + deleteforall=false → remove only this recipient's record.
- *   - Recipient + deleteforall=true  → full delete for everyone.
+ *   - Owner + deleteforall=1  → soft-delete (mark conversation + recipients as deleted).
+ *   - Owner + deleteforall=0  → unshare only (remove sharing, keep conversation).
+ *   - Recipient + deleteforall=0 → remove only this recipient's record.
+ *   - Recipient + deleteforall=1 → soft-delete for everyone.
  *
  * @package   format_videoclass
  * @copyright 2026 Atlantis University
@@ -42,11 +42,11 @@ class delete_chat_conversation extends external_api {
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters([
             'conversationid' => new external_value(PARAM_INT, 'Conversation ID'),
-            'deleteforall'   => new external_value(PARAM_BOOL, 'True = delete for everyone, false = delete for me only', VALUE_DEFAULT, true),
+            'deleteforall'   => new external_value(PARAM_INT, '1 = delete for everyone, 0 = delete for me only', VALUE_DEFAULT, 1),
         ]);
     }
 
-    public static function execute(int $conversationid, bool $deleteforall = true): array {
+    public static function execute(int $conversationid, int $deleteforall = 1): array {
         global $DB, $USER;
 
         $params = self::validate_parameters(self::execute_parameters(), [
@@ -55,7 +55,7 @@ class delete_chat_conversation extends external_api {
         ]);
 
         $convid       = $params['conversationid'];
-        $deleteforall = $params['deleteforall'];
+        $deleteforall = (int) $params['deleteforall'];
 
         // Load conversation (without restricting by userid).
         $conversation = $DB->get_record('format_videoclass_chat_conversations', ['id' => $convid]);
@@ -78,18 +78,34 @@ class delete_chat_conversation extends external_api {
         }
 
         if ($deleteforall) {
-            // "Delete for everyone": soft-delete conversation, mark recipients.
+            // "Delete for everyone": only the owner can do this.
+            if (!$isowner) {
+                return ['success' => false];
+            }
+
             // Delete messages (content gone).
             $DB->delete_records('format_videoclass_chat_history', [
                 'conversationid' => $convid,
                 'userid'         => $conversation->userid,
             ]);
-            // Mark conversation as deleted (keep record for recipient JOINs).
-            $DB->set_field('format_videoclass_chat_conversations', 'deleted', 1, ['id' => $convid]);
-            // Mark all recipients as deleted (they'll see a "deleted" notice).
-            $DB->set_field('format_videoclass_chat_conv_recipients', 'deleted', 1, [
-                'conversationid' => $convid,
-            ]);
+
+            // Check if 'deleted' column exists (might not if upgrade hasn't run yet).
+            $dbman = $DB->get_manager();
+            $table = new \xmldb_table('format_videoclass_chat_conversations');
+            $field = new \xmldb_field('deleted');
+            if ($dbman->field_exists($table, $field)) {
+                // Soft-delete: mark conversation and recipients.
+                $DB->set_field('format_videoclass_chat_conversations', 'deleted', 1, ['id' => $convid]);
+                $DB->set_field('format_videoclass_chat_conv_recipients', 'deleted', 1, [
+                    'conversationid' => $convid,
+                ]);
+            } else {
+                // Fallback: hard delete everything.
+                $DB->delete_records('format_videoclass_chat_conv_recipients', [
+                    'conversationid' => $convid,
+                ]);
+                $DB->delete_records('format_videoclass_chat_conversations', ['id' => $convid]);
+            }
         } else {
             // "Delete for me" only.
             if ($isowner) {
@@ -103,11 +119,12 @@ class delete_chat_conversation extends external_api {
                     'conversationid' => $convid,
                     'userid'         => $USER->id,
                 ]);
-                // If no more recipients and conversation is soft-deleted, hard-delete it.
+                // If no more recipients and conversation is soft-deleted, cleanup.
                 $remaining = $DB->count_records('format_videoclass_chat_conv_recipients', [
                     'conversationid' => $convid,
                 ]);
-                if ($remaining == 0 && (int) $conversation->deleted === 1) {
+                $convdeleted = isset($conversation->deleted) ? (int) $conversation->deleted : 0;
+                if ($remaining == 0 && $convdeleted === 1) {
                     $DB->delete_records('format_videoclass_chat_conversations', ['id' => $convid]);
                 }
             }

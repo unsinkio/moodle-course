@@ -881,12 +881,12 @@
                             'Remove sharing but keep your conversation.',
                             'Delete for everyone',
                             'Permanently delete for you and all recipients.',
-                            function() { deleteConversation(c.id, false); },
-                            function() { deleteConversation(c.id, true); }
+                            function() { deleteConversation(c.id, 0); },
+                            function() { deleteConversation(c.id, 1); }
                         );
                     } else {
                         if (!confirm('Delete this conversation? All messages will be lost.')) return;
-                        deleteConversation(c.id, true);
+                        deleteConversation(c.id, 1);
                     }
                 });
                 actions.appendChild(delBtn);
@@ -1115,7 +1115,7 @@
                     dismissBtn.textContent = 'Dismiss';
                     dismissBtn.addEventListener('click', function(e) {
                         e.stopPropagation();
-                        deleteConversation(c.id, false);
+                        deleteConversation(c.id, 0);
                     });
                     item.appendChild(dismissBtn);
 
@@ -1150,15 +1150,8 @@
                 delBtn.style.marginLeft = '4px';
                 delBtn.addEventListener('click', function(e) {
                     e.stopPropagation();
-                    showDeleteDialog(
-                        'This conversation was shared with you.',
-                        'Delete for me',
-                        'Remove from your shared list only.',
-                        'Delete for everyone',
-                        'Permanently delete for the owner and all recipients.',
-                        function() { deleteConversation(c.id, false); },
-                        function() { deleteConversation(c.id, true); }
-                    );
+                    if (!confirm('Remove this shared conversation from your list?')) return;
+                    deleteConversation(c.id, 0);
                 });
                 item.appendChild(delBtn);
 
@@ -1300,11 +1293,11 @@
         }
 
         function deleteConversation(convId, deleteforall) {
-            if (typeof deleteforall === 'undefined') deleteforall = true;
+            if (typeof deleteforall === 'undefined') deleteforall = 1;
             require(['core/ajax'], function(Ajax) {
                 Ajax.call([{
                     methodname: 'format_videoclass_delete_chat_conversation',
-                    args: { conversationid: convId, deleteforall: deleteforall }
+                    args: { conversationid: parseInt(convId), deleteforall: parseInt(deleteforall) }
                 }])[0].then(function(result) {
                     if (result && (result.success || (result.data && result.data.success))) {
                         if (deleteforall && currentConversationId === convId) {
