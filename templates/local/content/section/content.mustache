@@ -529,7 +529,7 @@
             messagesEl.scrollTop = messagesEl.scrollHeight;
         }
 
-        function appendMessage(role, content, msgId) {
+        function appendMessage(role, content, msgId, noteid) {
             var div = document.createElement('div');
             div.className = 'videoclass-tutor-msg videoclass-tutor-msg-' + role;
             var contentDiv = document.createElement('div');
@@ -541,20 +541,31 @@
                 var saveBtn = document.createElement('button');
                 saveBtn.type = 'button';
                 saveBtn.className = 'videoclass-tutor-save-note';
-                saveBtn.textContent = '\uD83D\uDCDD Save to Notes';
-                saveBtn.addEventListener('click', function() {
-                    saveToNotes(content, saveBtn);
-                });
+                if (msgId) saveBtn.dataset.chatid = msgId;
+                if (noteid && noteid > 0) {
+                    // Already saved — show disabled state.
+                    saveBtn.textContent = '\u2705 Saved!';
+                    saveBtn.classList.add('videoclass-tutor-save-done');
+                    saveBtn.disabled = true;
+                    saveBtn.dataset.noteid = noteid;
+                } else {
+                    saveBtn.textContent = '\uD83D\uDCDD Save to Notes';
+                    saveBtn.addEventListener('click', function() {
+                        saveToNotes(content, saveBtn);
+                    });
+                }
                 div.appendChild(saveBtn);
             }
 
             messagesEl.appendChild(div);
             scrollToBottom();
+            return div;
         }
 
         function saveToNotes(content, btn) {
             btn.disabled = true;
             btn.textContent = 'Saving...';
+            var chatid = btn.dataset.chatid ? parseInt(btn.dataset.chatid) : 0;
             require(['core/ajax'], function(Ajax) {
                 Ajax.call([{
                     methodname: 'format_videoclass_save_personal_note',
@@ -565,6 +576,13 @@
                     btn.dataset.noteid = result.id;
                     // Notify My Notes tab to refresh.
                     document.dispatchEvent(new CustomEvent('vc-note-saved', { detail: result }));
+                    // Persist link in DB.
+                    if (chatid > 0) {
+                        Ajax.call([{
+                            methodname: 'format_videoclass_link_chat_note',
+                            args: { chatid: chatid, noteid: result.id }
+                        }]);
+                    }
                 }).catch(function(err) {
                     console.error('[VC Tutor] Save error:', err);
                     btn.textContent = '\uD83D\uDCDD Save to Notes';
@@ -583,6 +601,22 @@
                     btn.classList.remove('videoclass-tutor-save-done');
                     btn.disabled = false;
                     delete btn.dataset.noteid;
+                    // Clear link in DB.
+                    var chatid = btn.dataset.chatid ? parseInt(btn.dataset.chatid) : 0;
+                    if (chatid > 0) {
+                        require(['core/ajax'], function(Ajax) {
+                            Ajax.call([{
+                                methodname: 'format_videoclass_link_chat_note',
+                                args: { chatid: chatid, noteid: 0 }
+                            }]);
+                        });
+                    }
+                    // Re-attach click listener.
+                    var msgContent = btn.closest('.videoclass-tutor-msg').querySelector('.videoclass-tutor-msg-content');
+                    var content = msgContent ? msgContent.textContent : '';
+                    btn.addEventListener('click', function() {
+                        saveToNotes(content, btn);
+                    });
                 }
             });
         });
@@ -601,7 +635,7 @@
                         // Clear welcome message and replace with history.
                         messagesEl.innerHTML = '';
                         msgs.forEach(function(m) {
-                            appendMessage(m.role, m.message, m.id);
+                            appendMessage(m.role, m.message, m.id, m.noteid || 0);
                         });
                     }
                     scrollToBottom();
@@ -657,7 +691,7 @@
                     if (result.error && !reply) {
                         reply = result.error;
                     }
-                    appendMessage('assistant', reply);
+                    appendMessage('assistant', reply, result.msgid || 0);
                     sending = false;
                     sendBtn.disabled = false;
                     inputEl.focus();

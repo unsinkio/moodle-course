@@ -24,7 +24,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version = 2026030906; // AI Tutor chat services + settings page.
+$plugin->version = 2026030907; // Chat-note linking + link_chat_note service.
 $plugin->requires = 2024100700; // Moodle 4.5.0.
 $plugin->component = 'format_videoclass';
 $plugin->maturity = MATURITY_ALPHA;

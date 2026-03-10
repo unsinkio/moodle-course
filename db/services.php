@@ -94,4 +94,10 @@ $functions = [
         'type'        => 'write',
         'ajax'        => true,
     ],
+    'format_videoclass_link_chat_note' => [
+        'classname'   => 'format_videoclass\external\link_chat_note',
+        'description' => 'Link or unlink a chat message to a personal note.',
+        'type'        => 'write',
+        'ajax'        => true,
+    ],
 ];

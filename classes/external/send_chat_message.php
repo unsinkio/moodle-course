@@ -117,7 +117,7 @@ class send_chat_message extends external_api {
         $reply = self::call_campusmcp($systemprompt, $message, $chathistory, $USER->email, fullname($USER));
 
         // 7. Save assistant response to history.
-        $DB->insert_record('format_videoclass_chat_history', (object) [
+        $assistantid = $DB->insert_record('format_videoclass_chat_history', (object) [
             'courseid'    => $courseid,
             'sectionid'   => $sectionid,
             'userid'      => $USER->id,
@@ -126,13 +126,14 @@ class send_chat_message extends external_api {
             'timecreated' => time(),
         ]);
 
-        return ['reply' => $reply, 'error' => ''];
+        return ['reply' => $reply, 'error' => '', 'msgid' => (int) $assistantid];
     }
 
     public static function execute_returns(): external_single_structure {
         return new external_single_structure([
             'reply' => new external_value(PARAM_RAW, 'Assistant reply'),
             'error' => new external_value(PARAM_RAW, 'Error message if any'),
+            'msgid' => new external_value(PARAM_INT, 'Assistant message DB ID', VALUE_OPTIONAL),
         ]);
     }
 

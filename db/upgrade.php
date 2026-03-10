@@ -100,5 +100,15 @@ function xmldb_format_videoclass_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026030905, 'format', 'videoclass');
     }
 
+    if ($oldversion < 2026030907) {
+        // Add noteid column to chat_history to track saved notes.
+        $table = new xmldb_table('format_videoclass_chat_history');
+        $field = new xmldb_field('noteid', XMLDB_TYPE_INTEGER, '10', null, null, null, '0', 'message');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        upgrade_plugin_savepoint(true, 2026030907, 'format', 'videoclass');
+    }
+
     return true;
 }

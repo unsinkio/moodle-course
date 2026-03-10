@@ -61,7 +61,7 @@ class get_chat_history extends external_api {
                 'userid'    => $USER->id,
             ],
             'timecreated ASC',
-            'id, role, message, timecreated'
+            'id, role, message, noteid, timecreated'
         );
 
         $messages = [];
@@ -70,6 +70,7 @@ class get_chat_history extends external_api {
                 'id'          => (int) $r->id,
                 'role'        => $r->role,
                 'message'     => $r->message,
+                'noteid'      => (int) ($r->noteid ?? 0),
                 'timecreated' => (int) $r->timecreated,
             ];
         }
@@ -83,6 +84,7 @@ class get_chat_history extends external_api {
                 'id'          => new external_value(PARAM_INT, 'Message ID'),
                 'role'        => new external_value(PARAM_ALPHA, 'user or assistant'),
                 'message'     => new external_value(PARAM_RAW, 'Message content'),
+                'noteid'      => new external_value(PARAM_INT, 'Linked note ID or 0'),
                 'timecreated' => new external_value(PARAM_INT, 'Timestamp'),
             ])
         );
