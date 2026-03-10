@@ -167,6 +167,7 @@ class section extends section_base
             'sectionid'      => $sectionid,
             'userid'         => $USER->id,
             'sesskey'        => sesskey(),
+            'logourl'        => (new \moodle_url('/course/format/videoclass/pix/atlas_icon.png'))->out(false),
         ];
 
         return $data;

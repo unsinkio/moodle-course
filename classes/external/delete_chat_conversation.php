@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Clear AI tutor chat history for a section (now a no-op; kept for backward compatibility).
+ * Delete an AI tutor conversation and all its messages.
  *
  * @package   format_videoclass
  * @copyright 2026 Atlantis University
@@ -31,34 +31,54 @@ use core_external\external_function_parameters;
 use core_external\external_single_structure;
 use core_external\external_value;
 
-class clear_chat_history extends external_api {
+class delete_chat_conversation extends external_api {
 
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters([
-            'courseid'  => new external_value(PARAM_INT, 'Course ID'),
-            'sectionid' => new external_value(PARAM_INT, 'Section ID'),
+            'conversationid' => new external_value(PARAM_INT, 'Conversation ID'),
         ]);
     }
 
-    public static function execute(int $courseid, int $sectionid): array {
-        global $USER;
+    public static function execute(int $conversationid): array {
+        global $DB, $USER;
 
         $params = self::validate_parameters(self::execute_parameters(), [
-            'courseid'  => $courseid,
-            'sectionid' => $sectionid,
+            'conversationid' => $conversationid,
         ]);
 
-        $context = \context_course::instance($params['courseid']);
+        $convid = $params['conversationid'];
+
+        // Verify ownership.
+        $conversation = $DB->get_record('format_videoclass_chat_conversations', [
+            'id'     => $convid,
+            'userid' => $USER->id,
+        ]);
+
+        if (!$conversation) {
+            return ['success' => false];
+        }
+
+        $context = \context_course::instance($conversation->courseid);
         self::validate_context($context);
 
-        // No-op: conversations are now preserved. The JS will simply start
-        // a new conversation on the next send (conversationid = 0).
+        // Delete all messages in the conversation.
+        $DB->delete_records('format_videoclass_chat_history', [
+            'conversationid' => $convid,
+            'userid'         => $USER->id,
+        ]);
+
+        // Delete the conversation record.
+        $DB->delete_records('format_videoclass_chat_conversations', [
+            'id'     => $convid,
+            'userid' => $USER->id,
+        ]);
+
         return ['success' => true];
     }
 
     public static function execute_returns(): external_single_structure {
         return new external_single_structure([
-            'success' => new external_value(PARAM_BOOL, 'Whether history was cleared'),
+            'success' => new external_value(PARAM_BOOL, 'Whether conversation was deleted'),
         ]);
     }
 }

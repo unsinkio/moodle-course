@@ -36,29 +36,50 @@ class get_chat_history extends external_api {
 
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters([
-            'courseid'  => new external_value(PARAM_INT, 'Course ID'),
-            'sectionid' => new external_value(PARAM_INT, 'Section ID'),
+            'courseid'       => new external_value(PARAM_INT, 'Course ID'),
+            'sectionid'      => new external_value(PARAM_INT, 'Section ID'),
+            'conversationid' => new external_value(PARAM_INT, 'Conversation ID (0 = latest)', VALUE_DEFAULT, 0),
         ]);
     }
 
-    public static function execute(int $courseid, int $sectionid): array {
+    public static function execute(int $courseid, int $sectionid, int $conversationid = 0): array {
         global $DB, $USER;
 
         $params = self::validate_parameters(self::execute_parameters(), [
-            'courseid'  => $courseid,
-            'sectionid' => $sectionid,
+            'courseid'       => $courseid,
+            'sectionid'      => $sectionid,
+            'conversationid' => $conversationid,
         ]);
 
         $context = \context_course::instance($params['courseid']);
         self::validate_context($context);
 
+        $convid = $params['conversationid'];
+
+        // If no conversation specified, find the most recent one.
+        if ($convid <= 0) {
+            $convid = (int) $DB->get_field_select(
+                'format_videoclass_chat_conversations',
+                'id',
+                'courseid = :courseid AND sectionid = :sectionid AND userid = :userid',
+                [
+                    'courseid'  => $params['courseid'],
+                    'sectionid' => $params['sectionid'],
+                    'userid'    => $USER->id,
+                ],
+                IGNORE_MULTIPLE
+            );
+            if (!$convid) {
+                return [];
+            }
+        }
+
         $records = $DB->get_records_select(
             'format_videoclass_chat_history',
-            'courseid = :courseid AND sectionid = :sectionid AND userid = :userid',
+            'conversationid = :conversationid AND userid = :userid',
             [
-                'courseid'  => $params['courseid'],
-                'sectionid' => $params['sectionid'],
-                'userid'    => $USER->id,
+                'conversationid' => $convid,
+                'userid'         => $USER->id,
             ],
             'timecreated ASC',
             'id, role, message, noteid, timecreated'

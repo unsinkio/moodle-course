@@ -110,5 +110,75 @@ function xmldb_format_videoclass_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026030907, 'format', 'videoclass');
     }
 
+    if ($oldversion < 2026031001) {
+        // Table: format_videoclass_chat_conversations.
+        $convtable = new xmldb_table('format_videoclass_chat_conversations');
+        if (!$dbman->table_exists($convtable)) {
+            $convtable->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+            $convtable->add_field('courseid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+            $convtable->add_field('sectionid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+            $convtable->add_field('userid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+            $convtable->add_field('title', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, null);
+            $convtable->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+            $convtable->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+            $convtable->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+            $convtable->add_key('courseid_fk', XMLDB_KEY_FOREIGN, ['courseid'], 'course', ['id']);
+            $convtable->add_key('userid_fk', XMLDB_KEY_FOREIGN, ['userid'], 'user', ['id']);
+            $convtable->add_index('courseid_sectionid_userid_idx', XMLDB_INDEX_NOTUNIQUE, ['courseid', 'sectionid', 'userid']);
+            $dbman->create_table($convtable);
+        }
+
+        // Add conversationid column to chat_history.
+        $historytable = new xmldb_table('format_videoclass_chat_history');
+        $field = new xmldb_field('conversationid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'userid');
+        if (!$dbman->field_exists($historytable, $field)) {
+            $dbman->add_field($historytable, $field);
+        }
+
+        // Migrate existing messages: create one conversation per (courseid, sectionid, userid) group.
+        $sql = "SELECT DISTINCT courseid, sectionid, userid
+                  FROM {format_videoclass_chat_history}
+                 WHERE conversationid = 0";
+        $groups = $DB->get_records_sql($sql);
+        foreach ($groups as $group) {
+            // Get first user message for title.
+            $firstmsg = $DB->get_field_select(
+                'format_videoclass_chat_history',
+                'message',
+                'courseid = :courseid AND sectionid = :sectionid AND userid = :userid AND role = :role',
+                [
+                    'courseid' => $group->courseid,
+                    'sectionid' => $group->sectionid,
+                    'userid' => $group->userid,
+                    'role' => 'user',
+                ],
+                IGNORE_MULTIPLE
+            );
+            $title = $firstmsg ? substr($firstmsg, 0, 80) : 'Imported conversation';
+            $now = time();
+            $convid = $DB->insert_record('format_videoclass_chat_conversations', (object) [
+                'courseid' => $group->courseid,
+                'sectionid' => $group->sectionid,
+                'userid' => $group->userid,
+                'title' => $title,
+                'timecreated' => $now,
+                'timemodified' => $now,
+            ]);
+            $DB->set_field_select(
+                'format_videoclass_chat_history',
+                'conversationid',
+                $convid,
+                'courseid = :courseid AND sectionid = :sectionid AND userid = :userid AND conversationid = 0',
+                [
+                    'courseid' => $group->courseid,
+                    'sectionid' => $group->sectionid,
+                    'userid' => $group->userid,
+                ]
+            );
+        }
+
+        upgrade_plugin_savepoint(true, 2026031001, 'format', 'videoclass');
+    }
+
     return true;
 }

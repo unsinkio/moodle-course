@@ -79,6 +79,12 @@ $string['aitutorclearconfirm'] = 'Start a new conversation? Chat history will be
 $string['aitutorwelcome'] = 'Hi! I am your AI tutor for this section. Ask me anything about the resources and content here.';
 $string['aitutorerror'] = 'Sorry, something went wrong. Please try again.';
 $string['aitutortyping'] = 'Thinking...';
+$string['aitutorconversations'] = 'Conversations';
+$string['aitutornewconversation'] = 'New conversation';
+$string['aitutornoconversations'] = 'No conversations yet.';
+$string['aitutordeleteconversation'] = 'Delete conversation';
+$string['aitutordeleteconfirm'] = 'Delete this conversation? All messages will be lost.';
+$string['aitutorlogoalt'] = 'ATLAS AI Tutor';
 
 // Settings.
 $string['settings_aitutor_heading'] = 'AI Tutor';

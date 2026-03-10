@@ -47,32 +47,55 @@
     <div class="videoclass-tutor" id="videoclass-tutor-{{id}}"
          data-courseid="{{videoclass.courseid}}"
          data-sectionid="{{videoclass.sectionid}}"
-         data-sesskey="{{videoclass.sesskey}}">
+         data-sesskey="{{videoclass.sesskey}}"
+         data-logourl="{{videoclass.logourl}}">
         <button type="button" class="videoclass-tutor-toggle" aria-expanded="false"
                 aria-controls="videoclass-tutor-body-{{id}}">
-            <span class="videoclass-tutor-icon">{{#pix}}atlas_icon, format_videoclass, ATLAS{{/pix}}</span>
+            <span class="videoclass-tutor-icon" data-action="show-logo">{{#pix}}atlas_icon, format_videoclass, ATLAS{{/pix}}</span>
             <span class="videoclass-tutor-label">{{#str}}aitutorexpand, format_videoclass{{/str}}</span>
             <span class="videoclass-tutor-chevron">&#x25BC;</span>
         </button>
         <div class="videoclass-tutor-body" id="videoclass-tutor-body-{{id}}" hidden>
-            <div class="videoclass-tutor-messages" id="videoclass-tutor-messages-{{id}}">
-                <div class="videoclass-tutor-msg videoclass-tutor-msg-assistant">
-                    <div class="videoclass-tutor-msg-content">{{#str}}aitutorwelcome, format_videoclass{{/str}}</div>
+            <div class="videoclass-tutor-layout">
+                {{! ── Conversation Sidebar ── }}
+                <div class="videoclass-tutor-sidebar" id="videoclass-tutor-sidebar-{{id}}">
+                    <div class="videoclass-tutor-sidebar-header">
+                        <span>{{#str}}aitutorconversations, format_videoclass{{/str}}</span>
+                        <button type="button" class="videoclass-tutor-new-conv"
+                                id="videoclass-tutor-new-conv-{{id}}"
+                                title="{{#str}}aitutornewconversation, format_videoclass{{/str}}">&#x2B; New</button>
+                    </div>
+                    <div class="videoclass-tutor-conv-list" id="videoclass-tutor-conv-list-{{id}}">
+                        <div class="videoclass-tutor-conv-empty">{{#str}}aitutornoconversations, format_videoclass{{/str}}</div>
+                    </div>
+                </div>
+                {{! ── Chat Column ── }}
+                <div class="videoclass-tutor-chat-col">
+                    <div class="videoclass-tutor-messages" id="videoclass-tutor-messages-{{id}}">
+                        <div class="videoclass-tutor-msg videoclass-tutor-msg-assistant">
+                            <div class="videoclass-tutor-msg-content">{{#str}}aitutorwelcome, format_videoclass{{/str}}</div>
+                        </div>
+                    </div>
+                    <div class="videoclass-tutor-input-row">
+                        <textarea class="videoclass-tutor-input"
+                                  id="videoclass-tutor-input-{{id}}"
+                                  placeholder="{{#str}}aitutorplaceholder, format_videoclass{{/str}}"
+                                  rows="1"
+                                  autocomplete="off"></textarea>
+                        <button type="button" class="videoclass-tutor-send"
+                                id="videoclass-tutor-send-{{id}}">{{#str}}aitutorsend, format_videoclass{{/str}}</button>
+                    </div>
                 </div>
             </div>
-            <div class="videoclass-tutor-input-row">
-                <textarea class="videoclass-tutor-input"
-                          id="videoclass-tutor-input-{{id}}"
-                          placeholder="{{#str}}aitutorplaceholder, format_videoclass{{/str}}"
-                          rows="1"
-                          autocomplete="off"></textarea>
-                <button type="button" class="videoclass-tutor-send"
-                        id="videoclass-tutor-send-{{id}}">{{#str}}aitutorsend, format_videoclass{{/str}}</button>
-            </div>
-            <div class="videoclass-tutor-actions">
-                <button type="button" class="videoclass-tutor-clear"
-                        id="videoclass-tutor-clear-{{id}}">&#x1F5D1; {{#str}}aitutorclear, format_videoclass{{/str}}</button>
-            </div>
+        </div>
+    </div>
+
+    {{! ── Logo Lightbox Modal ── }}
+    <div class="videoclass-logo-modal" id="videoclass-logo-modal-{{id}}" style="display:none;">
+        <div class="videoclass-logo-modal-backdrop"></div>
+        <div class="videoclass-logo-modal-content">
+            <button type="button" class="videoclass-logo-modal-close">&times;</button>
+            <img src="{{videoclass.logourl}}" alt="{{#str}}aitutorlogoalt, format_videoclass{{/str}}" class="videoclass-logo-modal-img">
         </div>
     </div>
 
@@ -519,10 +542,16 @@
         var messagesEl = widget.querySelector('.videoclass-tutor-messages');
         var inputEl = widget.querySelector('.videoclass-tutor-input');
         var sendBtn = widget.querySelector('.videoclass-tutor-send');
-        var clearBtn = widget.querySelector('.videoclass-tutor-clear');
         var labelEl = widget.querySelector('.videoclass-tutor-label');
         var chevronEl = widget.querySelector('.videoclass-tutor-chevron');
-        var historyLoaded = false;
+        var convListEl = widget.querySelector('.videoclass-tutor-conv-list');
+        var newConvBtn = widget.querySelector('.videoclass-tutor-new-conv');
+        var logoIcon = widget.querySelector('[data-action="show-logo"]');
+        var widgetId = widget.id.replace('videoclass-tutor-', '');
+        var logoModal = document.getElementById('videoclass-logo-modal-' + widgetId);
+
+        var currentConversationId = 0;
+        var conversationsLoaded = false;
         var sending = false;
 
         function scrollToBottom() {
@@ -543,7 +572,6 @@
                 saveBtn.className = 'videoclass-tutor-save-note';
                 if (msgId) saveBtn.dataset.chatid = msgId;
                 if (noteid && noteid > 0) {
-                    // Already saved — show disabled state.
                     saveBtn.textContent = '\u2705 Saved!';
                     saveBtn.classList.add('videoclass-tutor-save-done');
                     saveBtn.disabled = true;
@@ -574,9 +602,7 @@
                     btn.textContent = '\u2705 Saved!';
                     btn.classList.add('videoclass-tutor-save-done');
                     btn.dataset.noteid = result.id;
-                    // Notify My Notes tab to refresh.
                     document.dispatchEvent(new CustomEvent('vc-note-saved', { detail: result }));
-                    // Persist link in DB.
                     if (chatid > 0) {
                         Ajax.call([{
                             methodname: 'format_videoclass_link_chat_note',
@@ -601,7 +627,6 @@
                     btn.classList.remove('videoclass-tutor-save-done');
                     btn.disabled = false;
                     delete btn.dataset.noteid;
-                    // Clear link in DB.
                     var chatid = btn.dataset.chatid ? parseInt(btn.dataset.chatid) : 0;
                     if (chatid > 0) {
                         require(['core/ajax'], function(Ajax) {
@@ -611,28 +636,100 @@
                             }]);
                         });
                     }
-                    // Re-attach click listener.
                     var msgContent = btn.closest('.videoclass-tutor-msg').querySelector('.videoclass-tutor-msg-content');
-                    var content = msgContent ? msgContent.textContent : '';
+                    var noteContent = msgContent ? msgContent.textContent : '';
                     btn.addEventListener('click', function() {
-                        saveToNotes(content, btn);
+                        saveToNotes(noteContent, btn);
                     });
                 }
             });
         });
 
-        function loadHistory() {
-            if (historyLoaded) return;
-            historyLoaded = true;
+        // ── Conversation Sidebar ──
+        function loadConversations(selectId) {
+            require(['core/ajax'], function(Ajax) {
+                Ajax.call([{
+                    methodname: 'format_videoclass_get_chat_conversations',
+                    args: { courseid: parseInt(courseid), sectionid: parseInt(sectionid) }
+                }])[0].then(function(result) {
+                    var convs = result;
+                    if (result && result.data) convs = result.data;
+                    renderConversationList(convs || [], selectId);
+                    conversationsLoaded = true;
+                }).catch(function(err) {
+                    console.error('[VC Tutor] Load conversations error:', err);
+                });
+            });
+        }
+
+        function renderConversationList(convs, selectId) {
+            convListEl.innerHTML = '';
+            if (!convs || convs.length === 0) {
+                convListEl.innerHTML = '<div class="videoclass-tutor-conv-empty">No conversations yet.</div>';
+                return;
+            }
+            convs.forEach(function(c) {
+                var item = document.createElement('div');
+                item.className = 'videoclass-tutor-conv-item';
+                if (c.id === selectId || c.id === currentConversationId) {
+                    item.classList.add('active');
+                }
+                item.dataset.convid = c.id;
+
+                var info = document.createElement('div');
+                info.style.flex = '1';
+                info.style.minWidth = '0';
+
+                var title = document.createElement('div');
+                title.className = 'videoclass-tutor-conv-title';
+                title.textContent = c.title;
+                title.title = c.title;
+                info.appendChild(title);
+
+                var time = document.createElement('div');
+                time.className = 'videoclass-tutor-conv-time';
+                var d = new Date(c.timemodified * 1000);
+                time.textContent = d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                info.appendChild(time);
+
+                var delBtn = document.createElement('button');
+                delBtn.type = 'button';
+                delBtn.className = 'videoclass-tutor-conv-delete';
+                delBtn.innerHTML = '&#x1F5D1;';
+                delBtn.title = 'Delete conversation';
+                delBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    if (!confirm('Delete this conversation? All messages will be lost.')) return;
+                    deleteConversation(c.id);
+                });
+
+                item.appendChild(info);
+                item.appendChild(delBtn);
+
+                item.addEventListener('click', function() {
+                    switchConversation(c.id);
+                });
+
+                convListEl.appendChild(item);
+            });
+        }
+
+        function switchConversation(convId) {
+            currentConversationId = convId;
+            // Highlight active.
+            convListEl.querySelectorAll('.videoclass-tutor-conv-item').forEach(function(el) {
+                el.classList.toggle('active', parseInt(el.dataset.convid) === convId);
+            });
+            // Load messages.
+            showWelcome();
             require(['core/ajax'], function(Ajax) {
                 Ajax.call([{
                     methodname: 'format_videoclass_get_chat_history',
-                    args: { courseid: parseInt(courseid), sectionid: parseInt(sectionid) }
+                    args: { courseid: parseInt(courseid), sectionid: parseInt(sectionid), conversationid: convId }
                 }])[0].then(function(result) {
                     var msgs = result;
                     if (result && result.data) msgs = result.data;
                     if (msgs && msgs.length > 0) {
-                        // Clear welcome message and replace with history.
                         messagesEl.innerHTML = '';
                         msgs.forEach(function(m) {
                             appendMessage(m.role, m.message, m.id, m.noteid || 0);
@@ -640,13 +737,66 @@
                     }
                     scrollToBottom();
                 }).catch(function(err) {
-                    console.error('[VC Tutor] History load error:', err);
+                    console.error('[VC Tutor] Load history error:', err);
                 });
             });
         }
 
+        function deleteConversation(convId) {
+            require(['core/ajax'], function(Ajax) {
+                Ajax.call([{
+                    methodname: 'format_videoclass_delete_chat_conversation',
+                    args: { conversationid: convId }
+                }])[0].then(function(result) {
+                    if (result && (result.success || (result.data && result.data.success))) {
+                        if (currentConversationId === convId) {
+                            currentConversationId = 0;
+                            showWelcome();
+                        }
+                        loadConversations(currentConversationId);
+                    }
+                }).catch(function(err) {
+                    console.error('[VC Tutor] Delete conversation error:', err);
+                });
+            });
+        }
+
+        function showWelcome() {
+            messagesEl.innerHTML = '';
+            appendMessage('assistant', 'Hi! I am your AI tutor for this section. Ask me anything about the resources and content here.');
+        }
+
+        // New conversation button.
+        if (newConvBtn) {
+            newConvBtn.addEventListener('click', function() {
+                currentConversationId = 0;
+                showWelcome();
+                // Deselect all sidebar items.
+                convListEl.querySelectorAll('.videoclass-tutor-conv-item').forEach(function(el) {
+                    el.classList.remove('active');
+                });
+                inputEl.focus();
+            });
+        }
+
+        // ── Logo Lightbox ──
+        if (logoIcon && logoModal) {
+            logoIcon.addEventListener('click', function(e) {
+                e.stopPropagation();
+                logoModal.style.display = 'block';
+            });
+            logoModal.querySelector('.videoclass-logo-modal-backdrop').addEventListener('click', function() {
+                logoModal.style.display = 'none';
+            });
+            logoModal.querySelector('.videoclass-logo-modal-close').addEventListener('click', function() {
+                logoModal.style.display = 'none';
+            });
+        }
+
         // Toggle expand/collapse.
-        toggle.addEventListener('click', function() {
+        toggle.addEventListener('click', function(e) {
+            // Ignore if the logo icon was clicked.
+            if (e.target.closest('[data-action="show-logo"]')) return;
             var expanded = toggle.getAttribute('aria-expanded') === 'true';
             if (expanded) {
                 body.hidden = true;
@@ -658,7 +808,9 @@
                 toggle.setAttribute('aria-expanded', 'true');
                 labelEl.textContent = 'Hide tutor';
                 chevronEl.textContent = '\u25B2';
-                loadHistory();
+                if (!conversationsLoaded) {
+                    loadConversations();
+                }
                 scrollToBottom();
                 inputEl.focus();
             }
@@ -674,7 +826,6 @@
 
             appendMessage('user', text);
 
-            // Add typing indicator.
             var typingDiv = document.createElement('div');
             typingDiv.className = 'videoclass-tutor-msg videoclass-tutor-msg-assistant videoclass-tutor-typing';
             typingDiv.innerHTML = '<div class="videoclass-tutor-msg-content"><span class="videoclass-tutor-dots"><span>.</span><span>.</span><span>.</span></span> Thinking...</div>';
@@ -684,12 +835,24 @@
             require(['core/ajax'], function(Ajax) {
                 Ajax.call([{
                     methodname: 'format_videoclass_send_chat_message',
-                    args: { courseid: parseInt(courseid), sectionid: parseInt(sectionid), message: text }
+                    args: {
+                        courseid: parseInt(courseid),
+                        sectionid: parseInt(sectionid),
+                        message: text,
+                        conversationid: currentConversationId
+                    }
                 }])[0].then(function(result) {
                     if (typingDiv.parentNode) typingDiv.parentNode.removeChild(typingDiv);
-                    var reply = result.reply || result.data?.reply || '';
+                    var reply = result.reply || (result.data && result.data.reply) || '';
                     if (result.error && !reply) {
                         reply = result.error;
+                    }
+                    // Track the conversation ID returned by the server.
+                    var newConvId = result.conversationid || (result.data && result.data.conversationid) || 0;
+                    if (newConvId && newConvId !== currentConversationId) {
+                        currentConversationId = newConvId;
+                        // Refresh sidebar to include the new conversation.
+                        loadConversations(currentConversationId);
                     }
                     appendMessage('assistant', reply, result.msgid || 0);
                     sending = false;
@@ -713,27 +876,9 @@
             }
         });
 
-        // Auto-resize textarea as user types.
         inputEl.addEventListener('input', function() {
             this.style.height = 'auto';
             this.style.height = Math.min(this.scrollHeight, 120) + 'px';
-        });
-
-        // Clear history.
-        clearBtn.addEventListener('click', function() {
-            if (!confirm('Start a new conversation? Chat history will be cleared.')) return;
-            require(['core/ajax'], function(Ajax) {
-                Ajax.call([{
-                    methodname: 'format_videoclass_clear_chat_history',
-                    args: { courseid: parseInt(courseid), sectionid: parseInt(sectionid) }
-                }])[0].then(function() {
-                    messagesEl.innerHTML = '';
-                    appendMessage('assistant', 'Hi! I am your AI tutor for this section. Ask me anything about the resources and content here.');
-                    historyLoaded = true;
-                }).catch(function(err) {
-                    console.error('[VC Tutor] Clear error:', err);
-                });
-            });
         });
     });
 })();

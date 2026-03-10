@@ -100,4 +100,16 @@ $functions = [
         'type'        => 'write',
         'ajax'        => true,
     ],
+    'format_videoclass_get_chat_conversations' => [
+        'classname'   => 'format_videoclass\external\get_chat_conversations',
+        'description' => 'Get AI tutor conversation list for a section.',
+        'type'        => 'read',
+        'ajax'        => true,
+    ],
+    'format_videoclass_delete_chat_conversation' => [
+        'classname'   => 'format_videoclass\external\delete_chat_conversation',
+        'description' => 'Delete an AI tutor conversation and all its messages.',
+        'type'        => 'write',
+        'ajax'        => true,
+    ],
 ];

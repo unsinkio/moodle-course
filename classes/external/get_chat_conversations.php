@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Clear AI tutor chat history for a section (now a no-op; kept for backward compatibility).
+ * Get AI tutor conversation list for a section.
  *
  * @package   format_videoclass
  * @copyright 2026 Atlantis University
@@ -28,10 +28,11 @@ defined('MOODLE_INTERNAL') || die();
 
 use core_external\external_api;
 use core_external\external_function_parameters;
+use core_external\external_multiple_structure;
 use core_external\external_single_structure;
 use core_external\external_value;
 
-class clear_chat_history extends external_api {
+class get_chat_conversations extends external_api {
 
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters([
@@ -41,7 +42,7 @@ class clear_chat_history extends external_api {
     }
 
     public static function execute(int $courseid, int $sectionid): array {
-        global $USER;
+        global $DB, $USER;
 
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid'  => $courseid,
@@ -51,14 +52,39 @@ class clear_chat_history extends external_api {
         $context = \context_course::instance($params['courseid']);
         self::validate_context($context);
 
-        // No-op: conversations are now preserved. The JS will simply start
-        // a new conversation on the next send (conversationid = 0).
-        return ['success' => true];
+        $records = $DB->get_records_select(
+            'format_videoclass_chat_conversations',
+            'courseid = :courseid AND sectionid = :sectionid AND userid = :userid',
+            [
+                'courseid'  => $params['courseid'],
+                'sectionid' => $params['sectionid'],
+                'userid'    => $USER->id,
+            ],
+            'timemodified DESC',
+            'id, title, timecreated, timemodified'
+        );
+
+        $conversations = [];
+        foreach ($records as $r) {
+            $conversations[] = [
+                'id'           => (int) $r->id,
+                'title'        => $r->title,
+                'timecreated'  => (int) $r->timecreated,
+                'timemodified' => (int) $r->timemodified,
+            ];
+        }
+
+        return $conversations;
     }
 
-    public static function execute_returns(): external_single_structure {
-        return new external_single_structure([
-            'success' => new external_value(PARAM_BOOL, 'Whether history was cleared'),
-        ]);
+    public static function execute_returns(): external_multiple_structure {
+        return new external_multiple_structure(
+            new external_single_structure([
+                'id'           => new external_value(PARAM_INT, 'Conversation ID'),
+                'title'        => new external_value(PARAM_RAW, 'Conversation title'),
+                'timecreated'  => new external_value(PARAM_INT, 'Created timestamp'),
+                'timemodified' => new external_value(PARAM_INT, 'Modified timestamp'),
+            ])
+        );
     }
 }
