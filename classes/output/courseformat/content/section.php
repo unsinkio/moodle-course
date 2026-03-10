@@ -135,18 +135,14 @@ class section extends section_base
             }
         }
 
-        $cms = [];
-        if (!empty($data->cmlist) && !empty($data->cmlist->cms)) {
-            $cms = $data->cmlist->cms;
-        }
-
-        [$resources, $assessments, $qa] = $this->split_cms($cms);
-
         $format = $this->format;
         $course = $format->get_course();
         $context = \context_course::instance($course->id);
         $sectioninfo = $this->section;
         $sectionid = $sectioninfo->id;
+
+        // Build activity lists directly from modinfo (reliable source of truth).
+        [$resources, $assessments, $qa] = $this->build_activity_lists($output);
 
         // Load personal notes for this user (with sharing info).
         $personalnotes = $this->load_personal_notes($course->id, $sectionid);
@@ -156,9 +152,9 @@ class section extends section_base
 
         $data->videoclass = (object) [
             'sectionsnav'    => $this->build_sections_nav(),
-            'resources'      => $this->flatten_cmlist($resources, $output),
-            'assessments'    => $this->flatten_cmlist($assessments, $output),
-            'qa'             => $this->flatten_cmlist($qa, $output),
+            'resources'      => $resources,
+            'assessments'    => $assessments,
+            'qa'             => $qa,
             'hasvideo'       => $this->summary_has_video($data),
             'editurl'        => (new \moodle_url('/course/editsection.php', ['id' => $data->id]))->out(false),
             'personalnotes'  => $personalnotes,
@@ -203,6 +199,98 @@ class section extends section_base
         }
 
         return trim(strip_tags($summarytext)) !== '';
+    }
+
+    /**
+     * Build activity lists directly from modinfo for this section.
+     *
+     * This bypasses the parent export's cmlist (which may have an opaque
+     * structure) and reads cm_info objects directly — always reliable.
+     *
+     * @param \renderer_base $output
+     * @return array [$resources, $assessments, $qa]
+     */
+    private function build_activity_lists(\renderer_base $output): array
+    {
+        $resources = [];
+        $assessments = [];
+        $qa = [];
+
+        $format = $this->format;
+        $modinfo = $format->get_modinfo();
+        $section = $this->section;
+        $editing = $format->show_editor();
+
+        // Get all cm_info objects in this section.
+        if (empty($modinfo->sections[$section->section])) {
+            return [$resources, $assessments, $qa];
+        }
+
+        foreach ($modinfo->sections[$section->section] as $cmid) {
+            $cminfo = $modinfo->get_cm($cmid);
+
+            // Skip hidden or deleted modules.
+            if (!$cminfo->uservisible) {
+                continue;
+            }
+
+            // Skip labels (they have no URL).
+            if ($cminfo->modname === 'label') {
+                continue;
+            }
+
+            $name = $cminfo->name;
+
+            // Determine bucket from name prefix first.
+            $bucket = $this->bucket_from_label($name);
+
+            // If no prefix match, classify by module type.
+            if ($bucket === '') {
+                if (in_array($cminfo->modname, self::QA_MODULES, true)) {
+                    $bucket = 'qa';
+                } else if (in_array($cminfo->modname, self::ASSESSMENT_MODULES, true)) {
+                    $bucket = 'assessments';
+                } else {
+                    $bucket = 'resources';
+                }
+            }
+
+            // Build icon HTML.
+            $icon = '';
+            $iconurl = $cminfo->get_icon_url($output);
+            if ($iconurl) {
+                $icon = '<img src="' . $iconurl->out(false) . '" class="activityicon" alt="" role="presentation">';
+            }
+
+            // Build URL.
+            $url = $cminfo->url ? $cminfo->url->out(false) : '';
+
+            // Build controls for editing mode.
+            $cmcontrols = '';
+
+            $item = (object) [
+                'id'         => $cminfo->id,
+                'url'        => $url,
+                'name'       => format_string($name),
+                'icon'       => $icon,
+                'editing'    => $editing,
+                'cmcontrols' => $cmcontrols,
+            ];
+
+            switch ($bucket) {
+                case 'qa':
+                    $qa[] = $item;
+                    break;
+                case 'assessments':
+                    $assessments[] = $item;
+                    break;
+                default:
+                    $resources[] = $item;
+                    break;
+            }
+        }
+
+        return [$resources, $assessments, $qa];
     }
 
     /**

@@ -133,31 +133,32 @@
 
     {{! ── Tabs below layout ── }}
     <div class="videoclass-tabs" role="tablist">
-            {{! Tab radios (hidden) }}
             <input type="radio" name="videoclass-tabs-{{id}}" id="videoclass-tab-{{id}}-resources"
                    class="videoclass-tab-radio" checked aria-controls="videoclass-panel-{{id}}-resources">
-            <input type="radio" name="videoclass-tabs-{{id}}" id="videoclass-tab-{{id}}-assessments"
-                   class="videoclass-tab-radio" aria-controls="videoclass-panel-{{id}}-assessments">
-            <input type="radio" name="videoclass-tabs-{{id}}" id="videoclass-tab-{{id}}-qa"
-                   class="videoclass-tab-radio" aria-controls="videoclass-panel-{{id}}-qa">
-            <input type="radio" name="videoclass-tabs-{{id}}" id="videoclass-tab-{{id}}-mynotes"
-                   class="videoclass-tab-radio" aria-controls="videoclass-panel-{{id}}-mynotes">
-            <input type="radio" name="videoclass-tabs-{{id}}" id="videoclass-tab-{{id}}-sharednotes"
-                   class="videoclass-tab-radio" aria-controls="videoclass-panel-{{id}}-sharednotes">
-
-            {{! Tab labels }}
             <label for="videoclass-tab-{{id}}-resources" class="videoclass-tab-label" role="tab">
                 {{#str}}tabresources, format_videoclass{{/str}}
             </label>
+
+            <input type="radio" name="videoclass-tabs-{{id}}" id="videoclass-tab-{{id}}-assessments"
+                   class="videoclass-tab-radio" aria-controls="videoclass-panel-{{id}}-assessments">
             <label for="videoclass-tab-{{id}}-assessments" class="videoclass-tab-label" role="tab">
                 {{#str}}tabassessments, format_videoclass{{/str}}
             </label>
+
+            <input type="radio" name="videoclass-tabs-{{id}}" id="videoclass-tab-{{id}}-qa"
+                   class="videoclass-tab-radio" aria-controls="videoclass-panel-{{id}}-qa">
             <label for="videoclass-tab-{{id}}-qa" class="videoclass-tab-label" role="tab">
                 {{#str}}tabqa, format_videoclass{{/str}}
             </label>
+
+            <input type="radio" name="videoclass-tabs-{{id}}" id="videoclass-tab-{{id}}-mynotes"
+                   class="videoclass-tab-radio" aria-controls="videoclass-panel-{{id}}-mynotes">
             <label for="videoclass-tab-{{id}}-mynotes" class="videoclass-tab-label" role="tab">
                 {{#str}}tabmynotes, format_videoclass{{/str}}
             </label>
+
+            <input type="radio" name="videoclass-tabs-{{id}}" id="videoclass-tab-{{id}}-sharednotes"
+                   class="videoclass-tab-radio" aria-controls="videoclass-panel-{{id}}-sharednotes">
             <label for="videoclass-tab-{{id}}-sharednotes" class="videoclass-tab-label" role="tab">
                 {{#str}}tabsharednotes, format_videoclass{{/str}}
             </label>
