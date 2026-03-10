@@ -284,7 +284,7 @@ class section extends section_base
             return 'qa';
         }
 
-        if (preg_match('/^\[(nota|notas|notes?|assessment|assessments?|tarea|tareas|quiz|examen)\]/i', $label)) {
+        if (preg_match('/^\[(nota|notas|notes?|assignment|assignments?|assessment|assessments?|tarea|tareas|quiz|examen)\]/i', $label)) {
             return 'assessments';
         }
 
