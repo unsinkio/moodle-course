@@ -1768,3 +1768,163 @@ body.format-videoclass #page-header.header-maxwidth,
 body.format-videoclass .secondary-navigation {
     max-width: 100% !important;
 }
+
+/* ── Delete Confirmation Dialog ── */
+.vc-delete-dialog-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.5);
+    backdrop-filter: blur(4px);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: vc-fade-in 0.15s ease;
+}
+
+@keyframes vc-fade-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.vc-delete-dialog {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(15, 23, 42, 0.25);
+    padding: 24px;
+    width: 340px;
+    max-width: 90vw;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    animation: vc-slide-up 0.2s ease;
+}
+
+@keyframes vc-slide-up {
+    from {
+        transform: translateY(16px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.vc-delete-dialog-msg {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0 0 6px;
+    line-height: 1.4;
+    text-align: center;
+}
+
+.vc-delete-dialog-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    font-family: inherit;
+    text-align: left;
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+}
+
+.vc-delete-dialog-btn strong {
+    font-size: 0.88rem;
+    font-weight: 700;
+}
+
+.vc-delete-dialog-btn span {
+    font-size: 0.78rem;
+    opacity: 0.7;
+}
+
+.vc-delete-dialog-btn:hover {
+    transform: translateY(-1px);
+}
+
+/* "Delete for me" (secondary) */
+.vc-delete-dialog-btn-secondary {
+    background: #f1f5f9;
+    color: #334155;
+    border-color: #e2e8f0;
+}
+
+.vc-delete-dialog-btn-secondary:hover {
+    background: #e2e8f0;
+    border-color: #cbd5e1;
+}
+
+/* "Delete for everyone" (danger) */
+.vc-delete-dialog-btn-danger {
+    background: #fef2f2;
+    color: #991b1b;
+    border-color: #fecaca;
+}
+
+.vc-delete-dialog-btn-danger:hover {
+    background: #fee2e2;
+    border-color: #fca5a5;
+}
+
+/* Cancel */
+.vc-delete-dialog-btn-cancel {
+    background: none;
+    color: #64748b;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-align: center;
+    padding: 10px 16px;
+    margin-top: 2px;
+}
+
+.vc-delete-dialog-btn-cancel:hover {
+    background: #f8fafc;
+    color: #475569;
+}
+
+/* ── Deleted shared conversation notice ── */
+.vc-shared-deleted {
+    background: #f8f8f8 !important;
+    border-left: 3px solid #e74c3c !important;
+    opacity: 0.85;
+    cursor: default !important;
+}
+
+.vc-shared-deleted-notice {
+    font-size: 0.75rem;
+    color: #e74c3c;
+    font-weight: 600;
+    margin-top: 2px;
+}
+
+.vc-shared-dismiss-btn {
+    flex-shrink: 0;
+    margin-left: 6px;
+    padding: 4px 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #fff;
+    color: #475569;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    align-self: center;
+}
+
+.vc-shared-dismiss-btn:hover {
+    background: #f1f5f9;
+}

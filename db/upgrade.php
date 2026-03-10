@@ -197,5 +197,23 @@ function xmldb_format_videoclass_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026031002, 'format', 'videoclass');
     }
 
+    // Step 5 – Add 'deleted' flag for delete-for-everyone notifications.
+    if ($oldversion < 2026031003) {
+        // Add to conversations table (soft-delete, keep record for recipient JOINs).
+        $convtable = new xmldb_table('format_videoclass_chat_conversations');
+        $convfield = new xmldb_field('deleted', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'timemodified');
+        if (!$dbman->field_exists($convtable, $convfield)) {
+            $dbman->add_field($convtable, $convfield);
+        }
+
+        // Add to recipients table (marks notification for recipient).
+        $table = new xmldb_table('format_videoclass_chat_conv_recipients');
+        $field = new xmldb_field('deleted', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'timeshared');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        upgrade_plugin_savepoint(true, 2026031003, 'format', 'videoclass');
+    }
+
     return true;
 }

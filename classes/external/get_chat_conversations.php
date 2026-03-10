@@ -54,7 +54,7 @@ class get_chat_conversations extends external_api {
 
         $records = $DB->get_records_select(
             'format_videoclass_chat_conversations',
-            'courseid = :courseid AND sectionid = :sectionid AND userid = :userid',
+            'courseid = :courseid AND sectionid = :sectionid AND userid = :userid AND deleted = 0',
             [
                 'courseid'  => $params['courseid'],
                 'sectionid' => $params['sectionid'],

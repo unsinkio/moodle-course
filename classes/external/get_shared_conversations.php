@@ -52,6 +52,7 @@ class get_shared_conversations extends external_api {
         self::validate_context($context);
 
         $sql = "SELECT c.id, c.title, c.timemodified, c.userid,
+                       r.deleted AS recipientdeleted,
                        u.firstname, u.lastname, u.firstnamephonetic,
                        u.lastnamephonetic, u.middlename, u.alternatename
                   FROM {format_videoclass_chat_conv_recipients} r
@@ -75,6 +76,7 @@ class get_shared_conversations extends external_api {
                 'title'        => $r->title,
                 'ownername'    => fullname($r),
                 'timemodified' => (int) $r->timemodified,
+                'deleted'      => (int) $r->recipientdeleted,
             ];
         }
 
@@ -88,6 +90,7 @@ class get_shared_conversations extends external_api {
                 'title'        => new external_value(PARAM_TEXT, 'Conversation title'),
                 'ownername'    => new external_value(PARAM_TEXT, 'Owner full name'),
                 'timemodified' => new external_value(PARAM_INT, 'Last modified timestamp'),
+                'deleted'      => new external_value(PARAM_INT, 'Whether conversation was deleted by owner'),
             ])
         );
     }

@@ -874,8 +874,20 @@
                 delBtn.title = 'Delete conversation';
                 delBtn.addEventListener('click', function(e) {
                     e.stopPropagation();
-                    if (!confirm('Delete this conversation? All messages will be lost.')) return;
-                    deleteConversation(c.id);
+                    if (c.shared) {
+                        showDeleteDialog(
+                            'This conversation is shared. How would you like to proceed?',
+                            'Delete for me',
+                            'Remove sharing but keep your conversation.',
+                            'Delete for everyone',
+                            'Permanently delete for you and all recipients.',
+                            function() { deleteConversation(c.id, false); },
+                            function() { deleteConversation(c.id, true); }
+                        );
+                    } else {
+                        if (!confirm('Delete this conversation? All messages will be lost.')) return;
+                        deleteConversation(c.id, true);
+                    }
                 });
                 actions.appendChild(delBtn);
 
@@ -1075,6 +1087,42 @@
                 item.className = 'videoclass-tutor-conv-item videoclass-tutor-conv-shared';
                 item.dataset.convid = c.id;
 
+                if (c.deleted) {
+                    // Deleted conversation: show notice with dismiss button.
+                    item.classList.add('vc-shared-deleted');
+
+                    var info = document.createElement('div');
+                    info.style.flex = '1';
+                    info.style.minWidth = '0';
+
+                    var title = document.createElement('div');
+                    title.className = 'videoclass-tutor-conv-title';
+                    title.style.textDecoration = 'line-through';
+                    title.style.opacity = '0.6';
+                    title.textContent = c.title;
+                    info.appendChild(title);
+
+                    var notice = document.createElement('div');
+                    notice.className = 'vc-shared-deleted-notice';
+                    notice.textContent = 'Deleted by ' + c.ownername;
+                    info.appendChild(notice);
+
+                    item.appendChild(info);
+
+                    var dismissBtn = document.createElement('button');
+                    dismissBtn.type = 'button';
+                    dismissBtn.className = 'vc-shared-dismiss-btn';
+                    dismissBtn.textContent = 'Dismiss';
+                    dismissBtn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        deleteConversation(c.id, false);
+                    });
+                    item.appendChild(dismissBtn);
+
+                    sharedListEl.appendChild(item);
+                    return; // Skip normal rendering.
+                }
+
                 var info = document.createElement('div');
                 info.style.flex = '1';
                 info.style.minWidth = '0';
@@ -1092,7 +1140,30 @@
 
                 item.appendChild(info);
 
-                item.addEventListener('click', function() {
+                // Delete button for recipient.
+                var delBtn = document.createElement('button');
+                delBtn.type = 'button';
+                delBtn.className = 'videoclass-tutor-conv-action-btn videoclass-tutor-conv-delete';
+                delBtn.innerHTML = '&#x1F5D1;';
+                delBtn.title = 'Remove shared conversation';
+                delBtn.style.flexShrink = '0';
+                delBtn.style.marginLeft = '4px';
+                delBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    showDeleteDialog(
+                        'This conversation was shared with you.',
+                        'Delete for me',
+                        'Remove from your shared list only.',
+                        'Delete for everyone',
+                        'Permanently delete for the owner and all recipients.',
+                        function() { deleteConversation(c.id, false); },
+                        function() { deleteConversation(c.id, true); }
+                    );
+                });
+                item.appendChild(delBtn);
+
+                item.addEventListener('click', function(e) {
+                    if (e.target.closest('.videoclass-tutor-conv-delete')) return;
                     switchToSharedConversation(c.id);
                 });
 
@@ -1180,14 +1251,63 @@
             });
         }
 
-        function deleteConversation(convId) {
+        // Custom delete confirmation dialog for shared conversations.
+        function showDeleteDialog(message, btn1Label, btn1Desc, btn2Label, btn2Desc, onBtn1, onBtn2) {
+            // Remove any existing dialog.
+            var existing = document.querySelector('.vc-delete-dialog-overlay');
+            if (existing) existing.remove();
+
+            var overlay = document.createElement('div');
+            overlay.className = 'vc-delete-dialog-overlay';
+
+            var dialog = document.createElement('div');
+            dialog.className = 'vc-delete-dialog';
+
+            var msg = document.createElement('p');
+            msg.className = 'vc-delete-dialog-msg';
+            msg.textContent = message;
+            dialog.appendChild(msg);
+
+            // Button 1: "Delete for me".
+            var row1 = document.createElement('button');
+            row1.type = 'button';
+            row1.className = 'vc-delete-dialog-btn vc-delete-dialog-btn-secondary';
+            row1.innerHTML = '<strong>' + btn1Label + '</strong><span>' + btn1Desc + '</span>';
+            row1.addEventListener('click', function() { overlay.remove(); onBtn1(); });
+            dialog.appendChild(row1);
+
+            // Button 2: "Delete for everyone".
+            var row2 = document.createElement('button');
+            row2.type = 'button';
+            row2.className = 'vc-delete-dialog-btn vc-delete-dialog-btn-danger';
+            row2.innerHTML = '<strong>' + btn2Label + '</strong><span>' + btn2Desc + '</span>';
+            row2.addEventListener('click', function() { overlay.remove(); onBtn2(); });
+            dialog.appendChild(row2);
+
+            // Cancel button.
+            var cancelBtn = document.createElement('button');
+            cancelBtn.type = 'button';
+            cancelBtn.className = 'vc-delete-dialog-btn vc-delete-dialog-btn-cancel';
+            cancelBtn.textContent = 'Cancel';
+            cancelBtn.addEventListener('click', function() { overlay.remove(); });
+            dialog.appendChild(cancelBtn);
+
+            overlay.appendChild(dialog);
+            overlay.addEventListener('click', function(e) {
+                if (e.target === overlay) overlay.remove();
+            });
+            document.body.appendChild(overlay);
+        }
+
+        function deleteConversation(convId, deleteforall) {
+            if (typeof deleteforall === 'undefined') deleteforall = true;
             require(['core/ajax'], function(Ajax) {
                 Ajax.call([{
                     methodname: 'format_videoclass_delete_chat_conversation',
-                    args: { conversationid: convId }
+                    args: { conversationid: convId, deleteforall: deleteforall }
                 }])[0].then(function(result) {
                     if (result && (result.success || (result.data && result.data.success))) {
-                        if (currentConversationId === convId) {
+                        if (deleteforall && currentConversationId === convId) {
                             currentConversationId = 0;
                             showWelcome();
                             setReadOnly(false);
