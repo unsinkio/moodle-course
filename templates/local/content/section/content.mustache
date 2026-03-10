@@ -342,6 +342,8 @@
                 }).then(function(results) {
                     if (results[0] && !results[0].error) {
                         card.remove();
+                        // Notify AI Tutor to re-enable Save button.
+                        document.dispatchEvent(new CustomEvent('vc-note-deleted', { detail: { noteid: noteid } }));
                         if (!listEl.querySelector('.videoclass-mynote-card')) {
                             var empty = document.createElement('div');
                             empty.className = 'videoclass-empty videoclass-mynotes-empty';
@@ -560,6 +562,7 @@
                 }])[0].then(function(result) {
                     btn.textContent = '\u2705 Saved!';
                     btn.classList.add('videoclass-tutor-save-done');
+                    btn.dataset.noteid = result.id;
                     // Notify My Notes tab to refresh.
                     document.dispatchEvent(new CustomEvent('vc-note-saved', { detail: result }));
                 }).catch(function(err) {
@@ -569,6 +572,20 @@
                 });
             });
         }
+
+        // Re-enable Save button when a note is deleted from My Notes.
+        document.addEventListener('vc-note-deleted', function(e) {
+            var deletedId = String(e.detail && e.detail.noteid);
+            if (!deletedId) return;
+            widget.querySelectorAll('.videoclass-tutor-save-note').forEach(function(btn) {
+                if (btn.dataset.noteid === deletedId) {
+                    btn.textContent = '\uD83D\uDCDD Save to Notes';
+                    btn.classList.remove('videoclass-tutor-save-done');
+                    btn.disabled = false;
+                    delete btn.dataset.noteid;
+                }
+            });
+        });
 
         function loadHistory() {
             if (historyLoaded) return;
