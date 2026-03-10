@@ -217,6 +217,10 @@ class section extends section_base
         $assessments = [];
         $qa = [];
 
+        // Build a cmid → modname map from modinfo so we can classify by module type.
+        $modinfo = $this->format->get_modinfo();
+        $cminfos = $modinfo->get_cms(); // Keyed by cmid.
+
         foreach ($cms as $cmwrapper) {
             if (empty($cmwrapper->cmitem)) {
                 $resources[] = $cmwrapper;
@@ -224,10 +228,11 @@ class section extends section_base
             }
 
             $cmitem = $cmwrapper->cmitem;
+
+            // Extract the display name for prefix-based classification.
             $label = '';
             if (!empty($cmitem->cmformat) && !empty($cmitem->cmformat->cmname)) {
                 $cmname = $cmitem->cmformat->cmname;
-                // cmname can be a renderable object — safely extract text.
                 if (is_string($cmname)) {
                     $label = strip_tags($cmname);
                 } elseif (is_object($cmname) && method_exists($cmname, 'get_displayvalue')) {
@@ -238,14 +243,19 @@ class section extends section_base
             }
 
             $bucket = $this->bucket_from_label($label);
+
+            // If no prefix match, classify by module type using modinfo.
             if ($bucket === '') {
-                $module = $cmitem->module ?? '';
-                if (in_array($module, self::QA_MODULES, true)) {
+                $cmid = $cmitem->id ?? 0;
+                $modname = '';
+                if ($cmid && isset($cminfos[$cmid])) {
+                    $modname = $cminfos[$cmid]->modname;
+                }
+
+                if (in_array($modname, self::QA_MODULES, true)) {
                     $bucket = 'qa';
-                } else if (in_array($module, self::ASSESSMENT_MODULES, true)) {
+                } else if (in_array($modname, self::ASSESSMENT_MODULES, true)) {
                     $bucket = 'assessments';
-                } else if (in_array($module, self::RESOURCE_MODULES, true)) {
-                    $bucket = 'resources';
                 } else {
                     $bucket = 'resources';
                 }
