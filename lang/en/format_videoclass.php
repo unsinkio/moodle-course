@@ -85,6 +85,15 @@ $string['aitutornoconversations'] = 'No conversations yet.';
 $string['aitutordeleteconversation'] = 'Delete conversation';
 $string['aitutordeleteconfirm'] = 'Delete this conversation? All messages will be lost.';
 $string['aitutorlogoalt'] = 'ATLAS AI Tutor';
+$string['aitutorrename'] = 'Rename conversation';
+$string['aitutorshare'] = 'Share conversation';
+$string['aitutorunshare'] = 'Unshare conversation';
+$string['aitutorsharedchats'] = 'Shared with me';
+$string['aitutornosharedchats'] = 'No shared conversations.';
+$string['aitutorsharedby'] = 'Shared by {$a}';
+$string['aitutorreadonlychat'] = 'This is a shared conversation (read-only).';
+$string['aitutorshared'] = 'Shared';
+$string['aitutorsharesuccess'] = 'Conversation shared successfully.';
 
 // Settings.
 $string['settings_aitutor_heading'] = 'AI Tutor';

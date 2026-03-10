@@ -24,9 +24,9 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version = 2026031001; // Conversation history + logo lightbox.
+$plugin->version = 2026031002; // Rename + share conversations.
 $plugin->requires = 2024100700; // Moodle 4.5.0.
 $plugin->component = 'format_videoclass';
 $plugin->maturity = MATURITY_ALPHA;
-$plugin->release = '0.5.0';
+$plugin->release = '0.6.0';
 $plugin->supported = [405, 500];

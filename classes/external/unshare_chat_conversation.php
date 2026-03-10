@@ -14,28 +14,27 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Delete an AI tutor conversation and all its messages.
- *
- * @package   format_videoclass
- * @copyright 2026 Atlantis University
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace format_videoclass\external;
 
 defined('MOODLE_INTERNAL') || die();
 
-use core_external\external_api;
-use core_external\external_function_parameters;
-use core_external\external_single_structure;
-use core_external\external_value;
+require_once("$CFG->libdir/externallib.php");
 
-class delete_chat_conversation extends external_api {
+use external_api;
+use external_function_parameters;
+use external_single_structure;
+use external_value;
+
+/**
+ * Remove all sharing from a conversation (unshare).
+ *
+ * @package   format_videoclass
+ */
+class unshare_chat_conversation extends external_api {
 
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters([
-            'conversationid' => new external_value(PARAM_INT, 'Conversation ID'),
+            'conversationid' => new external_value(PARAM_INT, 'Conversation ID to unshare'),
         ]);
     }
 
@@ -46,36 +45,16 @@ class delete_chat_conversation extends external_api {
             'conversationid' => $conversationid,
         ]);
 
-        $convid = $params['conversationid'];
-
-        // Verify ownership.
-        $conversation = $DB->get_record('format_videoclass_chat_conversations', [
-            'id'     => $convid,
+        $conv = $DB->get_record('format_videoclass_chat_conversations', [
+            'id'     => $params['conversationid'],
             'userid' => $USER->id,
-        ]);
+        ], '*', MUST_EXIST);
 
-        if (!$conversation) {
-            return ['success' => false];
-        }
-
-        $context = \context_course::instance($conversation->courseid);
+        $context = \context_course::instance($conv->courseid);
         self::validate_context($context);
 
-        // Delete sharing recipients.
         $DB->delete_records('format_videoclass_chat_conv_recipients', [
-            'conversationid' => $convid,
-        ]);
-
-        // Delete all messages in the conversation.
-        $DB->delete_records('format_videoclass_chat_history', [
-            'conversationid' => $convid,
-            'userid'         => $USER->id,
-        ]);
-
-        // Delete the conversation record.
-        $DB->delete_records('format_videoclass_chat_conversations', [
-            'id'     => $convid,
-            'userid' => $USER->id,
+            'conversationid' => $conv->id,
         ]);
 
         return ['success' => true];
@@ -83,7 +62,7 @@ class delete_chat_conversation extends external_api {
 
     public static function execute_returns(): external_single_structure {
         return new external_single_structure([
-            'success' => new external_value(PARAM_BOOL, 'Whether conversation was deleted'),
+            'success' => new external_value(PARAM_BOOL, 'Whether unsharing succeeded'),
         ]);
     }
 }

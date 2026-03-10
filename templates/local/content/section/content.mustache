@@ -68,6 +68,13 @@
                     <div class="videoclass-tutor-conv-list" id="videoclass-tutor-conv-list-{{id}}">
                         <div class="videoclass-tutor-conv-empty">{{#str}}aitutornoconversations, format_videoclass{{/str}}</div>
                     </div>
+                    {{! ── Shared With Me ── }}
+                    <div class="videoclass-tutor-shared-section" id="videoclass-tutor-shared-section-{{id}}">
+                        <div class="videoclass-tutor-sidebar-subheader">{{#str}}aitutorsharedchats, format_videoclass{{/str}}</div>
+                        <div class="videoclass-tutor-shared-list" id="videoclass-tutor-shared-list-{{id}}">
+                            <div class="videoclass-tutor-conv-empty">{{#str}}aitutornosharedchats, format_videoclass{{/str}}</div>
+                        </div>
+                    </div>
                 </div>
                 {{! ── Sidebar Backdrop (mobile only) ── }}
                 <div class="videoclass-tutor-sidebar-backdrop"></div>
@@ -78,6 +85,23 @@
                                 title="{{#str}}aitutorconversations, format_videoclass{{/str}}">&#x2630;</button>
                         <button type="button" class="videoclass-tutor-new-conv-mobile"
                                 title="{{#str}}aitutornewconversation, format_videoclass{{/str}}">&#x2B; New</button>
+                    </div>
+                    {{! ── Share Picker Overlay ── }}
+                    <div class="videoclass-tutor-share-picker" id="videoclass-tutor-share-picker-{{id}}" style="display:none;">
+                        <div class="videoclass-tutor-share-picker-header">
+                            <span>{{#str}}aitutorshare, format_videoclass{{/str}}</span>
+                            <button type="button" class="videoclass-tutor-share-picker-close">&times;</button>
+                        </div>
+                        <input type="text" class="videoclass-tutor-share-search"
+                               placeholder="Search students..." autocomplete="off">
+                        <div class="videoclass-tutor-share-results"></div>
+                        <div class="videoclass-tutor-share-chips"></div>
+                        <button type="button" class="videoclass-tutor-share-confirm"
+                                disabled>Share</button>
+                    </div>
+                    {{! ── Read-Only Notice ── }}
+                    <div class="videoclass-tutor-readonly-notice" id="videoclass-tutor-readonly-{{id}}" style="display:none;">
+                        {{#str}}aitutorreadonlychat, format_videoclass{{/str}}
                     </div>
                     <div class="videoclass-tutor-messages" id="videoclass-tutor-messages-{{id}}">
                         <div class="videoclass-tutor-msg videoclass-tutor-msg-assistant">
@@ -654,6 +678,25 @@
         });
 
         // ── Conversation Sidebar ──
+        var sharedListEl = widget.querySelector('.videoclass-tutor-shared-list');
+        var sharePickerEl = widget.querySelector('.videoclass-tutor-share-picker');
+        var readonlyNotice = widget.querySelector('.videoclass-tutor-readonly-notice');
+        var inputRowEl = widget.querySelector('.videoclass-tutor-input-row');
+        var isReadOnly = false;
+        var shareConvId = 0;
+        var shareRecipients = [];
+
+        function setReadOnly(readonly) {
+            isReadOnly = readonly;
+            if (readonly) {
+                inputRowEl.style.display = 'none';
+                readonlyNotice.style.display = 'block';
+            } else {
+                inputRowEl.style.display = '';
+                readonlyNotice.style.display = 'none';
+            }
+        }
+
         function loadConversations(selectId) {
             require(['core/ajax'], function(Ajax) {
                 Ajax.call([{
@@ -668,6 +711,7 @@
                     console.error('[VC Tutor] Load conversations error:', err);
                 });
             });
+            loadSharedConversations();
         }
 
         function renderConversationList(convs, selectId) {
@@ -691,8 +735,16 @@
                 var title = document.createElement('div');
                 title.className = 'videoclass-tutor-conv-title';
                 title.textContent = c.title;
-                title.title = c.title;
+                title.title = 'Double-click to rename';
                 info.appendChild(title);
+
+                // Shared badge.
+                if (c.shared) {
+                    var badge = document.createElement('span');
+                    badge.className = 'videoclass-tutor-conv-shared-badge';
+                    badge.textContent = 'Shared';
+                    info.appendChild(badge);
+                }
 
                 var time = document.createElement('div');
                 time.className = 'videoclass-tutor-conv-time';
@@ -700,9 +752,35 @@
                 time.textContent = d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                 info.appendChild(time);
 
+                // Actions row.
+                var actions = document.createElement('div');
+                actions.className = 'videoclass-tutor-conv-actions';
+
+                // Share / Unshare button.
+                var shareBtn = document.createElement('button');
+                shareBtn.type = 'button';
+                if (c.shared) {
+                    shareBtn.className = 'videoclass-tutor-conv-action-btn videoclass-tutor-conv-unshare';
+                    shareBtn.innerHTML = '&#x1F512;';
+                    shareBtn.title = 'Unshare conversation';
+                    shareBtn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        unshareConversation(c.id);
+                    });
+                } else {
+                    shareBtn.className = 'videoclass-tutor-conv-action-btn videoclass-tutor-conv-share';
+                    shareBtn.innerHTML = '&#x1F4E4;';
+                    shareBtn.title = 'Share conversation';
+                    shareBtn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        openSharePicker(c.id);
+                    });
+                }
+                actions.appendChild(shareBtn);
+
                 var delBtn = document.createElement('button');
                 delBtn.type = 'button';
-                delBtn.className = 'videoclass-tutor-conv-delete';
+                delBtn.className = 'videoclass-tutor-conv-action-btn videoclass-tutor-conv-delete';
                 delBtn.innerHTML = '&#x1F5D1;';
                 delBtn.title = 'Delete conversation';
                 delBtn.addEventListener('click', function(e) {
@@ -710,11 +788,19 @@
                     if (!confirm('Delete this conversation? All messages will be lost.')) return;
                     deleteConversation(c.id);
                 });
+                actions.appendChild(delBtn);
 
                 item.appendChild(info);
-                item.appendChild(delBtn);
+                item.appendChild(actions);
+
+                // Double-click to rename.
+                title.addEventListener('dblclick', function(e) {
+                    e.stopPropagation();
+                    startInlineRename(title, c.id, c.title);
+                });
 
                 item.addEventListener('click', function() {
+                    setReadOnly(false);
                     switchConversation(c.id);
                 });
 
@@ -722,12 +808,263 @@
             });
         }
 
+        // ── Inline Rename ──
+        function startInlineRename(titleEl, convId, currentTitle) {
+            var input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'videoclass-tutor-conv-rename-input';
+            input.value = currentTitle;
+            titleEl.textContent = '';
+            titleEl.appendChild(input);
+            input.focus();
+            input.select();
+
+            function finishRename() {
+                var newTitle = input.value.trim();
+                if (newTitle && newTitle !== currentTitle) {
+                    renameConversation(convId, newTitle);
+                    titleEl.textContent = newTitle;
+                    titleEl.title = 'Double-click to rename';
+                } else {
+                    titleEl.textContent = currentTitle;
+                    titleEl.title = 'Double-click to rename';
+                }
+            }
+
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
+                if (e.key === 'Escape') { input.value = currentTitle; input.blur(); }
+            });
+            input.addEventListener('blur', finishRename);
+            input.addEventListener('click', function(e) { e.stopPropagation(); });
+        }
+
+        function renameConversation(convId, newTitle) {
+            require(['core/ajax'], function(Ajax) {
+                Ajax.call([{
+                    methodname: 'format_videoclass_rename_chat_conversation',
+                    args: { conversationid: convId, title: newTitle }
+                }])[0].catch(function(err) {
+                    console.error('[VC Tutor] Rename error:', err);
+                });
+            });
+        }
+
+        // ── Share Picker ──
+        function openSharePicker(convId) {
+            shareConvId = convId;
+            shareRecipients = [];
+            sharePickerEl.style.display = 'block';
+            var searchInput = sharePickerEl.querySelector('.videoclass-tutor-share-search');
+            var resultsEl = sharePickerEl.querySelector('.videoclass-tutor-share-results');
+            var chipsEl = sharePickerEl.querySelector('.videoclass-tutor-share-chips');
+            var confirmBtn = sharePickerEl.querySelector('.videoclass-tutor-share-confirm');
+            searchInput.value = '';
+            resultsEl.innerHTML = '';
+            chipsEl.innerHTML = '';
+            confirmBtn.disabled = true;
+            searchInput.focus();
+
+            var searchTimer = null;
+            searchInput.oninput = function() {
+                clearTimeout(searchTimer);
+                var q = searchInput.value.trim();
+                if (q.length < 2) { resultsEl.innerHTML = ''; return; }
+                searchTimer = setTimeout(function() {
+                    require(['core/ajax'], function(Ajax) {
+                        Ajax.call([{
+                            methodname: 'format_videoclass_search_students',
+                            args: { courseid: parseInt(courseid), query: q }
+                        }])[0].then(function(users) {
+                            var data = users;
+                            if (users && users.data) data = users.data;
+                            resultsEl.innerHTML = '';
+                            (data || []).forEach(function(u) {
+                                if (shareRecipients.indexOf(u.id) !== -1) return;
+                                var opt = document.createElement('div');
+                                opt.className = 'videoclass-tutor-share-result';
+                                opt.textContent = u.fullname;
+                                opt.addEventListener('click', function() {
+                                    shareRecipients.push(u.id);
+                                    addChip(u.id, u.fullname, chipsEl, confirmBtn);
+                                    resultsEl.innerHTML = '';
+                                    searchInput.value = '';
+                                    searchInput.focus();
+                                });
+                                resultsEl.appendChild(opt);
+                            });
+                        });
+                    });
+                }, 300);
+            };
+
+            confirmBtn.onclick = function() {
+                if (shareRecipients.length === 0) return;
+                shareConversation(shareConvId, shareRecipients);
+                closeSharePicker();
+            };
+        }
+
+        function addChip(uid, name, chipsEl, confirmBtn) {
+            var chip = document.createElement('span');
+            chip.className = 'videoclass-tutor-share-chip';
+            chip.textContent = name;
+            var rm = document.createElement('button');
+            rm.type = 'button';
+            rm.className = 'videoclass-tutor-share-chip-remove';
+            rm.innerHTML = '&times;';
+            rm.addEventListener('click', function() {
+                shareRecipients = shareRecipients.filter(function(id) { return id !== uid; });
+                chip.remove();
+                confirmBtn.disabled = shareRecipients.length === 0;
+            });
+            chip.appendChild(rm);
+            chipsEl.appendChild(chip);
+            confirmBtn.disabled = false;
+        }
+
+        function closeSharePicker() {
+            sharePickerEl.style.display = 'none';
+            shareConvId = 0;
+            shareRecipients = [];
+        }
+
+        // Close button.
+        sharePickerEl.querySelector('.videoclass-tutor-share-picker-close').addEventListener('click', closeSharePicker);
+
+        function shareConversation(convId, recipients) {
+            require(['core/ajax'], function(Ajax) {
+                Ajax.call([{
+                    methodname: 'format_videoclass_share_chat_conversation',
+                    args: { conversationid: convId, recipients: recipients }
+                }])[0].then(function() {
+                    loadConversations(currentConversationId);
+                }).catch(function(err) {
+                    console.error('[VC Tutor] Share error:', err);
+                });
+            });
+        }
+
+        function unshareConversation(convId) {
+            require(['core/ajax'], function(Ajax) {
+                Ajax.call([{
+                    methodname: 'format_videoclass_unshare_chat_conversation',
+                    args: { conversationid: convId }
+                }])[0].then(function() {
+                    loadConversations(currentConversationId);
+                }).catch(function(err) {
+                    console.error('[VC Tutor] Unshare error:', err);
+                });
+            });
+        }
+
+        // ── Shared Conversations ──
+        function loadSharedConversations() {
+            require(['core/ajax'], function(Ajax) {
+                Ajax.call([{
+                    methodname: 'format_videoclass_get_shared_conversations',
+                    args: { courseid: parseInt(courseid), sectionid: parseInt(sectionid) }
+                }])[0].then(function(result) {
+                    var convs = result;
+                    if (result && result.data) convs = result.data;
+                    renderSharedConversationList(convs || []);
+                }).catch(function(err) {
+                    console.error('[VC Tutor] Load shared conversations error:', err);
+                });
+            });
+        }
+
+        function renderSharedConversationList(convs) {
+            if (!sharedListEl) return;
+            sharedListEl.innerHTML = '';
+            if (!convs || convs.length === 0) {
+                sharedListEl.innerHTML = '<div class="videoclass-tutor-conv-empty">No shared conversations.</div>';
+                return;
+            }
+            convs.forEach(function(c) {
+                var item = document.createElement('div');
+                item.className = 'videoclass-tutor-conv-item videoclass-tutor-conv-shared';
+                item.dataset.convid = c.id;
+
+                var info = document.createElement('div');
+                info.style.flex = '1';
+                info.style.minWidth = '0';
+
+                var title = document.createElement('div');
+                title.className = 'videoclass-tutor-conv-title';
+                title.textContent = c.title;
+                title.title = c.title;
+                info.appendChild(title);
+
+                var owner = document.createElement('div');
+                owner.className = 'videoclass-tutor-conv-owner';
+                owner.textContent = 'by ' + c.ownername;
+                info.appendChild(owner);
+
+                item.appendChild(info);
+
+                item.addEventListener('click', function() {
+                    switchToSharedConversation(c.id);
+                });
+
+                sharedListEl.appendChild(item);
+            });
+        }
+
+        function switchToSharedConversation(convId) {
+            currentConversationId = convId;
+            setReadOnly(true);
+            // Deselect own conversations, highlight shared.
+            convListEl.querySelectorAll('.videoclass-tutor-conv-item').forEach(function(el) {
+                el.classList.remove('active');
+            });
+            sharedListEl.querySelectorAll('.videoclass-tutor-conv-item').forEach(function(el) {
+                el.classList.toggle('active', parseInt(el.dataset.convid) === convId);
+            });
+            // Load messages (read-only, no save-to-notes buttons).
+            messagesEl.innerHTML = '';
+            require(['core/ajax'], function(Ajax) {
+                Ajax.call([{
+                    methodname: 'format_videoclass_get_chat_history',
+                    args: { courseid: parseInt(courseid), sectionid: parseInt(sectionid), conversationid: convId }
+                }])[0].then(function(result) {
+                    var msgs = result;
+                    if (result && result.data) msgs = result.data;
+                    messagesEl.innerHTML = '';
+                    if (msgs && msgs.length > 0) {
+                        msgs.forEach(function(m) {
+                            // Render without save-to-notes.
+                            var msgDiv = document.createElement('div');
+                            msgDiv.className = 'videoclass-tutor-msg videoclass-tutor-msg-' + m.role;
+                            var content = document.createElement('div');
+                            content.className = 'videoclass-tutor-msg-content';
+                            content.textContent = m.message;
+                            msgDiv.appendChild(content);
+                            messagesEl.appendChild(msgDiv);
+                        });
+                    } else {
+                        appendMessage('assistant', 'This shared conversation has no messages.');
+                    }
+                    scrollToBottom();
+                }).catch(function(err) {
+                    console.error('[VC Tutor] Load shared history error:', err);
+                });
+            });
+            closeSidebarDrawer();
+        }
+
         function switchConversation(convId) {
             currentConversationId = convId;
-            // Highlight active.
+            setReadOnly(false);
+            // Highlight active in own list, deselect shared.
             convListEl.querySelectorAll('.videoclass-tutor-conv-item').forEach(function(el) {
                 el.classList.toggle('active', parseInt(el.dataset.convid) === convId);
             });
+            if (sharedListEl) {
+                sharedListEl.querySelectorAll('.videoclass-tutor-conv-item').forEach(function(el) {
+                    el.classList.remove('active');
+                });
+            }
             // Load messages.
             showWelcome();
             require(['core/ajax'], function(Ajax) {
@@ -760,6 +1097,7 @@
                         if (currentConversationId === convId) {
                             currentConversationId = 0;
                             showWelcome();
+                            setReadOnly(false);
                         }
                         loadConversations(currentConversationId);
                     }
@@ -778,9 +1116,12 @@
         if (newConvBtn) {
             newConvBtn.addEventListener('click', function() {
                 currentConversationId = 0;
+                setReadOnly(false);
                 showWelcome();
-                // Deselect all sidebar items.
                 convListEl.querySelectorAll('.videoclass-tutor-conv-item').forEach(function(el) {
+                    el.classList.remove('active');
+                });
+                if (sharedListEl) sharedListEl.querySelectorAll('.videoclass-tutor-conv-item').forEach(function(el) {
                     el.classList.remove('active');
                 });
                 inputEl.focus();
@@ -876,7 +1217,7 @@
 
         function sendMessage() {
             var text = inputEl.value.trim();
-            if (!text || sending) return;
+            if (!text || sending || isReadOnly) return;
             sending = true;
             inputEl.value = '';
             inputEl.style.height = 'auto';

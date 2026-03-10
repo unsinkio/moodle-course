@@ -55,6 +55,22 @@
         <INDEX NAME="courseid_sectionid_userid_idx" UNIQUE="false" FIELDS="courseid, sectionid, userid"/>
       </INDEXES>
     </TABLE>
+    <TABLE NAME="format_videoclass_chat_conv_recipients" COMMENT="Sharing links: who a conversation has been shared with">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="conversationid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="FK to chat_conversations.id"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="FK to user.id (recipient)"/>
+        <FIELD NAME="timeshared" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="conversationid_fk" TYPE="foreign" FIELDS="conversationid" REFTABLE="format_videoclass_chat_conversations" REFFIELDS="id"/>
+        <KEY NAME="userid_fk" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="conversationid_userid_idx" UNIQUE="true" FIELDS="conversationid, userid"/>
+      </INDEXES>
+    </TABLE>
     <TABLE NAME="format_videoclass_chat_history" COMMENT="AI tutor chat messages per user per section">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>

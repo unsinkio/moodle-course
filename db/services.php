@@ -112,4 +112,28 @@ $functions = [
         'type'        => 'write',
         'ajax'        => true,
     ],
+    'format_videoclass_rename_chat_conversation' => [
+        'classname'   => 'format_videoclass\\external\\rename_chat_conversation',
+        'description' => 'Rename an AI tutor conversation.',
+        'type'        => 'write',
+        'ajax'        => true,
+    ],
+    'format_videoclass_share_chat_conversation' => [
+        'classname'   => 'format_videoclass\\external\\share_chat_conversation',
+        'description' => 'Share an AI tutor conversation with classmates.',
+        'type'        => 'write',
+        'ajax'        => true,
+    ],
+    'format_videoclass_unshare_chat_conversation' => [
+        'classname'   => 'format_videoclass\\external\\unshare_chat_conversation',
+        'description' => 'Remove all sharing from a conversation.',
+        'type'        => 'write',
+        'ajax'        => true,
+    ],
+    'format_videoclass_get_shared_conversations' => [
+        'classname'   => 'format_videoclass\\external\\get_shared_conversations',
+        'description' => 'Get AI tutor conversations shared with the current user.',
+        'type'        => 'read',
+        'ajax'        => true,
+    ],
 ];

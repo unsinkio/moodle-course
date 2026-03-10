@@ -180,5 +180,22 @@ function xmldb_format_videoclass_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026031001, 'format', 'videoclass');
     }
 
+    // Step 4 – Conversation sharing recipients table.
+    if ($oldversion < 2026031002) {
+        $table = new xmldb_table('format_videoclass_chat_conv_recipients');
+        if (!$dbman->table_exists($table)) {
+            $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+            $table->add_field('conversationid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+            $table->add_field('userid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+            $table->add_field('timeshared', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+            $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+            $table->add_key('conversationid_fk', XMLDB_KEY_FOREIGN, ['conversationid'], 'format_videoclass_chat_conversations', ['id']);
+            $table->add_key('userid_fk', XMLDB_KEY_FOREIGN, ['userid'], 'user', ['id']);
+            $table->add_index('conversationid_userid_idx', XMLDB_INDEX_UNIQUE, ['conversationid', 'userid']);
+            $dbman->create_table($table);
+        }
+        upgrade_plugin_savepoint(true, 2026031002, 'format', 'videoclass');
+    }
+
     return true;
 }
