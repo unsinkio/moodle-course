@@ -61,10 +61,11 @@
                 </div>
             </div>
             <div class="videoclass-tutor-input-row">
-                <input type="text" class="videoclass-tutor-input"
-                       id="videoclass-tutor-input-{{id}}"
-                       placeholder="{{#str}}aitutorplaceholder, format_videoclass{{/str}}"
-                       autocomplete="off">
+                <textarea class="videoclass-tutor-input"
+                          id="videoclass-tutor-input-{{id}}"
+                          placeholder="{{#str}}aitutorplaceholder, format_videoclass{{/str}}"
+                          rows="1"
+                          autocomplete="off"></textarea>
                 <button type="button" class="videoclass-tutor-send"
                         id="videoclass-tutor-send-{{id}}">{{#str}}aitutorsend, format_videoclass{{/str}}</button>
             </div>
@@ -617,6 +618,7 @@
             if (!text || sending) return;
             sending = true;
             inputEl.value = '';
+            inputEl.style.height = 'auto';
             sendBtn.disabled = true;
 
             appendMessage('user', text);
@@ -658,6 +660,12 @@
                 e.preventDefault();
                 sendMessage();
             }
+        });
+
+        // Auto-resize textarea as user types.
+        inputEl.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
         });
 
         // Clear history.
