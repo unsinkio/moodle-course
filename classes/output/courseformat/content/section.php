@@ -280,31 +280,13 @@ class section extends section_base
                 }
             }
 
-            // Build move URLs for reordering.
-            $moveupurl = '';
-            $movedownurl = '';
-            if ($editing) {
-                $moveupurl = (new \moodle_url('/course/mod.php', [
-                    'id' => $cminfo->id,
-                    'move' => -1,
-                    'sesskey' => sesskey(),
-                ]))->out(false);
-                $movedownurl = (new \moodle_url('/course/mod.php', [
-                    'id' => $cminfo->id,
-                    'move' => 1,
-                    'sesskey' => sesskey(),
-                ]))->out(false);
-            }
-
             $item = (object) [
-                'id'          => $cminfo->id,
-                'url'         => $url,
-                'name'        => format_string($name),
-                'icon'        => $icon,
-                'editing'     => $editing,
-                'cmcontrols'  => $cmcontrols,
-                'moveupurl'   => $moveupurl,
-                'movedownurl' => $movedownurl,
+                'id'         => $cminfo->id,
+                'url'        => $url,
+                'name'       => format_string($name),
+                'icon'       => $icon,
+                'editing'    => $editing,
+                'cmcontrols' => $cmcontrols,
             ];
 
             switch ($bucket) {
@@ -319,16 +301,6 @@ class section extends section_base
                     break;
             }
         }
-
-        // Mark first/last items in each bucket so the template can hide boundary arrows.
-        foreach ([&$resources, &$assessments, &$qa] as &$bucket) {
-            $count = count($bucket);
-            for ($i = 0; $i < $count; $i++) {
-                $bucket[$i]->isfirst = ($i === 0);
-                $bucket[$i]->islast = ($i === $count - 1);
-            }
-        }
-        unset($bucket);
 
         return [$resources, $assessments, $qa];
     }
