@@ -267,6 +267,18 @@ class section extends section_base
 
             // Build controls for editing mode.
             $cmcontrols = '';
+            if ($editing) {
+                try {
+                    $controlmenu = new \core_courseformat\output\local\content\cm\controlmenu(
+                        $format,
+                        $section,
+                        $cminfo
+                    );
+                    $cmcontrols = $output->render($controlmenu);
+                } catch (\Throwable $e) {
+                    $cmcontrols = '';
+                }
+            }
 
             $item = (object) [
                 'id'         => $cminfo->id,

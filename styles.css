@@ -399,6 +399,68 @@
     margin-left: 12px;
 }
 
+/* ── Course Module Controls (Editing Mode) ── */
+.videoclass-cm-controls {
+    flex-shrink: 0;
+    margin-left: auto;
+    position: relative;
+    z-index: 5;
+}
+
+/* Allow dropdown to overflow the activity card in editing mode */
+.videoclass-activity:has(.videoclass-cm-controls) {
+    overflow: visible;
+}
+
+/* Style the Moodle action menu trigger (three-dot icon) */
+.videoclass-cm-controls .action-menu .dropdown-toggle,
+.videoclass-cm-controls .action-menu .action-menu-trigger {
+    background: none;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    padding: 4px 8px;
+    color: var(--vc-muted, #64748b);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    line-height: 1;
+}
+
+.videoclass-cm-controls .action-menu .dropdown-toggle:hover,
+.videoclass-cm-controls .action-menu .action-menu-trigger:hover {
+    background: rgba(249, 115, 22, 0.08);
+    border-color: rgba(249, 115, 22, 0.2);
+    color: #ea580c;
+}
+
+/* Style the dropdown menu */
+.videoclass-cm-controls .action-menu .dropdown-menu {
+    border: 1px solid rgba(15, 23, 42, 0.1);
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(15, 23, 42, 0.12);
+    padding: 6px;
+    min-width: 180px;
+    z-index: 1050;
+}
+
+.videoclass-cm-controls .action-menu .dropdown-menu .dropdown-item {
+    font-size: 0.85rem;
+    padding: 8px 14px;
+    border-radius: 8px;
+    color: #334155;
+    transition: background 0.15s;
+}
+
+.videoclass-cm-controls .action-menu .dropdown-menu .dropdown-item:hover {
+    background: rgba(249, 115, 22, 0.06);
+    color: #ea580c;
+}
+
+.videoclass-cm-controls .action-menu .dropdown-menu .dropdown-item .icon {
+    width: 16px;
+    height: 16px;
+    margin-right: 8px;
+}
+
 /* ── Personal Notes (My Notes) ── */
 .videoclass-mynotes-form {
     display: flex;
