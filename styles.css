@@ -400,9 +400,45 @@
 }
 
 /* ── Course Module Controls (Editing Mode) ── */
-.videoclass-cm-controls {
+.videoclass-cm-actions {
     flex-shrink: 0;
     margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.videoclass-cm-move {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.videoclass-cm-move-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 18px;
+    font-size: 0.6rem;
+    color: var(--vc-muted, #64748b);
+    background: rgba(15, 23, 42, 0.04);
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 5px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    line-height: 1;
+}
+
+.videoclass-cm-move-btn:hover {
+    color: #ea580c;
+    background: rgba(249, 115, 22, 0.08);
+    border-color: rgba(249, 115, 22, 0.2);
+    text-decoration: none;
+}
+
+.videoclass-cm-controls {
+    flex-shrink: 0;
     position: relative;
     z-index: 5;
 }

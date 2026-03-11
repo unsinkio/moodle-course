@@ -172,7 +172,13 @@
                             <div class="videoclass-activity-icon">{{{icon}}}</div>
                             <a href="{{url}}" class="videoclass-activity-link">{{name}}</a>
                             {{#editing}}
-                                <div class="videoclass-cm-controls">{{{cmcontrols}}}</div>
+                                <div class="videoclass-cm-actions">
+                                    <div class="videoclass-cm-move">
+                                        {{^isfirst}}<a href="{{moveupurl}}" class="videoclass-cm-move-btn" title="Move up">&#x25B2;</a>{{/isfirst}}
+                                        {{^islast}}<a href="{{movedownurl}}" class="videoclass-cm-move-btn" title="Move down">&#x25BC;</a>{{/islast}}
+                                    </div>
+                                    <div class="videoclass-cm-controls">{{{cmcontrols}}}</div>
+                                </div>
                             {{/editing}}
                         </div>
                     {{/videoclass.resources}}
@@ -188,7 +194,13 @@
                             <div class="videoclass-activity-icon">{{{icon}}}</div>
                             <a href="{{url}}" class="videoclass-activity-link">{{name}}</a>
                             {{#editing}}
-                                <div class="videoclass-cm-controls">{{{cmcontrols}}}</div>
+                                <div class="videoclass-cm-actions">
+                                    <div class="videoclass-cm-move">
+                                        {{^isfirst}}<a href="{{moveupurl}}" class="videoclass-cm-move-btn" title="Move up">&#x25B2;</a>{{/isfirst}}
+                                        {{^islast}}<a href="{{movedownurl}}" class="videoclass-cm-move-btn" title="Move down">&#x25BC;</a>{{/islast}}
+                                    </div>
+                                    <div class="videoclass-cm-controls">{{{cmcontrols}}}</div>
+                                </div>
                             {{/editing}}
                         </div>
                     {{/videoclass.assessments}}
@@ -204,7 +216,13 @@
                             <div class="videoclass-activity-icon">{{{icon}}}</div>
                             <a href="{{url}}" class="videoclass-activity-link">{{name}}</a>
                             {{#editing}}
-                                <div class="videoclass-cm-controls">{{{cmcontrols}}}</div>
+                                <div class="videoclass-cm-actions">
+                                    <div class="videoclass-cm-move">
+                                        {{^isfirst}}<a href="{{moveupurl}}" class="videoclass-cm-move-btn" title="Move up">&#x25B2;</a>{{/isfirst}}
+                                        {{^islast}}<a href="{{movedownurl}}" class="videoclass-cm-move-btn" title="Move down">&#x25BC;</a>{{/islast}}
+                                    </div>
+                                    <div class="videoclass-cm-controls">{{{cmcontrols}}}</div>
+                                </div>
                             {{/editing}}
                         </div>
                     {{/videoclass.qa}}
