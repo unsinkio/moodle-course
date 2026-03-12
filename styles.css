@@ -419,6 +419,48 @@
     margin-bottom: 0;
 }
 
+/* ── Video Activity Items (Inline Playback) ── */
+.videoclass-activity-video {
+    cursor: pointer;
+}
+
+.videoclass-video-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.videoclass-video-play-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f97316, #ea580c);
+    color: #fff;
+    font-size: 0.65rem;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(249, 115, 22, 0.3);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.videoclass-activity-video:hover .videoclass-video-play-badge {
+    transform: scale(1.15);
+    box-shadow: 0 4px 14px rgba(249, 115, 22, 0.45);
+}
+
+.videoclass-activity-video.is-playing {
+    background: linear-gradient(135deg, #fff7ed 0%, #fef3e2 100%);
+    border-color: rgba(249, 115, 22, 0.35);
+    box-shadow: 0 4px 16px rgba(249, 115, 22, 0.15);
+}
+
+.videoclass-activity-video.is-playing::before {
+    opacity: 1;
+}
+
 /* ── Course Module Controls (Editing Mode) ── */
 .videoclass-cm-controls {
     flex-shrink: 0;

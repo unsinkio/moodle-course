@@ -168,18 +168,33 @@
                 {{! ── Tab 1: Resources ── }}
                 <section class="videoclass-tab-panel" role="tabpanel" aria-labelledby="videoclass-tab-{{id}}-resources">
                     {{#videoclass.resources}}
-                        <div class="videoclass-activity" data-activity-id="{{id}}">
-                            <div class="videoclass-activity-icon">{{{icon}}}</div>
-                            {{#hasurl}}
-                                <a href="{{url}}" class="videoclass-activity-link">{{name}}</a>
-                            {{/hasurl}}
-                            {{^hasurl}}
-                                <div class="videoclass-activity-label">{{{content}}}</div>
-                            {{/hasurl}}
-                            {{#editing}}
-                                <div class="videoclass-cm-controls">{{{cmcontrols}}}</div>
-                            {{/editing}}
-                        </div>
+                        {{#isvideo}}
+                            <div class="videoclass-activity videoclass-activity-video" data-activity-id="{{id}}">
+                                <div class="videoclass-activity-icon">{{{icon}}}</div>
+                                <span class="videoclass-activity-link videoclass-video-trigger">
+                                    <span class="videoclass-video-play-badge">&#9654;</span>
+                                    {{name}}
+                                </span>
+                                {{#editing}}
+                                    <div class="videoclass-cm-controls">{{{cmcontrols}}}</div>
+                                {{/editing}}
+                                <div class="videoclass-video-content-data" style="display:none;">{{{content}}}</div>
+                            </div>
+                        {{/isvideo}}
+                        {{^isvideo}}
+                            <div class="videoclass-activity" data-activity-id="{{id}}">
+                                <div class="videoclass-activity-icon">{{{icon}}}</div>
+                                {{#hasurl}}
+                                    <a href="{{url}}" class="videoclass-activity-link">{{name}}</a>
+                                {{/hasurl}}
+                                {{^hasurl}}
+                                    <div class="videoclass-activity-label">{{{content}}}</div>
+                                {{/hasurl}}
+                                {{#editing}}
+                                    <div class="videoclass-cm-controls">{{{cmcontrols}}}</div>
+                                {{/editing}}
+                            </div>
+                        {{/isvideo}}
                     {{/videoclass.resources}}
                     {{^videoclass.resources}}
                         <div class="videoclass-empty">{{#str}}noresources, format_videoclass{{/str}}</div>
@@ -326,6 +341,56 @@
 </div>
 {{#js}}
 (function() {
+    // ── Inline Video Playback ──
+    // When a video item in Resources is clicked, swap the central video container content.
+    document.querySelectorAll('.videoclass-activity-video').forEach(function(card) {
+        card.addEventListener('click', function(e) {
+            // Don't intercept clicks on editing controls.
+            if (e.target.closest('.videoclass-cm-controls')) return;
+
+            var contentData = card.querySelector('.videoclass-video-content-data');
+            if (!contentData) return;
+
+            // Find the nearest video container (walk up to .videoclass-section-content).
+            var sectionContent = card.closest('.videoclass-section-content');
+            if (!sectionContent) return;
+
+            var videoContainer = sectionContent.querySelector('.videoclass-video');
+            if (!videoContainer) return;
+
+            // Find or create the embed div.
+            var embedDiv = videoContainer.querySelector('.videoclass-video-embed');
+            var emptyDiv = videoContainer.querySelector('.videoclass-video-empty');
+            if (!embedDiv) {
+                embedDiv = document.createElement('div');
+                embedDiv.className = 'videoclass-video-embed';
+                // Insert after the edit row if present, otherwise at the end.
+                var editRow = videoContainer.querySelector('.videoclass-edit-row');
+                if (editRow) {
+                    editRow.after(embedDiv);
+                } else {
+                    videoContainer.appendChild(embedDiv);
+                }
+            }
+
+            // Swap content.
+            embedDiv.innerHTML = contentData.innerHTML;
+            embedDiv.style.display = '';
+
+            // Hide the empty placeholder if present.
+            if (emptyDiv) emptyDiv.style.display = 'none';
+
+            // Highlight currently playing item.
+            sectionContent.querySelectorAll('.videoclass-activity-video').forEach(function(v) {
+                v.classList.remove('is-playing');
+            });
+            card.classList.add('is-playing');
+
+            // Smooth scroll to the video container.
+            videoContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+    });
+
     var myContainers = document.querySelectorAll('.videoclass-mynotes');
     myContainers.forEach(function(container) {
         var courseid = container.dataset.courseid;

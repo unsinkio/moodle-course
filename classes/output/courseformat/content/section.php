@@ -279,12 +279,17 @@ class section extends section_base
 
             // For labels (Text and media area), extract inline content.
             $content = '';
+            $isvideo = false;
             if ($cminfo->modname === 'label') {
                 $content = format_text(
                     $cminfo->content ?? '',
                     FORMAT_HTML,
                     ['context' => \context_module::instance($cminfo->id)]
                 );
+                // Detect if the label contains video/iframe/embed content.
+                if (preg_match('/<(iframe|video|embed|source)\b/i', $content)) {
+                    $isvideo = true;
+                }
             }
 
             $item = (object) [
@@ -294,6 +299,7 @@ class section extends section_base
                 'icon'       => $icon,
                 'hasurl'     => !empty($url),
                 'content'    => $content,
+                'isvideo'    => $isvideo,
                 'editing'    => $editing,
                 'cmcontrols' => $cmcontrols,
             ];
