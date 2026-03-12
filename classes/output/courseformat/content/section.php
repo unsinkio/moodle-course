@@ -234,10 +234,7 @@ class section extends section_base
                 continue;
             }
 
-            // Skip labels (they have no URL).
-            if ($cminfo->modname === 'label') {
-                continue;
-            }
+
 
             $name = $cminfo->name;
 
@@ -280,11 +277,23 @@ class section extends section_base
                 }
             }
 
+            // For labels (Text and media area), extract inline content.
+            $content = '';
+            if ($cminfo->modname === 'label') {
+                $content = format_text(
+                    $cminfo->content ?? '',
+                    FORMAT_HTML,
+                    ['context' => \context_module::instance($cminfo->id)]
+                );
+            }
+
             $item = (object) [
                 'id'         => $cminfo->id,
                 'url'        => $url,
                 'name'       => format_string($name),
                 'icon'       => $icon,
+                'hasurl'     => !empty($url),
+                'content'    => $content,
                 'editing'    => $editing,
                 'cmcontrols' => $cmcontrols,
             ];

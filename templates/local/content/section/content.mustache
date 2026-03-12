@@ -170,7 +170,12 @@
                     {{#videoclass.resources}}
                         <div class="videoclass-activity" data-activity-id="{{id}}">
                             <div class="videoclass-activity-icon">{{{icon}}}</div>
-                            <a href="{{url}}" class="videoclass-activity-link">{{name}}</a>
+                            {{#hasurl}}
+                                <a href="{{url}}" class="videoclass-activity-link">{{name}}</a>
+                            {{/hasurl}}
+                            {{^hasurl}}
+                                <div class="videoclass-activity-label">{{{content}}}</div>
+                            {{/hasurl}}
                             {{#editing}}
                                 <div class="videoclass-cm-controls">{{{cmcontrols}}}</div>
                             {{/editing}}
@@ -186,7 +191,12 @@
                     {{#videoclass.assessments}}
                         <div class="videoclass-activity" data-activity-id="{{id}}">
                             <div class="videoclass-activity-icon">{{{icon}}}</div>
-                            <a href="{{url}}" class="videoclass-activity-link">{{name}}</a>
+                            {{#hasurl}}
+                                <a href="{{url}}" class="videoclass-activity-link">{{name}}</a>
+                            {{/hasurl}}
+                            {{^hasurl}}
+                                <div class="videoclass-activity-label">{{{content}}}</div>
+                            {{/hasurl}}
                             {{#editing}}
                                 <div class="videoclass-cm-controls">{{{cmcontrols}}}</div>
                             {{/editing}}
@@ -202,7 +212,12 @@
                     {{#videoclass.qa}}
                         <div class="videoclass-activity" data-activity-id="{{id}}">
                             <div class="videoclass-activity-icon">{{{icon}}}</div>
-                            <a href="{{url}}" class="videoclass-activity-link">{{name}}</a>
+                            {{#hasurl}}
+                                <a href="{{url}}" class="videoclass-activity-link">{{name}}</a>
+                            {{/hasurl}}
+                            {{^hasurl}}
+                                <div class="videoclass-activity-label">{{{content}}}</div>
+                            {{/hasurl}}
                             {{#editing}}
                                 <div class="videoclass-cm-controls">{{{cmcontrols}}}</div>
                             {{/editing}}

@@ -399,6 +399,26 @@
     margin-left: 12px;
 }
 
+/* ── Inline Label Items (Text and media area) ── */
+.videoclass-activity-label {
+    flex: 1;
+    font-size: 0.9rem;
+    color: var(--vc-ink, #1e293b);
+    line-height: 1.55;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.videoclass-activity-label img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+}
+
+.videoclass-activity-label p:last-child {
+    margin-bottom: 0;
+}
+
 /* ── Course Module Controls (Editing Mode) ── */
 .videoclass-cm-controls {
     flex-shrink: 0;
