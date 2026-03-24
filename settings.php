@@ -17,6 +17,9 @@
 /**
  * VideoClass format settings.
  *
+ * Adds configuration under:
+ * Site Administration → AU Nexus → VideoClass
+ *
  * @package   format_videoclass
  * @copyright 2026 Atlantis University
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -24,7 +27,21 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-if ($ADMIN->fulltree) {
+if ($hassiteconfig) {
+
+    // ── AU Nexus category (fallback if local_aunexus not installed) ───
+    if (!$ADMIN->locate('aunexus')) {
+        $ADMIN->add('root', new admin_category('aunexus', 'AU Nexus'), 'users');
+    }
+
+    // ── VideoClass sub-category ─────────────────────────────────────
+    $ADMIN->add('aunexus', new admin_category(
+        'aunexus_videoclass',
+        get_string('pluginname', 'format_videoclass')
+    ));
+
+    // ── Settings page (inside the sub-category) ─────────────────────
+    $settings = new admin_settingpage('format_videoclass_settings', get_string('pluginname', 'format_videoclass'));
 
     // ── AI Tutor heading ──
     $settings->add(new admin_setting_heading(
@@ -64,4 +81,9 @@ if ($ADMIN->fulltree) {
         get_string('settings_aitutor_prompt_desc', 'format_videoclass'),
         $defaultprompt
     ));
+
+    $ADMIN->add('aunexus_videoclass', $settings);
+
+    // Prevent Moodle from creating a default settings link under Course formats.
+    $settings = null;
 }
