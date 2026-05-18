@@ -69,6 +69,7 @@ if ($hassiteconfig) {
 
     // AI Tutor System Prompt.
     $defaultprompt = 'You are an AI academic tutor for the course "{coursename}". '
+        . 'The summary of the course is: "{coursesummary}". '
         . 'The student is currently on section "{sectionname}". '
         . 'Use the following section resources as context to help the student:'
         . "\n\n{resources}\n\n"

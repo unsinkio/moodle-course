@@ -117,13 +117,14 @@ class send_chat_message extends external_api {
         }
 
         // 5. Build system prompt from configurable template.
-        $course = $DB->get_record('course', ['id' => $courseid], 'fullname', MUST_EXIST);
+        $course = $DB->get_record('course', ['id' => $courseid], 'fullname, summary', MUST_EXIST);
         $section = $DB->get_record('course_sections', ['id' => $sectionid], 'name, section', MUST_EXIST);
         $sectionname = !empty($section->name) ? $section->name : get_string('sectionname', 'format_videoclass') . ' ' . $section->section;
 
         $prompttemplate = get_config('format_videoclass', 'aitutor_prompt');
         if (empty($prompttemplate)) {
             $prompttemplate = 'You are an AI academic tutor for the course "{coursename}". '
+                . 'The summary of the course is: "{coursesummary}". '
                 . 'The student is currently on section "{sectionname}". '
                 . 'Use the following section resources as context to help the student:'
                 . "\n\n{resources}\n\n"
@@ -132,8 +133,8 @@ class send_chat_message extends external_api {
         }
 
         $systemprompt = str_replace(
-            ['{coursename}', '{sectionname}', '{resources}'],
-            [$course->fullname, $sectionname, $resourcecontext],
+            ['{coursename}', '{coursesummary}', '{sectionname}', '{resources}'],
+            [format_string($course->fullname), strip_tags($course->summary), $sectionname, $resourcecontext],
             $prompttemplate
         );
 
