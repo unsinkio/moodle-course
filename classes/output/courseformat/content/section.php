@@ -292,6 +292,18 @@ class section extends section_base
                 }
             }
 
+            // For URL modules, check if they point to a video service.
+            if ($cminfo->modname === 'url' && !$isvideo) {
+                $externalurl = $DB->get_field('url', 'externalurl', ['id' => $cminfo->instance]);
+                if ($externalurl) {
+                    $embedhtml = $this->url_to_video_embed($externalurl);
+                    if ($embedhtml) {
+                        $isvideo = true;
+                        $content = $embedhtml;
+                    }
+                }
+            }
+
             $item = (object) [
                 'id'         => $cminfo->id,
                 'url'        => $url,
@@ -415,6 +427,41 @@ class section extends section_base
 
         if (preg_match('/^\[(recurso|recursos|resource|material)\]/i', $label)) {
             return 'resources';
+        }
+
+        return '';
+    }
+
+    /**
+     * Convert a video service URL to an embeddable iframe.
+     *
+     * Supports YouTube and Vimeo URLs.
+     *
+     * @param string $url
+     * @return string  Embed HTML or empty string if not a known video URL.
+     */
+    private function url_to_video_embed(string $url): string
+    {
+        // YouTube: youtube.com/watch?v=ID, youtu.be/ID, youtube.com/embed/ID
+        if (preg_match(
+            '/(?:youtube\.com\/(?:watch\?.*v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/',
+            $url,
+            $m
+        )) {
+            $vid = clean_param($m[1], PARAM_ALPHANUMEXT);
+            return '<iframe src="https://www.youtube.com/embed/' . $vid
+                . '" frameborder="0" allowfullscreen'
+                . ' allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"'
+                . ' style="width:100%;aspect-ratio:16/9;border:0;border-radius:16px;"></iframe>';
+        }
+
+        // Vimeo: vimeo.com/ID
+        if (preg_match('/vimeo\.com\/(\d+)/', $url, $m)) {
+            $vid = clean_param($m[1], PARAM_INT);
+            return '<iframe src="https://player.vimeo.com/video/' . $vid
+                . '" frameborder="0" allowfullscreen'
+                . ' allow="autoplay; fullscreen; picture-in-picture"'
+                . ' style="width:100%;aspect-ratio:16/9;border:0;border-radius:16px;"></iframe>';
         }
 
         return '';
