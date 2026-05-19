@@ -650,10 +650,9 @@
                                    QUIZ RESKIN (Ultra-Minimal Executive Style)
                                    ======================================= */
                                 
-                                /* Ocultar el info box de la pregunta (solo dentro de .que), bloque de navegación, botón de Atrás y navegación inferior */
+                                /* Ocultar el info box de la pregunta (solo dentro de .que), bloque de navegación y navegación inferior */
                                 .path-mod-quiz .que .info,
                                 .path-mod-quiz #mod_quiz_navblock,
-                                .path-mod-quiz .tertiary-navigation,
                                 .activity-navigation {
                                     display: none !important;
                                 }
@@ -785,9 +784,12 @@
                                     padding: 1rem !important;
                                 }
 
-                                /* Botón principal de Empezar intento */
+                                /* Botón principal de Empezar/Continuar intento */
                                 .path-mod-quiz .continuebutton form input[type="submit"],
-                                .path-mod-quiz .quizstartbuttondiv input[type="submit"] {
+                                .path-mod-quiz .continuebutton form button,
+                                .path-mod-quiz .quizstartbuttondiv input[type="submit"],
+                                .path-mod-quiz .quizstartbuttondiv button,
+                                .path-mod-quiz .tertiary-navigation .btn-primary {
                                     background: #10b981 !important;
                                     color: #fff !important;
                                     border: none !important;
@@ -801,7 +803,10 @@
                                 }
                                 
                                 .path-mod-quiz .continuebutton form input[type="submit"]:hover,
-                                .path-mod-quiz .quizstartbuttondiv input[type="submit"]:hover {
+                                .path-mod-quiz .continuebutton form button:hover,
+                                .path-mod-quiz .quizstartbuttondiv input[type="submit"]:hover,
+                                .path-mod-quiz .quizstartbuttondiv button:hover,
+                                .path-mod-quiz .tertiary-navigation .btn-primary:hover {
                                     transform: translateY(-2px) !important;
                                     background: #059669 !important;
                                 }
