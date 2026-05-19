@@ -890,12 +890,20 @@
                             processTags(doc, 'card-deliverable', 'vc-card-deliverable');
                             processTags(doc, 'ai-prompt', 'vc-prompt-box');
 
+                            // Prevenir FOUC en navegaciones internas del iframe (ej. paginación del quiz)
+                            iframeEl.contentWindow.addEventListener('beforeunload', function() {
+                                iframeEl.style.opacity = '0';
+                                iframeEl.style.transition = 'none'; // Fade out instantáneo
+                            });
+
                         }
                     } catch(e) {
                         console.warn('Could not inject CSS into iframe', e);
                     }
-                    // Fade in the iframe and the button
+                    // Restaurar la transición y mostrar el iframe
+                    iframeEl.style.transition = 'opacity 0.3s ease';
                     iframeEl.style.opacity = '1';
+                    
                     var wrapper = embedDiv.querySelector('.vc-completion-wrapper');
                     if (wrapper) wrapper.style.opacity = '1';
                 });
