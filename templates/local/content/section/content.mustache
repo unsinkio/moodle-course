@@ -425,11 +425,47 @@
                 }
             }
 
-            // Render iframe
-            embedDiv.innerHTML = '<iframe src="' + embedUrl + '" class="videoclass-activity-iframe" style="width:100%; min-height:80vh; border:none; border-radius:12px; background:#fff; box-shadow:0 4px 12px rgba(0,0,0,0.05);"></iframe>';
+            // Render iframe with initial opacity 0 for smooth fade-in
+            var iframeHtml = '<iframe src="' + embedUrl + '" class="videoclass-activity-iframe" style="width:100%; min-height:80vh; border:none; border-radius:12px; background:#fff; box-shadow:0 4px 12px rgba(0,0,0,0.05); opacity:0; transition:opacity 0.3s;"></iframe>';
+            embedDiv.innerHTML = iframeHtml;
             embedDiv.style.display = '';
 
             if (emptyDiv) emptyDiv.style.display = 'none';
+
+            // CSS Injection to hide Moodle chrome
+            var iframeEl = embedDiv.querySelector('.videoclass-activity-iframe');
+            if (iframeEl) {
+                iframeEl.addEventListener('load', function() {
+                    try {
+                        var doc = iframeEl.contentWindow.document;
+                        if (doc) {
+                            var style = doc.createElement('style');
+                            style.innerHTML = `
+                                #page-header, 
+                                #page-footer, 
+                                .navbar, 
+                                #nav-drawer, 
+                                [data-region="blocks-column"], 
+                                #page-wrapper > nav, 
+                                header, 
+                                footer, 
+                                .drawer-toggles, 
+                                .secondary-navigation {
+                                    display: none !important;
+                                }
+                                #page { margin-top: 0 !important; padding-top: 1rem !important; }
+                                #region-main-box { width: 100% !important; flex: 0 0 100% !important; max-width: 100% !important; }
+                                body { background: transparent !important; }
+                            `;
+                            doc.head.appendChild(style);
+                        }
+                    } catch(e) {
+                        console.warn('Could not inject CSS into iframe', e);
+                    }
+                    // Fade in the iframe
+                    iframeEl.style.opacity = '1';
+                });
+            }
 
             // Highlight currently playing item
             sectionContent.querySelectorAll('.videoclass-activity-video, .videoclass-activity').forEach(function(v) {
