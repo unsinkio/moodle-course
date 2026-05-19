@@ -784,31 +784,48 @@
                                     padding: 1rem !important;
                                 }
 
+                                /* Forzar visibilidad del contenedor de botones */
+                                .path-mod-quiz .quizstartbuttondiv,
+                                .path-mod-quiz .continuebutton {
+                                    display: block !important;
+                                    text-align: center !important;
+                                    margin-top: 2rem !important;
+                                    visibility: visible !important;
+                                }
+
                                 /* Botón principal de Empezar/Continuar intento */
-                                .path-mod-quiz .continuebutton form input[type="submit"],
-                                .path-mod-quiz .continuebutton form button,
-                                .path-mod-quiz .quizstartbuttondiv input[type="submit"],
+                                .path-mod-quiz .continuebutton input,
+                                .path-mod-quiz .continuebutton button,
+                                .path-mod-quiz .continuebutton a,
+                                .path-mod-quiz .quizstartbuttondiv input,
                                 .path-mod-quiz .quizstartbuttondiv button,
+                                .path-mod-quiz .quizstartbuttondiv a,
                                 .path-mod-quiz .tertiary-navigation .btn-primary {
+                                    display: inline-block !important;
                                     background: #10b981 !important;
                                     color: #fff !important;
                                     border: none !important;
-                                    padding: 1.25rem 3rem !important;
+                                    padding: 1.25rem 3.5rem !important;
                                     border-radius: 9999px !important;
                                     font-weight: 600 !important;
                                     font-size: 1.15rem !important;
-                                    box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2) !important;
+                                    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3) !important;
                                     cursor: pointer !important;
                                     transition: all 0.2s ease !important;
+                                    text-decoration: none !important;
                                 }
                                 
-                                .path-mod-quiz .continuebutton form input[type="submit"]:hover,
-                                .path-mod-quiz .continuebutton form button:hover,
-                                .path-mod-quiz .quizstartbuttondiv input[type="submit"]:hover,
+                                .path-mod-quiz .continuebutton input:hover,
+                                .path-mod-quiz .continuebutton button:hover,
+                                .path-mod-quiz .continuebutton a:hover,
+                                .path-mod-quiz .quizstartbuttondiv input:hover,
                                 .path-mod-quiz .quizstartbuttondiv button:hover,
+                                .path-mod-quiz .quizstartbuttondiv a:hover,
                                 .path-mod-quiz .tertiary-navigation .btn-primary:hover {
                                     transform: translateY(-2px) !important;
                                     background: #059669 !important;
+                                    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4) !important;
+                                    color: #fff !important;
                                 }
                             `;
                             doc.head.appendChild(style);
