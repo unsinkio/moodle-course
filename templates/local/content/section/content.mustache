@@ -432,8 +432,51 @@
 
             // Render iframe with initial opacity 0 for smooth fade-in
             var iframeHtml = '<iframe src="' + embedUrl + '" class="videoclass-activity-iframe" style="width:100%; min-height:80vh; border:none; border-radius:12px; background:#fff; box-shadow:0 4px 12px rgba(0,0,0,0.05); opacity:0; transition:opacity 0.3s;"></iframe>';
-            embedDiv.innerHTML = iframeHtml;
+            
+            var activityCardObj = link.closest('.videoclass-activity');
+            var cmid = activityCardObj ? activityCardObj.dataset.activityId : null;
+            var completeBtnHtml = cmid ? '<div class="vc-completion-wrapper" style="text-align: center; margin-top: 1.5rem; opacity: 0; transition: opacity 0.5s; transition-delay: 0.5s;"><button type="button" class="vc-mark-complete-btn" data-cmid="' + cmid + '" style="background: #111827; color: #fff; border: none; padding: 14px 28px; border-radius: 12px; font-weight: 600; font-size: 1.05rem; cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,0.1); transition: all 0.2s ease;">&#10004; Mark as Complete</button></div>' : '';
+
+            embedDiv.innerHTML = iframeHtml + completeBtnHtml;
             embedDiv.style.display = '';
+
+            var completeBtn = embedDiv.querySelector('.vc-mark-complete-btn');
+            if (completeBtn) {
+                completeBtn.addEventListener('click', function() {
+                    var btn = this;
+                    var activityCmid = btn.dataset.cmid;
+                    if (!activityCmid) return;
+                    
+                    btn.disabled = true;
+                    btn.innerHTML = 'Marking...';
+                    btn.style.opacity = '0.8';
+                    
+                    require(['core/ajax'], function(Ajax) {
+                        Ajax.call([{
+                            methodname: 'core_completion_update_activity_status',
+                            args: { cmid: parseInt(activityCmid), completed: true }
+                        }])[0].then(function(result) {
+                            btn.innerHTML = '&#10004; Completed!';
+                            btn.style.background = '#10b981';
+                            btn.style.opacity = '1';
+                            btn.style.transform = 'scale(1.05)';
+                            setTimeout(function() { btn.style.transform = 'none'; }, 200);
+                            
+                            // Try to optimistically update the sidebar icon
+                            var sectionItem = document.querySelector('.videoclass-section-link.is-current .vc-progress-icon');
+                            if (sectionItem && sectionItem.classList.contains('vc-not-started')) {
+                                sectionItem.className = 'vc-progress-icon vc-in-progress';
+                                sectionItem.innerHTML = '&#9681;';
+                            }
+                        }).catch(function(err) {
+                            console.error('[VC Completion] error', err);
+                            btn.disabled = false;
+                            btn.innerHTML = '&#10004; Mark as Complete';
+                            btn.style.opacity = '1';
+                        });
+                    });
+                });
+            }
 
             if (emptyDiv) emptyDiv.style.display = 'none';
 
@@ -530,8 +573,10 @@
                     } catch(e) {
                         console.warn('Could not inject CSS into iframe', e);
                     }
-                    // Fade in the iframe
+                    // Fade in the iframe and the button
                     iframeEl.style.opacity = '1';
+                    var wrapper = embedDiv.querySelector('.vc-completion-wrapper');
+                    if (wrapper) wrapper.style.opacity = '1';
                 });
             }
 
