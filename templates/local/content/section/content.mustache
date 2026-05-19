@@ -742,41 +742,50 @@
                                     text-align: left !important; /* Alineado a la izquierda para estilo forma */
                                 }
 
-                                /* Botón de navegación (Next / Submit) */
+                                /* Botones de navegación base (Next / Prev) */
                                 .path-mod-quiz .submitbtns input[type="submit"],
+                                .path-mod-quiz .submitbtns button,
+                                .path-mod-quiz .mod_quiz-next-nav,
+                                .path-mod-quiz .mod_quiz-prev-nav {
+                                    height: auto !important;
+                                    min-height: 44px !important;
+                                    line-height: 1 !important;
+                                    padding: 10px 24px !important;
+                                    border-radius: 8px !important;
+                                    font-weight: 600 !important;
+                                    font-size: 0.95rem !important;
+                                    transition: all 0.2s ease !important;
+                                    cursor: pointer !important;
+                                    display: inline-flex !important;
+                                    align-items: center !important;
+                                    justify-content: center !important;
+                                    box-sizing: border-box !important;
+                                    vertical-align: middle !important;
+                                }
+
+                                /* Botón principal (Next / Submit) */
+                                .path-mod-quiz .submitbtns input[type="submit"]:not([name="previous"]),
                                 .path-mod-quiz .mod_quiz-next-nav {
                                     background: #0f172a !important;
                                     color: #fff !important;
                                     border: 1px solid #0f172a !important;
-                                    padding: 12px 28px !important;
-                                    border-radius: 12px !important;
-                                    font-weight: 600 !important;
-                                    font-size: 1.05rem !important;
-                                    transition: all 0.2s ease !important;
                                     box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
-                                    cursor: pointer !important;
                                 }
                                 
-                                .path-mod-quiz .submitbtns input[type="submit"]:hover,
+                                .path-mod-quiz .submitbtns input[type="submit"]:not([name="previous"]):hover,
                                 .path-mod-quiz .mod_quiz-next-nav:hover {
                                     background: #1e293b !important;
-                                    transform: translateY(-2px) !important;
+                                    transform: translateY(-1px) !important;
                                     box-shadow: 0 6px 16px rgba(0,0,0,0.12) !important;
                                 }
 
                                 /* Botón secundario (Previous page) */
                                 .path-mod-quiz .submitbtns input[name="previous"],
                                 .path-mod-quiz .mod_quiz-prev-nav {
-                                    background: transparent !important;
+                                    background: #fff !important;
                                     color: #475569 !important;
                                     border: 1px solid #cbd5e1 !important;
-                                    padding: 12px 24px !important;
-                                    border-radius: 12px !important;
-                                    font-weight: 600 !important;
-                                    font-size: 1.05rem !important;
-                                    box-shadow: none !important;
-                                    cursor: pointer !important;
-                                    transition: all 0.2s ease !important;
+                                    box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
                                 }
 
                                 .path-mod-quiz .submitbtns input[name="previous"]:hover,
