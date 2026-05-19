@@ -435,7 +435,8 @@
             
             var activityCardObj = link.closest('.videoclass-activity');
             var cmid = activityCardObj ? activityCardObj.dataset.activityId : null;
-            var completeBtnHtml = cmid ? '<div class="vc-completion-wrapper" style="text-align: center; margin-top: 1.5rem; opacity: 0; transition: opacity 0.5s; transition-delay: 0.5s;"><button type="button" class="vc-mark-complete-btn" data-cmid="' + cmid + '" style="background: #111827; color: #fff; border: none; padding: 14px 28px; border-radius: 12px; font-weight: 600; font-size: 1.05rem; cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,0.1); transition: all 0.2s ease;">&#10004; Mark as Complete</button></div>' : '';
+            var isQuiz = url.indexOf('mod/quiz') !== -1;
+            var completeBtnHtml = (cmid && !isQuiz) ? '<div class="vc-completion-wrapper" style="text-align: center; margin-top: 1.5rem; opacity: 0; transition: opacity 0.5s; transition-delay: 0.5s;"><button type="button" class="vc-mark-complete-btn" data-cmid="' + cmid + '" style="background: #111827; color: #fff; border: none; padding: 14px 28px; border-radius: 12px; font-weight: 600; font-size: 1.05rem; cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,0.1); transition: all 0.2s ease;">&#10004; Mark as Complete</button></div>' : '';
 
             embedDiv.innerHTML = iframeHtml + completeBtnHtml;
             embedDiv.style.display = '';
@@ -649,20 +650,25 @@
                                    QUIZ RESKIN (Ultra-Minimal Executive Style)
                                    ======================================= */
                                 
-                                /* Ocultar el info box de la pregunta y el bloque de navegación */
+                                /* Ocultar el info box de la pregunta, bloque de navegación y botón de Atrás */
                                 .path-mod-quiz .info,
-                                .path-mod-quiz #mod_quiz_navblock {
+                                .path-mod-quiz #mod_quiz_navblock,
+                                .path-mod-quiz .tertiary-navigation {
                                     display: none !important;
                                 }
 
                                 /* Ajustar el margen del contenido de la pregunta */
-                                .path-mod-quiz .que .content {
+                                .path-mod-quiz .que .content,
+                                .path-mod-quiz .que .formulation {
                                     margin: 0 !important;
                                     padding: 0 !important;
+                                    background: transparent !important;
+                                    border: none !important;
                                 }
 
                                 /* Eliminar bordes y fondos de Moodle para la pregunta */
-                                .path-mod-quiz .que {
+                                .path-mod-quiz .que,
+                                .path-mod-quiz .que .ablock {
                                     background: transparent !important;
                                     border: none !important;
                                     box-shadow: none !important;
