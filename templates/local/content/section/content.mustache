@@ -841,11 +841,17 @@
                                 .path-mod-quiz .quizstartbuttondiv button,
                                 .path-mod-quiz .quizstartbuttondiv a,
                                 .path-mod-quiz .tertiary-navigation .btn-primary {
-                                    display: inline-block !important;
+                                    display: inline-flex !important;
+                                    align-items: center !important;
+                                    justify-content: center !important;
                                     background: #10b981 !important;
                                     color: #fff !important;
                                     border: none !important;
-                                    padding: 1.25rem 3.5rem !important;
+                                    height: 56px !important;
+                                    min-height: 56px !important;
+                                    max-height: 56px !important;
+                                    line-height: 56px !important;
+                                    padding: 0 48px !important;
                                     border-radius: 9999px !important;
                                     font-weight: 600 !important;
                                     font-size: 1.15rem !important;
@@ -853,6 +859,9 @@
                                     cursor: pointer !important;
                                     transition: all 0.2s ease !important;
                                     text-decoration: none !important;
+                                    box-sizing: border-box !important;
+                                    white-space: nowrap !important;
+                                    margin: 0 auto !important;
                                 }
                                 
                                 .path-mod-quiz .continuebutton input:hover,
