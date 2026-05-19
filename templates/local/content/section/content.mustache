@@ -570,6 +570,81 @@
                                 .activity-header {
                                     display: none !important;
                                 }
+                                
+                                /* Activation Cards Design System */
+                                .vc-card-problem {
+                                    background-color: #fef2f2 !important;
+                                    border-left: 4px solid #ef4444 !important;
+                                    padding: 1.5rem !important;
+                                    border-radius: 0 8px 8px 0 !important;
+                                    margin-bottom: 2rem !important;
+                                    box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important;
+                                }
+                                .vc-card-problem h1, .vc-card-problem h2, .vc-card-problem h3 {
+                                    color: #991b1b !important;
+                                    margin-top: 0 !important;
+                                }
+
+                                .vc-card-action {
+                                    background-color: #f0fdfa !important;
+                                    border-left: 4px solid #0d9488 !important;
+                                    padding: 1.5rem !important;
+                                    border-radius: 0 8px 8px 0 !important;
+                                    margin-bottom: 2rem !important;
+                                    box-shadow: 0 4px 6px rgba(0,0,0,0.05) !important;
+                                }
+                                .vc-card-action h1, .vc-card-action h2, .vc-card-action h3 {
+                                    color: #115e59 !important;
+                                    margin-top: 0 !important;
+                                }
+
+                                .vc-card-deliverable {
+                                    background-color: #111827 !important;
+                                    color: #f9fafb !important;
+                                    padding: 1.75rem !important;
+                                    border-radius: 12px !important;
+                                    margin-bottom: 2rem !important;
+                                    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05) !important;
+                                }
+                                .vc-card-deliverable h1, .vc-card-deliverable h2, .vc-card-deliverable h3 {
+                                    color: #fff !important;
+                                    margin-top: 0 !important;
+                                    border-bottom: 1px solid #374151 !important;
+                                    padding-bottom: 0.75rem !important;
+                                    margin-bottom: 1.25rem !important;
+                                }
+                                .vc-card-deliverable p, .vc-card-deliverable li {
+                                    color: #e5e7eb !important;
+                                }
+                                .vc-card-deliverable strong, .vc-card-deliverable b {
+                                    color: #fff !important;
+                                }
+
+                                .vc-prompt-box {
+                                    background-color: #1e1e1e !important;
+                                    color: #d4d4d4 !important;
+                                    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace !important;
+                                    padding: 1.25rem !important;
+                                    border-radius: 8px !important;
+                                    margin-bottom: 2rem !important;
+                                    font-size: 0.95rem !important;
+                                    border: 1px solid #333 !important;
+                                    position: relative !important;
+                                }
+                                .vc-prompt-box::before {
+                                    content: 'AI Prompt';
+                                    position: absolute;
+                                    top: -10px;
+                                    left: 12px;
+                                    background: #1e1e1e;
+                                    padding: 0 8px;
+                                    font-size: 0.75rem;
+                                    color: #8b5cf6;
+                                    font-family: 'Inter', sans-serif;
+                                    font-weight: 600;
+                                    border-radius: 4px;
+                                    border: 1px solid #333;
+                                }
                             `;
                             doc.head.appendChild(style);
                         }
