@@ -645,6 +645,144 @@
                                     border-radius: 4px;
                                     border: 1px solid #333;
                                 }
+                                /* =======================================
+                                   QUIZ RESKIN (Executive Form Style)
+                                   ======================================= */
+                                
+                                /* Ocultar el info box de la pregunta y el bloque de navegación */
+                                .path-mod-quiz .info,
+                                .path-mod-quiz #mod_quiz_navblock {
+                                    display: none !important;
+                                }
+
+                                /* Expander la caja de contenido ya que ocultamos el info */
+                                .path-mod-quiz .que .content {
+                                    margin: 0 !important;
+                                    padding: 2.5rem !important;
+                                }
+
+                                /* Diseño de la tarjeta de pregunta */
+                                .path-mod-quiz .que {
+                                    background: #ffffff !important;
+                                    border: 1px solid #f3f4f6 !important;
+                                    border-radius: 16px !important;
+                                    box-shadow: 0 10px 25px rgba(0,0,0,0.03), 0 2px 5px rgba(0,0,0,0.01) !important;
+                                    margin-bottom: 3rem !important;
+                                    overflow: hidden !important;
+                                }
+
+                                /* Texto de la pregunta */
+                                .path-mod-quiz .qtext {
+                                    font-size: 1.35rem !important;
+                                    font-weight: 600 !important;
+                                    color: #111827 !important;
+                                    margin-bottom: 2rem !important;
+                                }
+
+                                /* Opciones de respuesta */
+                                .path-mod-quiz .answer div {
+                                    background: #f9fafb !important;
+                                    border: 2px solid #e5e7eb !important;
+                                    border-radius: 12px !important;
+                                    padding: 1.25rem 1.5rem !important;
+                                    margin-bottom: 1rem !important;
+                                    transition: all 0.2s ease !important;
+                                    display: flex !important;
+                                    align-items: center !important;
+                                    cursor: pointer !important;
+                                }
+                                
+                                .path-mod-quiz .answer div:hover {
+                                    background: #f3f4f6 !important;
+                                    border-color: #d1d5db !important;
+                                    transform: translateY(-1px) !important;
+                                }
+
+                                /* Hacer los radio buttons nativos un poco más grandes */
+                                .path-mod-quiz .answer input[type="radio"],
+                                .path-mod-quiz .answer input[type="checkbox"] {
+                                    width: 1.5rem !important;
+                                    height: 1.5rem !important;
+                                    margin-right: 1.25rem !important;
+                                    cursor: pointer !important;
+                                    flex-shrink: 0 !important;
+                                    accent-color: #111827 !important;
+                                }
+                                
+                                /* Espaciado entre el radio y el texto */
+                                .path-mod-quiz .answer label {
+                                    margin: 0 !important;
+                                    padding: 0 !important;
+                                    cursor: pointer !important;
+                                    font-weight: 500 !important;
+                                    color: #374151 !important;
+                                    font-size: 1.1rem !important;
+                                    line-height: 1.4 !important;
+                                }
+
+                                /* Botones de navegación del Quiz */
+                                .path-mod-quiz .submitbtns input[type="submit"],
+                                .path-mod-quiz .mod_quiz-next-nav {
+                                    background: #111827 !important;
+                                    color: #fff !important;
+                                    border: none !important;
+                                    padding: 1rem 2.5rem !important;
+                                    border-radius: 10px !important;
+                                    font-weight: 600 !important;
+                                    font-size: 1.1rem !important;
+                                    transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+                                    box-shadow: 0 4px 6px rgba(0,0,0,0.1) !important;
+                                    cursor: pointer !important;
+                                }
+                                
+                                .path-mod-quiz .submitbtns input[type="submit"]:hover,
+                                .path-mod-quiz .mod_quiz-next-nav:hover {
+                                    transform: translateY(-2px) !important;
+                                    box-shadow: 0 6px 12px rgba(0,0,0,0.15) !important;
+                                }
+                                
+                                /* Ocultar enlaces confusos como "Clear my choice" */
+                                .path-mod-quiz .qtype_multichoice_clearchoice {
+                                    display: none !important;
+                                }
+
+                                /* Limpieza de tabla resumen en Intro/Review */
+                                .path-mod-quiz .quizattemptsummary,
+                                .path-mod-quiz .quizinfo {
+                                    background: #fff !important;
+                                    border: none !important;
+                                    border-radius: 16px !important;
+                                    box-shadow: 0 4px 20px rgba(0,0,0,0.04) !important;
+                                    padding: 2rem !important;
+                                    margin-bottom: 2rem !important;
+                                }
+
+                                .path-mod-quiz .quizattemptsummary th,
+                                .path-mod-quiz .quizattemptsummary td {
+                                    border-color: #f3f4f6 !important;
+                                    padding: 1rem !important;
+                                }
+
+                                /* Botón principal de "Empezar intento" */
+                                .path-mod-quiz .continuebutton form input[type="submit"],
+                                .path-mod-quiz .quizstartbuttondiv input[type="submit"] {
+                                    background: #10b981 !important;
+                                    color: #fff !important;
+                                    border: none !important;
+                                    padding: 1.25rem 3rem !important;
+                                    border-radius: 12px !important;
+                                    font-weight: 600 !important;
+                                    font-size: 1.15rem !important;
+                                    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3) !important;
+                                    cursor: pointer !important;
+                                    transition: all 0.2s ease !important;
+                                }
+                                
+                                .path-mod-quiz .continuebutton form input[type="submit"]:hover,
+                                .path-mod-quiz .quizstartbuttondiv input[type="submit"]:hover {
+                                    transform: translateY(-2px) !important;
+                                    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4) !important;
+                                }
                             `;
                             doc.head.appendChild(style);
 
