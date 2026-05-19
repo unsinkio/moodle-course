@@ -633,7 +633,7 @@ class section extends section_base
                 'is_completed' => $is_completed,
                 'in_progress' => $in_progress,
                 'not_started' => $not_started,
-                'has_tracking' => ($tracked_activities > 0)
+                'has_tracking' => true
             ];
         }
 
