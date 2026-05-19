@@ -647,6 +647,67 @@
                                 }
                             `;
                             doc.head.appendChild(style);
+
+                            // Shortcode DOM Parser for Activation Cards
+                            var processTags = function(doc, tag, className) {
+                                var startTag = '[' + tag + ']';
+                                var endTag = '[/' + tag + ']';
+                                
+                                var walker = doc.createTreeWalker(doc.body, NodeFilter.SHOW_TEXT, null, false);
+                                var startNodes = [];
+                                var endNodes = [];
+                                
+                                var node;
+                                while ((node = walker.nextNode())) {
+                                    var val = node.nodeValue.trim();
+                                    if (val === startTag) startNodes.push(node);
+                                    if (val === endTag) endNodes.push(node);
+                                }
+                                
+                                for (var i = 0; i < startNodes.length; i++) {
+                                    var startText = startNodes[i];
+                                    var endText = endNodes[i];
+                                    if (!startText || !endText) continue;
+                                    
+                                    var getBlock = function(n, tagText) {
+                                        var curr = n.parentNode;
+                                        var highest = n;
+                                        while (curr && curr !== doc.body) {
+                                            if (curr.textContent.trim() === tagText) {
+                                                highest = curr;
+                                                curr = curr.parentNode;
+                                            } else {
+                                                break;
+                                            }
+                                        }
+                                        return highest;
+                                    };
+                                    
+                                    var startBlock = getBlock(startText, startTag);
+                                    var endBlock = getBlock(endText, endTag);
+                                    
+                                    if (startBlock.parentNode === endBlock.parentNode) {
+                                        var wrapper = doc.createElement('div');
+                                        wrapper.className = className;
+                                        startBlock.parentNode.insertBefore(wrapper, startBlock);
+                                        
+                                        var curr = startBlock.nextSibling;
+                                        while (curr && curr !== endBlock) {
+                                            var next = curr.nextSibling;
+                                            wrapper.appendChild(curr);
+                                            curr = next;
+                                        }
+                                        startBlock.parentNode.removeChild(startBlock);
+                                        endBlock.parentNode.removeChild(endBlock);
+                                    }
+                                }
+                            };
+                            
+                            processTags(doc, 'card-problem', 'vc-card-problem');
+                            processTags(doc, 'card-action', 'vc-card-action');
+                            processTags(doc, 'card-deliverable', 'vc-card-deliverable');
+                            processTags(doc, 'ai-prompt', 'vc-prompt-box');
+
                         }
                     } catch(e) {
                         console.warn('Could not inject CSS into iframe', e);
