@@ -451,37 +451,37 @@
                     btn.innerHTML = 'Marking...';
                     btn.style.opacity = '0.8';
                     
-                    var iframeEl = embedDiv.querySelector('.videoclass-activity-iframe');
-                    var nativeClicked = false;
-                    
-                    if (iframeEl) {
-                        try {
-                            var iframeDoc = iframeEl.contentWindow.document;
-                            // Buscar el botón nativo de completitud manual de Moodle 4.x
-                            var nativeBtn = iframeDoc.querySelector('button[data-action="toggle-manual-completion"]');
-                            if (nativeBtn && !nativeBtn.disabled) {
-                                nativeBtn.click();
-                                nativeClicked = true;
+                    require(['core/ajax'], function(Ajax) {
+                        Ajax.call([{
+                            methodname: 'core_completion_update_activity_statuses',
+                            args: { cmids: [parseInt(activityCmid)], state: 1 }
+                        }])[0].then(function(result) {
+                            if (result === false || (result && result.status === false)) {
+                                console.warn('[VC Completion] Moodle returned false.');
+                                alert('Moodle rejected the manual completion. This is normal if you are testing as an Admin or Teacher. Please log in as a Student to test manual completion.');
                             }
-                        } catch (e) {
-                            console.warn('[VC Completion] Cannot access iframe DOM', e);
-                        }
-                    }
-                    
-                    // Actualizar nuestra UI independientemente (si es "must view", ya se completó sola en el backend)
-                    btn.innerHTML = '&#10004; Completed!';
-                    btn.style.background = '#10b981';
-                    btn.style.opacity = '1';
-                    btn.style.transform = 'scale(1.05)';
-                    setTimeout(function() { btn.style.transform = 'none'; }, 200);
-                    
-                    // Try to optimistically update the sidebar icon
-                    var sectionItem = document.querySelector('.videoclass-section-link.is-current .vc-progress-icon');
-                    if (sectionItem && sectionItem.classList.contains('vc-not-started')) {
-                        sectionItem.className = 'vc-progress-icon vc-in-progress';
-                        sectionItem.innerHTML = '&#9681;';
-                        sectionItem.style.color = '#f59e0b';
-                    }
+                            
+                            btn.innerHTML = '&#10004; Completed!';
+                            btn.style.background = '#10b981';
+                            btn.style.opacity = '1';
+                            btn.style.transform = 'scale(1.05)';
+                            setTimeout(function() { btn.style.transform = 'none'; }, 200);
+                            
+                            // Optimistically update the sidebar icon
+                            var sectionItem = document.querySelector('.videoclass-section-link.is-current .vc-progress-icon');
+                            if (sectionItem && sectionItem.classList.contains('vc-not-started')) {
+                                sectionItem.className = 'vc-progress-icon vc-in-progress';
+                                sectionItem.innerHTML = '&#9681;';
+                                sectionItem.style.color = '#f59e0b';
+                            }
+                        }).catch(function(err) {
+                            console.error('[VC Completion] error', err);
+                            alert('Moodle rejected the manual completion. As an Admin/Teacher, Moodle does not track your manual progress. Please test with a Student account.');
+                            btn.disabled = false;
+                            btn.innerHTML = '&#10004; Mark as Complete';
+                            btn.style.opacity = '1';
+                        });
+                    });
                 });
             }
 
