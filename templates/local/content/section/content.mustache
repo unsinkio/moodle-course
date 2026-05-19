@@ -14,7 +14,12 @@
             <nav class="videoclass-sections-nav" aria-label="Course sections">
                 {{#videoclass.sectionsnav}}
                     <a class="videoclass-section-link {{#current}}is-current{{/current}}" href="{{url}}">
-                        {{name}}
+                        {{#has_tracking}}
+                            {{#is_completed}}<span class="vc-progress-icon vc-completed">&#9679;</span>{{/is_completed}}
+                            {{#in_progress}}<span class="vc-progress-icon vc-in-progress">&#9681;</span>{{/in_progress}}
+                            {{#not_started}}<span class="vc-progress-icon vc-not-started">&#9675;</span>{{/not_started}}
+                        {{/has_tracking}}
+                        <span class="vc-section-name">{{name}}</span>
                     </a>
                 {{/videoclass.sectionsnav}}
                 {{^videoclass.sectionsnav}}
@@ -535,7 +540,13 @@
                 v.classList.remove('is-playing');
             });
             var activityCard = link.closest('.videoclass-activity');
-            if (activityCard) activityCard.classList.add('is-playing');
+            if (activityCard) {
+                activityCard.classList.add('is-playing');
+                var titleEl = activityCard.querySelector('.videoclass-activity-link');
+                if (titleEl) {
+                    window.vcCurrentActivityContext = titleEl.textContent.trim();
+                }
+            }
 
             // Smooth scroll to the video container
             videoContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1675,7 +1686,8 @@
                         courseid: parseInt(courseid),
                         sectionid: parseInt(sectionid),
                         message: text,
-                        conversationid: currentConversationId
+                        conversationid: currentConversationId,
+                        activitycontext: window.vcCurrentActivityContext || ''
                     }
                 }])[0].then(function(result) {
                     if (typingDiv.parentNode) typingDiv.parentNode.removeChild(typingDiv);

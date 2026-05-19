@@ -39,10 +39,11 @@ class send_chat_message extends external_api {
             'sectionid'       => new external_value(PARAM_INT, 'Section ID'),
             'message'         => new external_value(PARAM_RAW, 'User message'),
             'conversationid'  => new external_value(PARAM_INT, 'Conversation ID (0 = new)', VALUE_DEFAULT, 0),
+            'activitycontext' => new external_value(PARAM_RAW, 'Current active activity context', VALUE_DEFAULT, ''),
         ]);
     }
 
-    public static function execute(int $courseid, int $sectionid, string $message, int $conversationid = 0): array {
+    public static function execute(int $courseid, int $sectionid, string $message, int $conversationid = 0, string $activitycontext = ''): array {
         global $DB, $USER;
 
         $params = self::validate_parameters(self::execute_parameters(), [
@@ -50,6 +51,7 @@ class send_chat_message extends external_api {
             'sectionid'      => $sectionid,
             'message'        => $message,
             'conversationid' => $conversationid,
+            'activitycontext'=> $activitycontext,
         ]);
 
         $context = \context_course::instance($params['courseid']);
@@ -59,6 +61,7 @@ class send_chat_message extends external_api {
         $sectionid      = $params['sectionid'];
         $message        = trim($params['message']);
         $conversationid = $params['conversationid'];
+        $activitycontext= trim($params['activitycontext']);
         $now            = time();
 
         if ($message === '') {
@@ -127,7 +130,7 @@ class send_chat_message extends external_api {
             $prompttemplate = <<<EOF
 You are an AI Tutor embedded in an academic LMS environment for the course "{coursename}".
 The summary of the course is: "{coursesummary}".
-The student is currently on section "{sectionname}".
+The student is currently on section "{sectionname}".{activitycontext}
 Use the following section resources as context to help the student:
 
 {resources}
@@ -248,9 +251,14 @@ CURRENT MODE: {mode}
 EOF;
         }
 
+        $contextstr = '';
+        if ($activitycontext !== '') {
+            $contextstr = "\n\nThe student is currently working on this specific deliverable/activity: \"$activitycontext\". Tailor your response and guidance specifically to this context and help them advance this exact step.";
+        }
+
         $systemprompt = str_replace(
-            ['{coursename}', '{coursesummary}', '{sectionname}', '{resources}', '{mode}'],
-            [format_string($course->fullname), strip_tags($course->summary), $sectionname, $resourcecontext, 'LEARNING'],
+            ['{coursename}', '{coursesummary}', '{sectionname}', '{resources}', '{mode}', '{activitycontext}'],
+            [format_string($course->fullname), strip_tags($course->summary), $sectionname, $resourcecontext, 'LEARNING', $contextstr],
             $prompttemplate
         );
 

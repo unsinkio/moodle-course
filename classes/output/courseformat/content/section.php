@@ -561,6 +561,7 @@ class section extends section_base
      */
     private function build_sections_nav(): array
     {
+        global $USER;
         $format = $this->format;
         $course = $format->get_course();
         $modinfo = $format->get_modinfo();
@@ -572,6 +573,8 @@ class section extends section_base
 
         $last = $format->get_last_section_number();
         $items = [];
+        
+        $completioninfo = new \completion_info($course);
 
         foreach ($modinfo->get_section_info_all() as $section) {
             if (!$section) {
@@ -591,11 +594,46 @@ class section extends section_base
                 'id' => $course->id,
                 'section' => $section->section,
             ]);
+            
+            // Calculate completion for this section
+            $tracked_activities = 0;
+            $completed_activities = 0;
+
+            if (!empty($modinfo->sections[$section->section])) {
+                foreach ($modinfo->sections[$section->section] as $cmid) {
+                    $cm = $modinfo->get_cm($cmid);
+                    if ($cm->uservisible && $cm->completion != COMPLETION_TRACKING_NONE) {
+                        $tracked_activities++;
+                        $cdata = $completioninfo->get_data($cm, false, $USER->id);
+                        if ($cdata->completionstate == COMPLETION_COMPLETE || $cdata->completionstate == COMPLETION_COMPLETE_PASS) {
+                            $completed_activities++;
+                        }
+                    }
+                }
+            }
+
+            $is_completed = false;
+            $in_progress = false;
+            $not_started = true;
+            
+            if ($tracked_activities > 0) {
+                if ($completed_activities === $tracked_activities) {
+                    $is_completed = true;
+                    $not_started = false;
+                } elseif ($completed_activities > 0) {
+                    $in_progress = true;
+                    $not_started = false;
+                }
+            }
 
             $items[] = (object) [
                 'name' => $name,
                 'url' => $url->out(false),
                 'current' => ((int) $section->section === (int) $current),
+                'is_completed' => $is_completed,
+                'in_progress' => $in_progress,
+                'not_started' => $not_started,
+                'has_tracking' => ($tracked_activities > 0)
             ];
         }
 

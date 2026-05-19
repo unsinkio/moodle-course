@@ -162,6 +162,30 @@
     box-shadow: 0 6px 16px rgba(249, 115, 22, 0.2);
 }
 
+.vc-progress-icon {
+    display: inline-block;
+    margin-right: 6px;
+    font-size: 1.1rem;
+    line-height: 1;
+    vertical-align: middle;
+}
+
+.vc-completed {
+    color: #10b981; /* Emerald Green */
+}
+
+.vc-in-progress {
+    color: #f59e0b; /* Amber */
+}
+
+.vc-not-started {
+    color: #cbd5e1; /* Slate */
+}
+
+.vc-section-name {
+    vertical-align: middle;
+}
+
 .videoclass-video {
     background: radial-gradient(circle at top left, #1e293b 0%, #0f172a 55%, #020617 100%);
     border-radius: 22px;
