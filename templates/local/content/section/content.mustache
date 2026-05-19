@@ -743,14 +743,16 @@
                                 }
 
                                 /* Botones de navegación base (Next / Prev) */
-                                .path-mod-quiz .submitbtns input[type="submit"],
+                                .path-mod-quiz .submitbtns input,
                                 .path-mod-quiz .submitbtns button,
+                                .path-mod-quiz .submitbtns a,
                                 .path-mod-quiz .mod_quiz-next-nav,
                                 .path-mod-quiz .mod_quiz-prev-nav {
-                                    height: auto !important;
+                                    height: 44px !important;
                                     min-height: 44px !important;
-                                    line-height: 1 !important;
-                                    padding: 10px 24px !important;
+                                    max-height: 44px !important;
+                                    line-height: 44px !important;
+                                    padding: 0 24px !important;
                                     border-radius: 8px !important;
                                     font-weight: 600 !important;
                                     font-size: 0.95rem !important;
@@ -761,10 +763,13 @@
                                     justify-content: center !important;
                                     box-sizing: border-box !important;
                                     vertical-align: middle !important;
+                                    margin: 0 8px 0 0 !important;
+                                    white-space: nowrap !important;
                                 }
 
                                 /* Botón principal (Next / Submit) */
-                                .path-mod-quiz .submitbtns input[type="submit"]:not([name="previous"]),
+                                .path-mod-quiz .submitbtns input:not([name="previous"]),
+                                .path-mod-quiz .submitbtns button:not([name="previous"]),
                                 .path-mod-quiz .mod_quiz-next-nav {
                                     background: #0f172a !important;
                                     color: #fff !important;
@@ -772,7 +777,8 @@
                                     box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
                                 }
                                 
-                                .path-mod-quiz .submitbtns input[type="submit"]:not([name="previous"]):hover,
+                                .path-mod-quiz .submitbtns input:not([name="previous"]):hover,
+                                .path-mod-quiz .submitbtns button:not([name="previous"]):hover,
                                 .path-mod-quiz .mod_quiz-next-nav:hover {
                                     background: #1e293b !important;
                                     transform: translateY(-1px) !important;
@@ -780,7 +786,7 @@
                                 }
 
                                 /* Botón secundario (Previous page) */
-                                .path-mod-quiz .submitbtns input[name="previous"],
+                                .path-mod-quiz .submitbtns *[name="previous"],
                                 .path-mod-quiz .mod_quiz-prev-nav {
                                     background: #fff !important;
                                     color: #475569 !important;
@@ -788,7 +794,7 @@
                                     box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
                                 }
 
-                                .path-mod-quiz .submitbtns input[name="previous"]:hover,
+                                .path-mod-quiz .submitbtns *[name="previous"]:hover,
                                 .path-mod-quiz .mod_quiz-prev-nav:hover {
                                     background: #f8fafc !important;
                                     border-color: #94a3b8 !important;
