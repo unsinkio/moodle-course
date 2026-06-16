@@ -67,8 +67,11 @@
         <div class="videoclass-tutor-toggle">
             <span class="videoclass-tutor-icon" data-action="show-logo">{{#pix}}atlas_icon, format_videoclass, ATLAS{{/pix}}</span>
             <span class="videoclass-tutor-label">{{#str}}aitutor, format_videoclass{{/str}}</span>
+            <button type="button" class="videoclass-tutor-dock-btn" title="Dock to sidebar">
+                <span class="vc-dock-icon">&#x21E5;</span>
+            </button>
             <button type="button" class="videoclass-tutor-panel-close" aria-label="Close"
-                    style="background:none;border:none;color:#e0e0e0;font-size:1.3rem;cursor:pointer;margin-left:auto;line-height:1;padding:2px 6px;">&#x2715;</button>
+                    style="background:none;border:none;color:#e0e0e0;font-size:1.3rem;cursor:pointer;line-height:1;padding:2px 6px;">&#x2715;</button>
         </div>
         <div class="videoclass-tutor-body">
             <div class="videoclass-tutor-layout">
@@ -2082,13 +2085,48 @@
             closeSidebarDrawer();
         };
 
-        // ── FAB open/close logic ──
+        // ── FAB open/close + dock/undock logic ──
         // fab is already declared above (when moving to body).
         var panelCloseBtn = widget.querySelector('.videoclass-tutor-panel-close');
+        var dockBtn = widget.querySelector('.videoclass-tutor-dock-btn');
+        var dockIcon = dockBtn ? dockBtn.querySelector('.vc-dock-icon') : null;
+        var isSidebar = false;
+
+        // Restore saved mode preference.
+        var savedMode = null;
+        try { savedMode = localStorage.getItem('vc-tutor-mode'); } catch(e) {}
+        if (savedMode === 'sidebar') {
+            enterSidebarMode(true);
+        }
+
+        function enterSidebarMode(silent) {
+            isSidebar = true;
+            widget.classList.add('is-sidebar');
+            if (fab) fab.classList.add('is-sidebar');
+            if (dockBtn) dockBtn.title = 'Undock to popup';
+            if (dockIcon) dockIcon.innerHTML = '&#x21E4;'; // ⇤
+            if (!silent) {
+                document.body.classList.add('vc-sidebar-open');
+            }
+            try { localStorage.setItem('vc-tutor-mode', 'sidebar'); } catch(e) {}
+        }
+
+        function exitSidebarMode() {
+            isSidebar = false;
+            widget.classList.remove('is-sidebar');
+            if (fab) fab.classList.remove('is-sidebar');
+            document.body.classList.remove('vc-sidebar-open');
+            if (dockBtn) dockBtn.title = 'Dock to sidebar';
+            if (dockIcon) dockIcon.innerHTML = '&#x21E5;'; // ⇥
+            try { localStorage.setItem('vc-tutor-mode', 'popup'); } catch(e) {}
+        }
 
         function openTutor() {
             widget.classList.add('is-open');
             if (fab) fab.classList.add('is-open');
+            if (isSidebar) {
+                document.body.classList.add('vc-sidebar-open');
+            }
             if (!conversationsLoaded) {
                 loadConversations();
             }
@@ -2099,6 +2137,7 @@
         function closeTutor() {
             widget.classList.remove('is-open');
             if (fab) fab.classList.remove('is-open');
+            document.body.classList.remove('vc-sidebar-open');
         }
 
         if (fab) {
@@ -2115,6 +2154,16 @@
         if (panelCloseBtn) {
             panelCloseBtn.addEventListener('click', function() {
                 closeTutor();
+            });
+        }
+
+        if (dockBtn) {
+            dockBtn.addEventListener('click', function() {
+                if (isSidebar) {
+                    exitSidebarMode();
+                } else {
+                    enterSidebarMode(false);
+                }
             });
         }
 
