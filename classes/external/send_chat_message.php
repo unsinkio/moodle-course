@@ -124,8 +124,8 @@ class send_chat_message extends external_api {
         $section = $DB->get_record('course_sections', ['id' => $sectionid], 'name, section', MUST_EXIST);
         $sectionname = !empty($section->name) ? $section->name : get_string('sectionname', 'format_videoclass') . ' ' . $section->section;
 
-        // Force bypassing DB config for testing
-        $prompttemplate = '';
+        // Read admin-configured prompt; fall back to hardcoded default.
+        $prompttemplate = get_config('format_videoclass', 'aitutor_prompt');
         if (empty($prompttemplate)) {
             $prompttemplate = <<<EOF
 You are an AI Tutor embedded in an academic LMS environment for the course "{coursename}".
