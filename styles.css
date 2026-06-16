@@ -888,13 +888,23 @@
     transform: scale(0.95);
 }
 
-.videoclass-tutor-fab .icon,
-.videoclass-tutor-fab img {
+.videoclass-tutor-fab .videoclass-tutor-fab-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 32px;
     height: 32px;
+}
+
+.videoclass-tutor-fab .videoclass-tutor-fab-icon .icon,
+.videoclass-tutor-fab .videoclass-tutor-fab-icon img {
+    width: 32px !important;
+    height: 32px !important;
     border-radius: 50%;
     object-fit: cover;
     pointer-events: none;
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
 .videoclass-tutor-fab-close {
