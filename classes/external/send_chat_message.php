@@ -126,6 +126,10 @@ class send_chat_message extends external_api {
 
         // Read admin-configured prompt; fall back to hardcoded default.
         $prompttemplate = get_config('format_videoclass', 'aitutor_prompt');
+        $usingsetting = !empty($prompttemplate);
+        error_log("[VC AI Tutor] Prompt source: " . ($usingsetting ? 'SETTING' : 'HARDCODED')
+            . " | length=" . strlen($prompttemplate ?: '')
+            . " | has_scope_control=" . (strpos($prompttemplate ?: '', 'SCOPE CONTROL') !== false ? 'YES' : 'NO'));
         if (empty($prompttemplate)) {
             $prompttemplate = <<<EOF
 You are an AI Tutor embedded in an academic LMS environment for the course "{coursename}".
