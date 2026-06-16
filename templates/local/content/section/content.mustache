@@ -1344,6 +1344,13 @@
         var widgetId = widget.id.replace('videoclass-tutor-', '');
         var logoModal = document.getElementById('videoclass-logo-modal-' + widgetId);
 
+        // Move FAB + panel to document.body so position:fixed works
+        // (Moodle containers may have transforms that break fixed positioning).
+        var fab = document.getElementById('videoclass-tutor-fab-' + widgetId);
+        if (fab) document.body.appendChild(fab);
+        document.body.appendChild(widget);
+        if (logoModal) document.body.appendChild(logoModal);
+
         var currentConversationId = 0;
         var conversationsLoaded = false;
         var sending = false;
@@ -2076,7 +2083,7 @@
         };
 
         // ── FAB open/close logic ──
-        var fab = document.getElementById('videoclass-tutor-fab-' + widgetId);
+        // fab is already declared above (when moving to body).
         var panelCloseBtn = widget.querySelector('.videoclass-tutor-panel-close');
 
         function openTutor() {
