@@ -280,8 +280,14 @@ EOF;
             'timecreated'    => time(),
         ]);
 
+        // TEMP DEBUG — remove after verifying.
+        $debuginfo = "[DEBUG] Prompt source: " . ($usingsetting ? 'SETTING' : 'HARDCODED')
+            . " | length=" . strlen($prompttemplate)
+            . " | has_scope_control=" . (strpos($prompttemplate, 'SCOPE CONTROL') !== false ? 'YES' : 'NO')
+            . "\n\n";
+
         return [
-            'reply'          => $reply,
+            'reply'          => $debuginfo . $reply,
             'error'          => '',
             'msgid'          => (int) $assistantid,
             'conversationid' => (int) $conversationid,
