@@ -857,15 +857,112 @@
     line-height: 1.55;
 }
 
-/* ── AI Tutor Chat Widget ── */
-.videoclass-tutor {
-    margin-bottom: 20px;
-    border-radius: var(--vc-radius);
-    overflow: hidden;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-    border: 1px solid var(--vc-border);
+/* ── AI Tutor — Floating Chat Widget ── */
+
+/* FAB: always-visible floating action button */
+.videoclass-tutor-fab {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    z-index: 9000;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 6px 24px rgba(22, 33, 62, 0.35), 0 2px 8px rgba(0,0,0,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.25s cubic-bezier(.34,1.56,.64,1), box-shadow 0.25s;
+    outline: none;
 }
 
+.videoclass-tutor-fab:hover {
+    transform: scale(1.08);
+    box-shadow: 0 8px 32px rgba(22, 33, 62, 0.45), 0 3px 12px rgba(0,0,0,0.2);
+}
+
+.videoclass-tutor-fab:active {
+    transform: scale(0.95);
+}
+
+.videoclass-tutor-fab .icon,
+.videoclass-tutor-fab img {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    pointer-events: none;
+}
+
+.videoclass-tutor-fab-close {
+    display: none;
+    font-size: 1.6rem;
+    color: #e0e0e0;
+    line-height: 1;
+}
+
+.videoclass-tutor-fab.is-open .videoclass-tutor-fab-icon {
+    display: none;
+}
+
+.videoclass-tutor-fab.is-open .videoclass-tutor-fab-close {
+    display: block;
+}
+
+/* Pulse ring animation on the FAB */
+.videoclass-tutor-fab::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    border: 2px solid rgba(74, 144, 217, 0.4);
+    animation: vc-fab-pulse 2.5s ease-out infinite;
+    pointer-events: none;
+}
+
+.videoclass-tutor-fab.is-open::before {
+    animation: none;
+    border-color: transparent;
+}
+
+@keyframes vc-fab-pulse {
+    0% { transform: scale(1); opacity: 1; }
+    70% { transform: scale(1.25); opacity: 0; }
+    100% { transform: scale(1.25); opacity: 0; }
+}
+
+/* Panel: the floating chat window */
+.videoclass-tutor {
+    position: fixed;
+    bottom: 100px;
+    right: 28px;
+    z-index: 8999;
+    width: 420px;
+    max-height: calc(100vh - 140px);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.18), 0 4px 16px rgba(0,0,0,0.08);
+    border: 1px solid rgba(0,0,0,0.08);
+    background: #fff;
+
+    /* slide-up entrance */
+    opacity: 0;
+    transform: translateY(20px) scale(0.96);
+    pointer-events: none;
+    transition: opacity 0.3s cubic-bezier(.16,1,.3,1),
+                transform 0.3s cubic-bezier(.16,1,.3,1);
+}
+
+.videoclass-tutor.is-open {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+}
+
+/* Panel header bar (replaces old accordion toggle) */
 .videoclass-tutor-toggle {
     display: flex;
     align-items: center;
@@ -877,8 +974,8 @@
     color: #e0e0e0;
     font-size: 0.95rem;
     font-weight: 600;
-    cursor: pointer;
-    transition: background 0.2s, box-shadow 0.2s;
+    cursor: default; /* No longer a toggle — just a header */
+    user-select: none;
 }
 
 .videoclass-tutor-toggle:hover {
@@ -917,11 +1014,14 @@
 .videoclass-tutor-body {
     background: #fafbfc;
     border-top: 1px solid var(--vc-border);
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100vh - 200px);
 }
 
 .videoclass-tutor-messages {
-    max-height: 350px;
-    min-height: 120px;
+    flex: 1;
+    min-height: 200px;
     overflow-y: auto;
     padding: 16px;
     display: flex;
@@ -1157,7 +1257,7 @@
 /* ── Tutor Layout: sidebar + chat ── */
 .videoclass-tutor-layout {
     display: flex;
-    height: 420px;
+    height: 480px;
 }
 
 .videoclass-tutor-sidebar {
@@ -1598,10 +1698,6 @@
         width: 200px;
         min-width: 160px;
     }
-
-    .videoclass-tutor-messages {
-        max-height: 340px;
-    }
 }
 
 /* Mobile: ≤768px */
@@ -1730,15 +1826,38 @@
         padding: 0 16px 12px;
     }
 
-    /* ── AI Tutor: slide-over drawer ── */
+    /* ── AI Tutor: floating widget mobile adjustments ── */
+    .videoclass-tutor-fab {
+        bottom: 20px;
+        right: 20px;
+        width: 54px;
+        height: 54px;
+    }
+
+    .videoclass-tutor-fab .icon,
+    .videoclass-tutor-fab img {
+        width: 28px;
+        height: 28px;
+    }
+
     .videoclass-tutor {
-        border-radius: 10px;
+        bottom: 0;
+        right: 0;
+        left: 0;
+        width: 100%;
+        max-height: 85vh;
+        border-radius: 16px 16px 0 0;
+        transform: translateY(100%);
+    }
+
+    .videoclass-tutor.is-open {
+        transform: translateY(0);
     }
 
     .videoclass-tutor-layout {
         position: relative;
         flex-direction: row;
-        height: auto;
+        height: 70vh;
         overflow: visible;
     }
 
@@ -1792,7 +1911,7 @@
         transition: transform 0.25s ease;
         border-right: 1px solid #e0e4ea;
         border-bottom: none;
-        border-radius: 0 0 0 10px;
+        border-radius: 0;
         box-shadow: 4px 0 16px rgba(0, 0, 0, 0.08);
     }
 
@@ -1810,11 +1929,6 @@
 
     .videoclass-tutor-sidebar-backdrop.visible {
         display: block;
-    }
-
-    .videoclass-tutor-messages {
-        max-height: 55vh;
-        min-height: 200px;
     }
 
     .videoclass-tutor-msg-content {

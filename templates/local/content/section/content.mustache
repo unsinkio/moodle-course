@@ -48,20 +48,29 @@
         </div>
     </div>
 
-    {{! ── AI Tutor (collapsible) ── }}
+    {{! ── AI Tutor FAB (floating action button) ── }}
     {{#videoclass.aitutorenabled}}
+    <button type="button" class="videoclass-tutor-fab" id="videoclass-tutor-fab-{{id}}"
+            aria-label="{{#str}}aitutorexpand, format_videoclass{{/str}}"
+            data-target="videoclass-tutor-{{id}}">
+        <span class="videoclass-tutor-fab-icon">{{#pix}}atlas_icon, format_videoclass, ATLAS{{/pix}}</span>
+        <span class="videoclass-tutor-fab-close">&#x2715;</span>
+    </button>
+
+    {{! ── AI Tutor Panel (floating) ── }}
     <div class="videoclass-tutor" id="videoclass-tutor-{{id}}"
          data-courseid="{{videoclass.courseid}}"
          data-sectionid="{{videoclass.sectionid}}"
          data-sesskey="{{videoclass.sesskey}}"
          data-logourl="{{videoclass.logourl}}">
-        <button type="button" class="videoclass-tutor-toggle" aria-expanded="false"
-                aria-controls="videoclass-tutor-body-{{id}}">
+        {{! Panel header }}
+        <div class="videoclass-tutor-toggle">
             <span class="videoclass-tutor-icon" data-action="show-logo">{{#pix}}atlas_icon, format_videoclass, ATLAS{{/pix}}</span>
-            <span class="videoclass-tutor-label">{{#str}}aitutorexpand, format_videoclass{{/str}}</span>
-            <span class="videoclass-tutor-chevron">&#x25BC;</span>
-        </button>
-        <div class="videoclass-tutor-body" id="videoclass-tutor-body-{{id}}" hidden>
+            <span class="videoclass-tutor-label">{{#str}}aitutor, format_videoclass{{/str}}</span>
+            <button type="button" class="videoclass-tutor-panel-close" aria-label="Close"
+                    style="background:none;border:none;color:#e0e0e0;font-size:1.3rem;cursor:pointer;margin-left:auto;line-height:1;padding:2px 6px;">&#x2715;</button>
+        </div>
+        <div class="videoclass-tutor-body">
             <div class="videoclass-tutor-layout">
                 {{! ── Conversation Sidebar ── }}
                 <div class="videoclass-tutor-sidebar" id="videoclass-tutor-sidebar-{{id}}">
@@ -1329,7 +1338,6 @@
         var inputEl = widget.querySelector('.videoclass-tutor-input');
         var sendBtn = widget.querySelector('.videoclass-tutor-send');
         var labelEl = widget.querySelector('.videoclass-tutor-label');
-        var chevronEl = widget.querySelector('.videoclass-tutor-chevron');
         var convListEl = widget.querySelector('.videoclass-tutor-conv-list');
         var newConvBtn = widget.querySelector('.videoclass-tutor-new-conv');
         var logoIcon = widget.querySelector('[data-action="show-logo"]');
@@ -2067,26 +2075,46 @@
             closeSidebarDrawer();
         };
 
-        // Toggle expand/collapse.
-        toggle.addEventListener('click', function(e) {
-            // Ignore if the logo icon was clicked.
-            if (e.target.closest('[data-action="show-logo"]')) return;
-            var expanded = toggle.getAttribute('aria-expanded') === 'true';
-            if (expanded) {
-                body.hidden = true;
-                toggle.setAttribute('aria-expanded', 'false');
-                labelEl.textContent = 'Show AI Tutor';
-                chevronEl.textContent = '\u25BC';
-            } else {
-                body.hidden = false;
-                toggle.setAttribute('aria-expanded', 'true');
-                labelEl.textContent = 'Hide tutor';
-                chevronEl.textContent = '\u25B2';
-                if (!conversationsLoaded) {
-                    loadConversations();
+        // ── FAB open/close logic ──
+        var fab = document.getElementById('videoclass-tutor-fab-' + widgetId);
+        var panelCloseBtn = widget.querySelector('.videoclass-tutor-panel-close');
+
+        function openTutor() {
+            widget.classList.add('is-open');
+            if (fab) fab.classList.add('is-open');
+            if (!conversationsLoaded) {
+                loadConversations();
+            }
+            scrollToBottom();
+            inputEl.focus();
+        }
+
+        function closeTutor() {
+            widget.classList.remove('is-open');
+            if (fab) fab.classList.remove('is-open');
+        }
+
+        if (fab) {
+            fab.addEventListener('click', function() {
+                var isOpen = widget.classList.contains('is-open');
+                if (isOpen) {
+                    closeTutor();
+                } else {
+                    openTutor();
                 }
-                scrollToBottom();
-                inputEl.focus();
+            });
+        }
+
+        if (panelCloseBtn) {
+            panelCloseBtn.addEventListener('click', function() {
+                closeTutor();
+            });
+        }
+
+        // Close on Escape key.
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && widget.classList.contains('is-open')) {
+                closeTutor();
             }
         });
 
