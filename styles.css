@@ -993,51 +993,6 @@ body.vc-sidebar-open {
     pointer-events: none;
 }
 
-/* In sidebar mode, use mobile-like layout (drawer for conversations) */
-.is-sidebar .videoclass-tutor-sidebar {
-    position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    width: 240px;
-    min-width: unset;
-    z-index: 20;
-    transform: translateX(-110%);
-    transition: transform 0.25s ease;
-    border-radius: 0;
-    box-shadow: 4px 0 16px rgba(0, 0, 0, 0.1);
-}
-
-.is-sidebar .videoclass-tutor-sidebar.open {
-    transform: translateX(0);
-}
-
-.is-sidebar .videoclass-tutor-sidebar-backdrop {
-    display: none;
-    position: absolute;
-    inset: 0;
-    z-index: 19;
-    background: rgba(0, 0, 0, 0.2);
-}
-
-.is-sidebar .videoclass-tutor-sidebar-backdrop.visible {
-    display: block;
-}
-
-/* Show the hamburger/new conv header in sidebar mode */
-.is-sidebar .videoclass-tutor-chat-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 6px 12px;
-    background: #f8f9fb;
-    border-bottom: 1px solid #e0e4ea;
-}
-
-/* Messages: push to bottom so it doesn't look empty */
-.is-sidebar .videoclass-tutor-messages {
-    justify-content: flex-end;
-}
 
 /* Dock/Undock button in header */
 .videoclass-tutor-dock-btn {
@@ -1372,14 +1327,39 @@ body.vc-sidebar-open {
     overflow: hidden;
 }
 
+/* Conversation sidebar: always a slide-over drawer */
 .videoclass-tutor-sidebar {
-    width: 220px;
-    min-width: 180px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 240px;
+    min-width: unset;
     background: #f2f4f7;
     border-right: 1px solid #e0e4ea;
     display: flex;
     flex-direction: column;
-    border-radius: 0 0 0 12px;
+    border-radius: 0;
+    z-index: 20;
+    transform: translateX(-110%);
+    transition: transform 0.25s ease;
+    box-shadow: 4px 0 16px rgba(0, 0, 0, 0.1);
+}
+
+.videoclass-tutor-sidebar.open {
+    transform: translateX(0);
+}
+
+.videoclass-tutor-sidebar-backdrop {
+    display: none;
+    position: absolute;
+    inset: 0;
+    z-index: 19;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.videoclass-tutor-sidebar-backdrop.visible {
+    display: block;
 }
 
 .videoclass-tutor-sidebar-header {
@@ -1772,9 +1752,48 @@ body.vc-sidebar-open {
     color: #1f2937;
 }
 
-/* ── Mobile: chat header with toggle (hidden on desktop) ── */
+/* ── Chat header with conversations toggle — always visible ── */
 .videoclass-tutor-chat-header {
-    display: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 12px;
+    background: #f8f9fb;
+    border-bottom: 1px solid #e0e4ea;
+}
+
+.videoclass-tutor-sidebar-toggle {
+    background: none;
+    border: 1px solid #d0d5dd;
+    border-radius: 6px;
+    font-size: 1.15rem;
+    padding: 5px 10px;
+    cursor: pointer;
+    color: #4a5568;
+    transition: background 0.15s, color 0.15s;
+}
+
+.videoclass-tutor-sidebar-toggle:hover,
+.videoclass-tutor-sidebar-toggle:active {
+    background: #e6eaf0;
+    color: #2d3748;
+}
+
+.videoclass-tutor-new-conv-mobile {
+    background: linear-gradient(135deg, #4a90d9 0%, #357abd 100%);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 6px 14px;
+    cursor: pointer;
+    transition: transform 0.1s, box-shadow 0.2s;
+}
+
+.videoclass-tutor-new-conv-mobile:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(53, 122, 189, 0.25);
 }
 
 /* ── Responsive ── */
@@ -1804,11 +1823,6 @@ body.vc-sidebar-open {
 
     .videoclass-tutor-layout {
         height: auto;
-    }
-
-    .videoclass-tutor-sidebar {
-        width: 200px;
-        min-width: 160px;
     }
 }
 
@@ -1997,74 +2011,9 @@ body.vc-sidebar-open {
         overflow: visible;
     }
 
-    .videoclass-tutor-chat-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 8px 12px;
-        background: #f8f9fb;
-        border-bottom: 1px solid #e0e4ea;
-    }
-
-    .videoclass-tutor-sidebar-toggle {
-        background: none;
-        border: 1px solid #d0d5dd;
-        border-radius: 6px;
-        font-size: 1.15rem;
-        padding: 5px 10px;
-        cursor: pointer;
-        color: #4a5568;
-        transition: background 0.15s, color 0.15s;
-    }
-
-    .videoclass-tutor-sidebar-toggle:hover,
-    .videoclass-tutor-sidebar-toggle:active {
-        background: #e6eaf0;
-        color: #2d3748;
-    }
-
-    .videoclass-tutor-new-conv-mobile {
-        background: linear-gradient(135deg, #4a90d9 0%, #357abd 100%);
-        color: #fff;
-        border: none;
-        border-radius: 6px;
-        font-size: 0.78rem;
-        font-weight: 600;
-        padding: 6px 14px;
-        cursor: pointer;
-    }
-
+    /* On mobile, widen the sidebar drawer */
     .videoclass-tutor-sidebar {
-        position: absolute;
-        top: 0;
-        left: 0;
-        bottom: 0;
         width: 260px;
-        min-width: unset;
-        max-height: none;
-        z-index: 20;
-        transform: translateX(-110%);
-        transition: transform 0.25s ease;
-        border-right: 1px solid #e0e4ea;
-        border-bottom: none;
-        border-radius: 0;
-        box-shadow: 4px 0 16px rgba(0, 0, 0, 0.08);
-    }
-
-    .videoclass-tutor-sidebar.open {
-        transform: translateX(0);
-    }
-
-    .videoclass-tutor-sidebar-backdrop {
-        display: none;
-        position: absolute;
-        inset: 0;
-        z-index: 19;
-        background: rgba(0, 0, 0, 0.25);
-    }
-
-    .videoclass-tutor-sidebar-backdrop.visible {
-        display: block;
     }
 
     .videoclass-tutor-msg-content {
