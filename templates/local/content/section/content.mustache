@@ -2092,20 +2092,14 @@
         var dockIcon = dockBtn ? dockBtn.querySelector('.vc-dock-icon') : null;
         var isSidebar = false;
 
-        // Restore saved mode preference.
-        var savedMode = null;
-        try { savedMode = localStorage.getItem('vc-tutor-mode'); } catch(e) {}
-        if (savedMode === 'sidebar') {
-            enterSidebarMode(true);
-        }
-
-        function enterSidebarMode(silent) {
+        function enterSidebarMode() {
             isSidebar = true;
             widget.classList.add('is-sidebar');
             if (fab) fab.classList.add('is-sidebar');
             if (dockBtn) dockBtn.title = 'Undock to popup';
-            if (dockIcon) dockIcon.innerHTML = '&#x21E4;'; // ⇤
-            if (!silent) {
+            if (dockIcon) dockIcon.textContent = '\u21E4';
+            // If already open, apply body class.
+            if (widget.classList.contains('is-open')) {
                 document.body.classList.add('vc-sidebar-open');
             }
             try { localStorage.setItem('vc-tutor-mode', 'sidebar'); } catch(e) {}
@@ -2117,9 +2111,16 @@
             if (fab) fab.classList.remove('is-sidebar');
             document.body.classList.remove('vc-sidebar-open');
             if (dockBtn) dockBtn.title = 'Dock to sidebar';
-            if (dockIcon) dockIcon.innerHTML = '&#x21E5;'; // ⇥
+            if (dockIcon) dockIcon.textContent = '\u21E5';
             try { localStorage.setItem('vc-tutor-mode', 'popup'); } catch(e) {}
         }
+
+        // Restore saved mode preference.
+        try {
+            if (localStorage.getItem('vc-tutor-mode') === 'sidebar') {
+                enterSidebarMode();
+            }
+        } catch(e) {}
 
         function openTutor() {
             widget.classList.add('is-open');
@@ -2141,9 +2142,10 @@
         }
 
         if (fab) {
-            fab.addEventListener('click', function() {
-                var isOpen = widget.classList.contains('is-open');
-                if (isOpen) {
+            fab.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (widget.classList.contains('is-open')) {
                     closeTutor();
                 } else {
                     openTutor();
@@ -2152,17 +2154,21 @@
         }
 
         if (panelCloseBtn) {
-            panelCloseBtn.addEventListener('click', function() {
+            panelCloseBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
                 closeTutor();
             });
         }
 
         if (dockBtn) {
-            dockBtn.addEventListener('click', function() {
+            dockBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
                 if (isSidebar) {
                     exitSidebarMode();
                 } else {
-                    enterSidebarMode(false);
+                    enterSidebarMode();
                 }
             });
         }
