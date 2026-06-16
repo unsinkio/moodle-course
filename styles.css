@@ -993,6 +993,52 @@ body.vc-sidebar-open {
     pointer-events: none;
 }
 
+/* In sidebar mode, use mobile-like layout (drawer for conversations) */
+.is-sidebar .videoclass-tutor-sidebar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 240px;
+    min-width: unset;
+    z-index: 20;
+    transform: translateX(-110%);
+    transition: transform 0.25s ease;
+    border-radius: 0;
+    box-shadow: 4px 0 16px rgba(0, 0, 0, 0.1);
+}
+
+.is-sidebar .videoclass-tutor-sidebar.open {
+    transform: translateX(0);
+}
+
+.is-sidebar .videoclass-tutor-sidebar-backdrop {
+    display: none;
+    position: absolute;
+    inset: 0;
+    z-index: 19;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.is-sidebar .videoclass-tutor-sidebar-backdrop.visible {
+    display: block;
+}
+
+/* Show the hamburger/new conv header in sidebar mode */
+.is-sidebar .videoclass-tutor-chat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 12px;
+    background: #f8f9fb;
+    border-bottom: 1px solid #e0e4ea;
+}
+
+/* Messages: push to bottom so it doesn't look empty */
+.is-sidebar .videoclass-tutor-messages {
+    justify-content: flex-end;
+}
+
 /* Dock/Undock button in header */
 .videoclass-tutor-dock-btn {
     background: none;
@@ -1081,6 +1127,7 @@ body.vc-sidebar-open {
     display: flex;
     flex-direction: column;
     gap: 10px;
+    justify-content: flex-end;
 }
 
 .videoclass-tutor-msg {
@@ -1317,6 +1364,12 @@ body.vc-sidebar-open {
 /* In sidebar mode, fill the full height */
 .is-sidebar .videoclass-tutor-layout {
     height: calc(100vh - 48px); /* minus the header bar */
+}
+
+.is-sidebar .videoclass-tutor-body {
+    flex: 1;
+    max-height: none;
+    overflow: hidden;
 }
 
 .videoclass-tutor-sidebar {
