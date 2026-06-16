@@ -117,3 +117,10 @@ $string['task_cleanup_chat'] = 'Clean up old AI tutor chat history';
 // Capabilities.
 $string['videoclass:usechat'] = 'Use the AI Tutor chat';
 $string['videoclass:sharenotes'] = 'Share notes and conversations with classmates';
+
+// Course-level format options.
+$string['settings_enable_aitutor'] = 'Enable AI Tutor';
+$string['settings_enable_aitutor_help'] = 'When enabled, students see the AI Tutor chatbot on each section. When disabled, the AI Tutor panel is hidden and the chat API is blocked.';
+
+// Error messages.
+$string['aitutordisabled'] = 'The AI Tutor is disabled for this course.';

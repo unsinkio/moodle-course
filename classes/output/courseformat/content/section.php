@@ -150,6 +150,10 @@ class section extends section_base
         // Load notes shared with the current user.
         $sharedwithme = $this->load_shared_with_me($course->id, $sectionid);
 
+        // Check if AI Tutor is enabled for this course (format option).
+        $formatoptions = $format->get_format_options();
+        $aitutorenabled = !empty($formatoptions['enable_aitutor']);
+
         $data->videoclass = (object) [
             'sectionsnav'    => $this->build_sections_nav(),
             'resources'      => $resources,
@@ -164,6 +168,7 @@ class section extends section_base
             'userid'         => $USER->id,
             'sesskey'        => sesskey(),
             'logourl'        => (new \moodle_url('/course/format/videoclass/pix/atlas_icon.png'))->out(false),
+            'aitutorenabled' => $aitutorenabled,
         ];
 
         return $data;

@@ -49,6 +49,7 @@
     </div>
 
     {{! ── AI Tutor (collapsible) ── }}
+    {{#videoclass.aitutorenabled}}
     <div class="videoclass-tutor" id="videoclass-tutor-{{id}}"
          data-courseid="{{videoclass.courseid}}"
          data-sectionid="{{videoclass.sectionid}}"
@@ -126,8 +127,10 @@
             </div>
         </div>
     </div>
+    {{/videoclass.aitutorenabled}}
 
     {{! ── Logo Lightbox Modal ── }}
+    {{#videoclass.aitutorenabled}}
     <div class="videoclass-logo-modal" id="videoclass-logo-modal-{{id}}" style="display:none;">
         <div class="videoclass-logo-modal-backdrop"></div>
         <div class="videoclass-logo-modal-content">
@@ -135,6 +138,7 @@
             <img src="{{videoclass.logourl}}" alt="{{#str}}aitutorlogoalt, format_videoclass{{/str}}" class="videoclass-logo-modal-img">
         </div>
     </div>
+    {{/videoclass.aitutorenabled}}
 
     {{! ── Tabs below layout ── }}
     <div class="videoclass-tabs" role="tablist">

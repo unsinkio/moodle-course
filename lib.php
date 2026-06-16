@@ -197,4 +197,46 @@ EOF;
         }
         return get_string('sectionname', 'format_videoclass') . ' ' . $section->section;
     }
+
+    /**
+     * Course-level format options.
+     *
+     * Teachers can toggle the AI Tutor on/off per course from
+     * Course Settings → Course Format.
+     *
+     * @param bool $foreditform
+     * @return array
+     */
+    public function course_format_options($foreditform = false): array {
+        static $courseformatoptions = false;
+
+        if ($courseformatoptions === false) {
+            $courseformatoptions = [
+                'enable_aitutor' => [
+                    'default' => 1,
+                    'type'    => PARAM_INT,
+                ],
+            ];
+        }
+
+        if ($foreditform) {
+            $optionsedit = [
+                'enable_aitutor' => [
+                    'label' => get_string('settings_enable_aitutor', 'format_videoclass'),
+                    'help'  => 'settings_enable_aitutor',
+                    'help_component' => 'format_videoclass',
+                    'element_type'   => 'select',
+                    'element_attributes' => [
+                        [
+                            0 => get_string('no'),
+                            1 => get_string('yes'),
+                        ],
+                    ],
+                ],
+            ];
+            return array_merge_recursive($courseformatoptions, $optionsedit);
+        }
+
+        return $courseformatoptions;
+    }
 }
