@@ -868,7 +868,7 @@
     width: 60px;
     height: 60px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    background: linear-gradient(135deg, #3b4f6b 0%, #4a6180 100%);
     border: none;
     cursor: pointer;
     box-shadow: 0 6px 24px rgba(22, 33, 62, 0.35), 0 2px 8px rgba(0,0,0,0.15);
@@ -1034,7 +1034,7 @@ body.vc-sidebar-open {
     gap: 10px;
     width: 100%;
     padding: 12px 18px;
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    background: linear-gradient(135deg, #3b4f6b 0%, #4a6180 100%);
     border: none;
     color: #e0e0e0;
     font-size: 0.95rem;
@@ -1044,7 +1044,7 @@ body.vc-sidebar-open {
 }
 
 .videoclass-tutor-toggle:hover {
-    background: linear-gradient(135deg, #23234a 0%, #1b2a4f 100%);
+    background: linear-gradient(135deg, #455c78 0%, #537090 100%);
     box-shadow: 0 2px 16px rgba(22, 33, 62, 0.3);
 }
 
