@@ -18,13 +18,11 @@ namespace format_videoclass\external;
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once("$CFG->libdir/externallib.php");
-
-use external_api;
-use external_function_parameters;
-use external_multiple_structure;
-use external_single_structure;
-use external_value;
+use core_external\external_api;
+use core_external\external_function_parameters;
+use core_external\external_multiple_structure;
+use core_external\external_single_structure;
+use core_external\external_value;
 
 /**
  * Share a saved personal note with selected classmates.
@@ -67,6 +65,11 @@ class share_note extends external_api {
         $recipientnames = [];
 
         foreach ($params['recipients'] as $recipientid) {
+            // Only share with users enrolled in the course.
+            if (!is_enrolled($context, $recipientid, '', true)) {
+                continue;
+            }
+
             // Skip if already shared with this user.
             if ($DB->record_exists('format_videoclass_note_recipients', [
                 'noteid' => $note->id,

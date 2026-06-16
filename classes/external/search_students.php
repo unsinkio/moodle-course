@@ -18,13 +18,11 @@ namespace format_videoclass\external;
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once("$CFG->libdir/externallib.php");
-
-use external_api;
-use external_function_parameters;
-use external_multiple_structure;
-use external_single_structure;
-use external_value;
+use core_external\external_api;
+use core_external\external_function_parameters;
+use core_external\external_multiple_structure;
+use core_external\external_single_structure;
+use core_external\external_value;
 
 /**
  * Search enrolled students in a course for the recipient picker.
@@ -63,15 +61,6 @@ class search_students extends external_api {
         // Get ALL enrolled users (not just active — relaxed filter).
         $enrolled = get_enrolled_users($context, '', 0, 'u.*', 'u.lastname, u.firstname');
 
-        error_log("[VC search_students] courseid={$params['courseid']} query={$query} enrolled_count=" . count($enrolled) . " current_user={$USER->id}");
-
-        // Temp debug: log all enrolled user names.
-        $allnames = [];
-        foreach ($enrolled as $u) {
-            $allnames[] = $u->id . ':' . fullname($u) . ' (' . $u->email . ')';
-        }
-        error_log("[VC search_students] enrolled_users: " . implode(' | ', $allnames));
-
         $results = [];
         $search = \core_text::strtolower($query);
 
@@ -92,8 +81,6 @@ class search_students extends external_api {
                 }
             }
         }
-
-        error_log("[VC search_students] results_count=" . count($results));
 
         return $results;
     }

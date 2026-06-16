@@ -103,4 +103,17 @@ $string['settings_campusmcp_url_desc'] = 'Base URL of the CampusMCP server (with
 $string['settings_campusmcp_apikey'] = 'CampusMCP API Key';
 $string['settings_campusmcp_apikey_desc'] = 'Shared secret (Bearer token) for authenticating with CampusMCP.';
 $string['settings_aitutor_prompt'] = 'System Prompt';
-$string['settings_aitutor_prompt_desc'] = 'The system prompt sent to the AI. Use placeholders: <code>{coursename}</code>, <code>{sectionname}</code>, <code>{resources}</code>';
+$string['settings_aitutor_prompt_desc'] = 'The system prompt sent to the AI. Use placeholders: <code>{coursename}</code>, <code>{coursesummary}</code>, <code>{sectionname}</code>, <code>{resources}</code>, <code>{mode}</code>, <code>{activitycontext}</code>';
+
+// Data Retention settings.
+$string['settings_retention_heading'] = 'Data Retention';
+$string['settings_retention_desc'] = 'Configure how long user-generated data is kept.';
+$string['settings_chat_retention_days'] = 'Chat retention (days)';
+$string['settings_chat_retention_days_desc'] = 'Delete AI tutor chat history older than this many days. Set to 0 to keep conversations forever.';
+
+// Scheduled tasks.
+$string['task_cleanup_chat'] = 'Clean up old AI tutor chat history';
+
+// Capabilities.
+$string['videoclass:usechat'] = 'Use the AI Tutor chat';
+$string['videoclass:sharenotes'] = 'Share notes and conversations with classmates';

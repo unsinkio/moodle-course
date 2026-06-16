@@ -57,6 +57,10 @@ class send_chat_message extends external_api {
         $context = \context_course::instance($params['courseid']);
         self::validate_context($context);
 
+        if (!is_enrolled($context, $USER, '', true)) {
+            throw new \moodle_exception('notenrolled', 'error');
+        }
+
         $courseid       = $params['courseid'];
         $sectionid      = $params['sectionid'];
         $message        = trim($params['message']);
@@ -124,131 +128,11 @@ class send_chat_message extends external_api {
         $section = $DB->get_record('course_sections', ['id' => $sectionid], 'name, section', MUST_EXIST);
         $sectionname = !empty($section->name) ? $section->name : get_string('sectionname', 'format_videoclass') . ' ' . $section->section;
 
-        // Read admin-configured prompt; fall back to hardcoded default.
+        // Read admin-configured prompt; fall back to class constant default.
         $prompttemplate = get_config('format_videoclass', 'aitutor_prompt');
         if (empty($prompttemplate)) {
-            $prompttemplate = <<<EOF
-You are an AI Tutor embedded in an academic LMS environment for the course "{coursename}".
-The summary of the course is: "{coursesummary}".
-The student is currently on section "{sectionname}".{activitycontext}
-Use the following section resources as context to help the student:
-
-{resources}
-
-Respond in the same language the student uses.
-
-Your primary responsibility is NOT to provide answers, but to enforce learning, academic integrity, and evidence-based skill development.
-
-You must operate under strict governance rules based on the current interaction mode.
-
-----------------------------------------
-GLOBAL PRINCIPLES (ALWAYS APPLY)
-----------------------------------------
-
-1. Capability-first learning:
-   Focus on what the student can DO, not just what they receive.
-
-2. Evidence-based learning:
-   Every interaction should guide the student toward producing their own work.
-
-3. Do not replace thinking:
-   Never fully solve a task if it removes the student's need to think.
-
-4. Progressive disclosure:
-   Provide help in stages:
-   - Hint → Explanation → Partial solution → (Only if allowed) Full solution
-
-5. Always encourage student action:
-   End responses with a prompt, question, or next step for the student.
-
-----------------------------------------
-MODES OF OPERATION
-----------------------------------------
-
-You will receive a variable: MODE
-
-You MUST adapt behavior strictly based on MODE.
-
-----------------------------------------
-MODE: LEARNING
-----------------------------------------
-
-Allowed:
-- Explain concepts clearly
-- Provide examples
-- Provide partial code
-- Guide step-by-step
-
-Rules:
-- Do NOT immediately provide full solutions
-- Break problems into smaller steps
-- Ask the student to complete parts
-
-----------------------------------------
-MODE: ASSIST
-----------------------------------------
-
-Allowed:
-- Provide full solutions
-- Generate code
-
-BUT MUST:
-- Explain the solution line-by-line
-- Justify design decisions
-- Suggest improvements
-- Ask the student to reflect or modify
-
-----------------------------------------
-MODE: ASSESSMENT (CRITICAL)
-----------------------------------------
-
-STRICTLY FORBIDDEN:
-- Providing full solutions
-- Generating complete code answers
-- Giving direct answers to graded tasks
-
-Allowed:
-- Hints
-- Error explanations
-- Concept clarification
-- Debugging guidance
-
-Behavior:
-- If student asks for solution → REFUSE politely
-- Redirect to guidance
-- Encourage independent attempt
-
-Example refusal style:
-"I can’t provide the full solution in this context, but I can help you think through it."
-
-----------------------------------------
-OUTPUT STYLE RULES
-----------------------------------------
-
-- Be clear, structured, and concise
-- Avoid unnecessary verbosity
-- Use step-by-step breakdowns when helpful
-- When code is used:
-  - Keep it minimal unless MODE allows expansion
-
-----------------------------------------
-FAIL-SAFE
-----------------------------------------
-
-If you are unsure:
-→ Default to NOT giving the full solution
-
-----------------------------------------
-GOAL
-----------------------------------------
-
-Your goal is not to help the student finish faster.
-Your goal is to make the student more capable.
-
-Every response should move the student toward independence.
-
-CURRENT MODE: {mode}
-EOF;
+            require_once($CFG->dirroot . '/course/format/videoclass/lib.php');
+            $prompttemplate = \format_videoclass::DEFAULT_AITUTOR_PROMPT;
         }
 
         $contextstr = '';
@@ -334,34 +218,32 @@ EOF;
             $headers[] = 'Authorization: Bearer ' . $apikey;
         }
 
-        $ch = curl_init($endpoint . '/chat');
-        curl_setopt_array($ch, [
-            CURLOPT_POST           => true,
-            CURLOPT_POSTFIELDS     => $payload,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_HTTPHEADER     => $headers,
-            CURLOPT_TIMEOUT        => 60,
-            CURLOPT_CONNECTTIMEOUT => 10,
+        // Use Moodle's curl wrapper — respects proxy, security blocklists, and logging.
+        $curl = new \curl();
+        $curl->setopt([
+            'CURLOPT_TIMEOUT'        => 60,
+            'CURLOPT_CONNECTTIMEOUT' => 10,
         ]);
+        $curl->setHeader($headers);
 
-        $response = curl_exec($ch);
-        $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $error    = curl_error($ch);
-        curl_close($ch);
+        $response = $curl->post($endpoint . '/chat', $payload);
+        $info = $curl->get_info();
+        $httpcode = (int) ($info['http_code'] ?? 0);
+        $error = $curl->get_errno() ? $curl->error : '';
 
         if ($error) {
-            error_log("[VC AI Tutor] cURL error: {$error}");
+            debugging("[VC AI Tutor] cURL error: {$error}", DEBUG_DEVELOPER);
             return "I'm sorry, I'm having trouble connecting right now. Please try again later.";
         }
 
         if ($httpcode !== 200) {
-            error_log("[VC AI Tutor] HTTP {$httpcode}: {$response}");
+            debugging("[VC AI Tutor] HTTP {$httpcode}: {$response}", DEBUG_DEVELOPER);
             return "I'm sorry, something went wrong (HTTP {$httpcode}). Please try again later.";
         }
 
         $data = json_decode($response, true);
         if (!$data) {
-            error_log("[VC AI Tutor] Invalid JSON response: {$response}");
+            debugging("[VC AI Tutor] Invalid JSON response: {$response}", DEBUG_DEVELOPER);
             return "I'm sorry, I received an unexpected response. Please try again.";
         }
 
@@ -370,7 +252,7 @@ EOF;
             return $data['response'];
         }
 
-        error_log("[VC AI Tutor] Unexpected response shape: " . json_encode($data));
+        debugging("[VC AI Tutor] Unexpected response shape: " . json_encode($data), DEBUG_DEVELOPER);
         return "I received a response but couldn't parse it. Please try again.";
     }
 }

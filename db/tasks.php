@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version details for the VideoClass course format.
+ * Scheduled task definitions for format_videoclass.
  *
  * @package   format_videoclass
  * @copyright 2026 Atlantis University
@@ -24,9 +24,14 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version = 2026061601; // Security, quality & architecture improvements.
-$plugin->requires = 2024100700; // Moodle 4.5.0.
-$plugin->component = 'format_videoclass';
-$plugin->maturity = MATURITY_ALPHA;
-$plugin->release = '0.6.0';
-$plugin->supported = [405, 500];
+$tasks = [
+    [
+        'classname' => 'format_videoclass\task\cleanup_chat_history',
+        'blocking'  => 0,
+        'minute'    => '30',
+        'hour'      => '3',
+        'day'       => '*',
+        'month'     => '*',
+        'dayofweek' => '0', // Sundays.
+    ],
+];

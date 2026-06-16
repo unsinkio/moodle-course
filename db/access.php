@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version details for the VideoClass course format.
+ * Capability definitions for format_videoclass.
  *
  * @package   format_videoclass
  * @copyright 2026 Atlantis University
@@ -24,9 +24,27 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version = 2026061601; // Security, quality & architecture improvements.
-$plugin->requires = 2024100700; // Moodle 4.5.0.
-$plugin->component = 'format_videoclass';
-$plugin->maturity = MATURITY_ALPHA;
-$plugin->release = '0.6.0';
-$plugin->supported = [405, 500];
+$capabilities = [
+    // Allows a user to interact with the AI Tutor chat.
+    'format/videoclass:usechat' => [
+        'captype'      => 'write',
+        'contextlevel' => CONTEXT_COURSE,
+        'archetypes'   => [
+            'student'        => CAP_ALLOW,
+            'teacher'        => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW,
+            'manager'        => CAP_ALLOW,
+        ],
+    ],
+
+    // Allows a user to share notes and conversations with classmates.
+    'format/videoclass:sharenotes' => [
+        'captype'      => 'write',
+        'contextlevel' => CONTEXT_COURSE,
+        'archetypes'   => [
+            'student'        => CAP_ALLOW,
+            'teacher'        => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW,
+        ],
+    ],
+];
