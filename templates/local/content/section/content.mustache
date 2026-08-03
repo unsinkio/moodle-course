@@ -63,6 +63,7 @@
          data-sectionid="{{videoclass.sectionid}}"
          data-sesskey="{{videoclass.sesskey}}"
          data-logourl="{{videoclass.logourl}}">
+        <div class="videoclass-tutor-resize-handle" aria-hidden="true" title="Resize"></div>
         {{! Panel header }}
         <div class="videoclass-tutor-toggle">
             <span class="videoclass-tutor-icon" data-action="show-logo">{{#pix}}atlas_icon, format_videoclass, ATLAS{{/pix}}</span>
@@ -206,7 +207,8 @@
                             <div class="videoclass-activity" data-activity-id="{{id}}">
                                 <div class="videoclass-activity-icon">{{{icon}}}</div>
                                 {{#hasurl}}
-                                    <a href="{{url}}" class="videoclass-activity-link">{{name}}</a>
+                                    <a href="{{url}}" class="videoclass-activity-link{{#ispdf}} videoclass-pdf-trigger{{/ispdf}}"
+                                       {{#hasfileurl}}data-fileurl="{{fileurl}}"{{/hasfileurl}}>{{name}}</a>
                                 {{/hasurl}}
                                 {{^hasurl}}
                                     <div class="videoclass-activity-label">{{{content}}}</div>
@@ -228,7 +230,8 @@
                         <div class="videoclass-activity" data-activity-id="{{id}}">
                             <div class="videoclass-activity-icon">{{{icon}}}</div>
                             {{#hasurl}}
-                                <a href="{{url}}" class="videoclass-activity-link">{{name}}</a>
+                                <a href="{{url}}" class="videoclass-activity-link{{#ispdf}} videoclass-pdf-trigger{{/ispdf}}"
+                                   {{#hasfileurl}}data-fileurl="{{fileurl}}"{{/hasfileurl}}>{{name}}</a>
                             {{/hasurl}}
                             {{^hasurl}}
                                 <div class="videoclass-activity-label">{{{content}}}</div>
@@ -249,7 +252,8 @@
                         <div class="videoclass-activity" data-activity-id="{{id}}">
                             <div class="videoclass-activity-icon">{{{icon}}}</div>
                             {{#hasurl}}
-                                <a href="{{url}}" class="videoclass-activity-link">{{name}}</a>
+                                <a href="{{url}}" class="videoclass-activity-link{{#ispdf}} videoclass-pdf-trigger{{/ispdf}}"
+                                   {{#hasfileurl}}data-fileurl="{{fileurl}}"{{/hasfileurl}}>{{name}}</a>
                             {{/hasurl}}
                             {{^hasurl}}
                                 <div class="videoclass-activity-label">{{{content}}}</div>
@@ -413,6 +417,86 @@
     });
 
     // ── Inline Activity Playback (Dynamic Viewport) ──
+    function vcIsPdfHref(href) {
+        if (!href) {
+            return false;
+        }
+        try {
+            var path = href.split('?')[0].split('#')[0];
+            return /\.pdf$/i.test(path);
+        } catch (err) {
+            return false;
+        }
+    }
+
+    function vcEnsureEmbedDiv(videoContainer) {
+        var embedDiv = videoContainer.querySelector('.videoclass-video-embed');
+        if (embedDiv) {
+            return embedDiv;
+        }
+        embedDiv = document.createElement('div');
+        embedDiv.className = 'videoclass-video-embed';
+        var editRow = videoContainer.querySelector('.videoclass-edit-row');
+        if (editRow) {
+            editRow.after(embedDiv);
+        } else {
+            videoContainer.appendChild(embedDiv);
+        }
+        return embedDiv;
+    }
+
+    function vcRenderCenterIframe(embedDiv, embedUrl, isPdf, cmid, activityUrl) {
+        var iframeClass = isPdf
+            ? 'videoclass-activity-iframe videoclass-pdf-iframe'
+            : 'videoclass-activity-iframe';
+        var iframeHtml = '<iframe src="' + embedUrl + '" class="' + iframeClass + '"'
+            + ' title="Activity content"'
+            + ' style="width:100%; min-height:80vh; border:none; border-radius:12px;'
+            + ' background:#fff; box-shadow:0 4px 12px rgba(0,0,0,0.05); opacity:0; transition:opacity 0.3s;"></iframe>';
+
+        var isQuiz = activityUrl && activityUrl.indexOf('mod/quiz') !== -1;
+        var completeBtnHtml = (cmid && !isQuiz && !isPdf)
+            ? '<div class="vc-completion-wrapper" style="text-align: center; margin-top: 1.5rem; opacity: 0; transition: opacity 0.5s; transition-delay: 0.5s;">'
+            + '<button type="button" class="vc-mark-complete-btn" data-cmid="' + cmid + '"'
+            + ' style="background: #111827; color: #fff; border: none; padding: 14px 28px; border-radius: 12px;'
+            + ' font-weight: 600; font-size: 1.05rem; cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,0.1);'
+            + ' transition: all 0.2s ease;">&#10004; Mark as Complete</button></div>'
+            : '';
+
+        embedDiv.innerHTML = iframeHtml + completeBtnHtml;
+        embedDiv.style.display = '';
+        return embedDiv.querySelector('.videoclass-activity-iframe');
+    }
+
+    // PDF links inside section summary / center content (e.g. syllabus).
+    document.querySelectorAll('.videoclass-section-content').forEach(function(sectionContent) {
+        var videoContainer = sectionContent.querySelector('.videoclass-video');
+        if (!videoContainer) {
+            return;
+        }
+        videoContainer.addEventListener('click', function(e) {
+            if (e.target.closest('.videoclass-cm-controls')) {
+                return;
+            }
+            var link = e.target.closest('.videoclass-video-embed a[href]');
+            if (!link) {
+                return;
+            }
+            var href = link.getAttribute('href');
+            if (!vcIsPdfHref(href)) {
+                return;
+            }
+            e.preventDefault();
+            var embedDiv = vcEnsureEmbedDiv(videoContainer);
+            var emptyDiv = videoContainer.querySelector('.videoclass-video-empty');
+            vcRenderCenterIframe(embedDiv, href, true, null, null);
+            if (emptyDiv) {
+                emptyDiv.style.display = 'none';
+            }
+            videoContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+    });
+
     document.querySelectorAll('.videoclass-activity-link:not(.videoclass-video-trigger)').forEach(function(link) {
         link.addEventListener('click', function(e) {
             // Don't intercept clicks on editing controls
@@ -423,8 +507,11 @@
             var url = link.getAttribute('href');
             if (!url) return;
 
-            // Add inpopup=1 to the URL to hide Moodle headers/footers
-            var embedUrl = url + (url.indexOf('?') === -1 ? '?' : '&') + 'inpopup=1';
+            var fileurl = link.getAttribute('data-fileurl');
+            var isPdf = link.classList.contains('videoclass-pdf-trigger') && fileurl;
+            var embedUrl = isPdf
+                ? fileurl
+                : url + (url.indexOf('?') === -1 ? '?' : '&') + 'inpopup=1';
 
             var sectionContent = link.closest('.videoclass-section-content');
             if (!sectionContent) return;
@@ -432,30 +519,12 @@
             var videoContainer = sectionContent.querySelector('.videoclass-video');
             if (!videoContainer) return;
 
-            var embedDiv = videoContainer.querySelector('.videoclass-video-embed');
+            var embedDiv = vcEnsureEmbedDiv(videoContainer);
             var emptyDiv = videoContainer.querySelector('.videoclass-video-empty');
 
-            if (!embedDiv) {
-                embedDiv = document.createElement('div');
-                embedDiv.className = 'videoclass-video-embed';
-                var editRow = videoContainer.querySelector('.videoclass-edit-row');
-                if (editRow) {
-                    editRow.after(embedDiv);
-                } else {
-                    videoContainer.appendChild(embedDiv);
-                }
-            }
-
-            // Render iframe with initial opacity 0 for smooth fade-in
-            var iframeHtml = '<iframe src="' + embedUrl + '" class="videoclass-activity-iframe" style="width:100%; min-height:80vh; border:none; border-radius:12px; background:#fff; box-shadow:0 4px 12px rgba(0,0,0,0.05); opacity:0; transition:opacity 0.3s;"></iframe>';
-            
             var activityCardObj = link.closest('.videoclass-activity');
             var cmid = activityCardObj ? activityCardObj.dataset.activityId : null;
-            var isQuiz = url.indexOf('mod/quiz') !== -1;
-            var completeBtnHtml = (cmid && !isQuiz) ? '<div class="vc-completion-wrapper" style="text-align: center; margin-top: 1.5rem; opacity: 0; transition: opacity 0.5s; transition-delay: 0.5s;"><button type="button" class="vc-mark-complete-btn" data-cmid="' + cmid + '" style="background: #111827; color: #fff; border: none; padding: 14px 28px; border-radius: 12px; font-weight: 600; font-size: 1.05rem; cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,0.1); transition: all 0.2s ease;">&#10004; Mark as Complete</button></div>' : '';
-
-            embedDiv.innerHTML = iframeHtml + completeBtnHtml;
-            embedDiv.style.display = '';
+            var iframeEl = vcRenderCenterIframe(embedDiv, embedUrl, isPdf, cmid, url);
 
             var completeBtn = embedDiv.querySelector('.vc-mark-complete-btn');
             if (completeBtn) {
@@ -504,9 +573,8 @@
 
             if (emptyDiv) emptyDiv.style.display = 'none';
 
-            // CSS Injection to hide Moodle chrome
-            var iframeEl = embedDiv.querySelector('.videoclass-activity-iframe');
-            if (iframeEl) {
+            // CSS Injection to hide Moodle chrome (skip for direct PDF embeds).
+            if (iframeEl && !isPdf) {
                 iframeEl.addEventListener('load', function() {
                     try {
                         var doc = iframeEl.contentWindow.document;
@@ -972,6 +1040,11 @@
                     var wrapper = embedDiv.querySelector('.vc-completion-wrapper');
                     if (wrapper) wrapper.style.opacity = '1';
                 });
+            } else if (iframeEl && isPdf) {
+                iframeEl.addEventListener('load', function() {
+                    iframeEl.style.opacity = '1';
+                });
+                iframeEl.style.opacity = '1';
             }
 
             // Highlight currently playing item
@@ -1360,6 +1433,24 @@
 
         function scrollToBottom() {
             messagesEl.scrollTop = messagesEl.scrollHeight;
+        }
+
+        // Keep wheel/touch scroll inside chat messages (don't scroll the course page).
+        if (messagesEl) {
+            messagesEl.addEventListener('wheel', function(e) {
+                var delta = e.deltaY;
+                var atTop = messagesEl.scrollTop <= 0;
+                var atBottom = messagesEl.scrollTop + messagesEl.clientHeight >= messagesEl.scrollHeight - 1;
+                if ((delta < 0 && !atTop) || (delta > 0 && !atBottom)) {
+                    e.stopPropagation();
+                }
+            }, { passive: true });
+        }
+
+        if (convListEl) {
+            convListEl.addEventListener('wheel', function(e) {
+                e.stopPropagation();
+            }, { passive: true });
         }
 
         function appendMessage(role, content, msgId, noteid) {
@@ -2090,11 +2181,42 @@
         var panelCloseBtn = widget.querySelector('.videoclass-tutor-panel-close');
         var dockBtn = widget.querySelector('.videoclass-tutor-dock-btn');
         var dockIcon = dockBtn ? dockBtn.querySelector('.vc-dock-icon') : null;
+        var resizeHandle = widget.querySelector('.videoclass-tutor-resize-handle');
         var isSidebar = false;
+        var sidebarWidth = 420;
+        var SIDEBAR_MIN = 320;
+        var SIDEBAR_MAX = 720;
+
+        function clampSidebarWidth(width) {
+            var maxAllowed = Math.min(SIDEBAR_MAX, Math.floor(window.innerWidth * 0.65));
+            return Math.max(SIDEBAR_MIN, Math.min(width, maxAllowed));
+        }
+
+        function applySidebarWidth(width) {
+            sidebarWidth = clampSidebarWidth(width);
+            document.documentElement.style.setProperty('--vc-tutor-sidebar-width', sidebarWidth + 'px');
+            if (isSidebar) {
+                widget.style.width = sidebarWidth + 'px';
+            }
+            try {
+                localStorage.setItem('vc-tutor-sidebar-width', String(sidebarWidth));
+            } catch (e) {}
+        }
+
+        function restoreSidebarWidth() {
+            var saved = 420;
+            try {
+                saved = parseInt(localStorage.getItem('vc-tutor-sidebar-width'), 10) || 420;
+            } catch (e) {}
+            applySidebarWidth(saved);
+        }
+
+        restoreSidebarWidth();
 
         function enterSidebarMode() {
             isSidebar = true;
             widget.classList.add('is-sidebar');
+            widget.style.width = sidebarWidth + 'px';
             if (fab) fab.classList.add('is-sidebar');
             if (dockBtn) dockBtn.title = 'Undock to popup';
             if (dockIcon) dockIcon.textContent = '\u21E4';
@@ -2108,6 +2230,7 @@
         function exitSidebarMode() {
             isSidebar = false;
             widget.classList.remove('is-sidebar');
+            widget.style.width = '';
             if (fab) fab.classList.remove('is-sidebar');
             document.body.classList.remove('vc-sidebar-open');
             if (dockBtn) dockBtn.title = 'Dock to sidebar';
@@ -2172,6 +2295,76 @@
                 }
             });
         }
+
+        if (resizeHandle) {
+            var resizing = false;
+            var resizeStartX = 0;
+            var resizeStartWidth = 0;
+
+            function onResizeMove(clientX) {
+                var delta = resizeStartX - clientX;
+                applySidebarWidth(resizeStartWidth + delta);
+            }
+
+            function stopResize() {
+                if (!resizing) {
+                    return;
+                }
+                resizing = false;
+                widget.classList.remove('is-resizing');
+                document.body.classList.remove('vc-sidebar-resizing');
+                document.body.style.userSelect = '';
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', stopResize);
+                document.removeEventListener('touchmove', onTouchMove);
+                document.removeEventListener('touchend', stopResize);
+            }
+
+            function onMouseMove(e) {
+                onResizeMove(e.clientX);
+            }
+
+            function onTouchMove(e) {
+                if (e.touches && e.touches[0]) {
+                    onResizeMove(e.touches[0].clientX);
+                }
+            }
+
+            resizeHandle.addEventListener('mousedown', function(e) {
+                if (!isSidebar) {
+                    return;
+                }
+                e.preventDefault();
+                resizing = true;
+                resizeStartX = e.clientX;
+                resizeStartWidth = sidebarWidth;
+                widget.classList.add('is-resizing');
+                document.body.classList.add('vc-sidebar-resizing');
+                document.body.style.userSelect = 'none';
+                document.addEventListener('mousemove', onMouseMove);
+                document.addEventListener('mouseup', stopResize);
+            });
+
+            resizeHandle.addEventListener('touchstart', function(e) {
+                if (!isSidebar || !e.touches || !e.touches[0]) {
+                    return;
+                }
+                resizing = true;
+                resizeStartX = e.touches[0].clientX;
+                resizeStartWidth = sidebarWidth;
+                widget.classList.add('is-resizing');
+                document.body.classList.add('vc-sidebar-resizing');
+                document.body.style.userSelect = 'none';
+                document.addEventListener('touchmove', onTouchMove, { passive: true });
+                document.addEventListener('touchend', stopResize);
+            }, { passive: true });
+        }
+
+        window.addEventListener('resize', function() {
+            if (isSidebar) {
+                applySidebarWidth(sidebarWidth);
+            }
+        });
 
         // Close on Escape key.
         document.addEventListener('keydown', function(e) {

@@ -217,6 +217,8 @@ class section extends section_base
      */
     private function build_activity_lists(\renderer_base $output): array
     {
+        global $DB;
+
         $resources = [];
         $assessments = [];
         $qa = [];
@@ -309,6 +311,17 @@ class section extends section_base
                 }
             }
 
+            // File resources — expose direct file URL for inline PDF viewing.
+            $fileurl = '';
+            $ispdf = false;
+            if ($cminfo->modname === 'resource') {
+                $fileinfo = $this->get_resource_file_info($cminfo);
+                if ($fileinfo !== null) {
+                    $fileurl = $fileinfo['url'];
+                    $ispdf = $fileinfo['ispdf'];
+                }
+            }
+
             $item = (object) [
                 'id'         => $cminfo->id,
                 'url'        => $url,
@@ -317,6 +330,9 @@ class section extends section_base
                 'hasurl'     => !empty($url),
                 'content'    => $content,
                 'isvideo'    => $isvideo,
+                'ispdf'      => $ispdf,
+                'fileurl'    => $fileurl,
+                'hasfileurl' => !empty($fileurl),
                 'editing'    => $editing,
                 'cmcontrols' => $cmcontrols,
             ];
@@ -470,6 +486,50 @@ class section extends section_base
         }
 
         return '';
+    }
+
+    /**
+     * Resolve the main file for a resource module (for inline PDF viewing).
+     *
+     * @param \cm_info $cminfo
+     * @return array|null  Keys: url (string), ispdf (bool), mimetype (string)
+     */
+    private function get_resource_file_info(\cm_info $cminfo): ?array
+    {
+        $context = \context_module::instance($cminfo->id);
+        $fs = get_file_storage();
+        $files = $fs->get_area_files(
+            $context->id,
+            'mod_resource',
+            'content',
+            0,
+            'sortorder DESC, id ASC',
+            false
+        );
+
+        if (empty($files)) {
+            return null;
+        }
+
+        $file = reset($files);
+        $mimetype = $file->get_mimetype();
+        $filename = $file->get_filename();
+        $ispdf = ($mimetype === 'application/pdf') || preg_match('/\.pdf$/i', $filename);
+
+        $url = \moodle_url::make_pluginfile_url(
+            $file->get_contextid(),
+            $file->get_component(),
+            $file->get_filearea(),
+            $file->get_itemid(),
+            $file->get_filepath(),
+            $file->get_filename()
+        )->out(false);
+
+        return [
+            'url'      => $url,
+            'ispdf'    => $ispdf,
+            'mimetype' => $mimetype,
+        ];
     }
 
     /**
