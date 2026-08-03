@@ -179,6 +179,15 @@ EOF;
     }
 
     /**
+     * VideoClass always shows one section per page (multipage layout).
+     *
+     * @return int
+     */
+    public function get_course_display(): int {
+        return COURSE_DISPLAY_MULTIPAGE;
+    }
+
+    /**
      * Return the default section name.
      *
      * @param \stdClass $section The section object.

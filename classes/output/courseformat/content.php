@@ -114,16 +114,20 @@ class content extends content_base
      */
     protected function get_sections_to_display(course_modinfo $modinfo): array
     {
-        $sections = [];
-        $singlesection = $this->format->get_sectionnum();
+        $singlesectionid = $this->format->get_sectionid();
+        if ($singlesectionid) {
+            return [
+                $modinfo->get_section_info_by_id($singlesectionid),
+            ];
+        }
 
-        // If course format instance is not tied to a specific section (e.g. course home),
-        // default to section 0 (General).
+        $singlesection = $this->format->get_sectionnum();
         if ($singlesection === null) {
             $singlesection = 0;
         }
 
-        $sections[] = $modinfo->get_section_info($singlesection);
-        return $sections;
+        return [
+            $modinfo->get_section_info($singlesection),
+        ];
     }
 }

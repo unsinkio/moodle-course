@@ -24,7 +24,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version = 2026061603; // Ask Atlas: chat scroll containment + sidebar resize.
+$plugin->version = 2026061604; // Moodle 5.x section navigation via section.php URLs.
 $plugin->requires = 2024100700; // Moodle 4.5.0.
 $plugin->component = 'format_videoclass';
 $plugin->maturity = MATURITY_ALPHA;

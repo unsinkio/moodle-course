@@ -631,10 +631,7 @@ class section extends section_base
         $course = $format->get_course();
         $modinfo = $format->get_modinfo();
 
-        $current = $format->get_sectionnum();
-        if ($current === null || $current < 0) {
-            $current = 0;
-        }
+        $current = $this->get_active_section_number();
 
         $last = $format->get_last_section_number();
         $items = [];
@@ -655,10 +652,7 @@ class section extends section_base
             }
 
             $name = get_section_name($course, $section);
-            $url = new \moodle_url('/course/view.php', [
-                'id' => $course->id,
-                'section' => $section->section,
-            ]);
+            $url = $format->get_view_url($section, ['navigation' => true])->out(false);
             
             // Calculate completion for this section
             $tracked_activities = 0;
@@ -693,7 +687,8 @@ class section extends section_base
 
             $items[] = (object) [
                 'name' => $name,
-                'url' => $url->out(false),
+                'url' => $url,
+                'sectionid' => $section->id,
                 'current' => ((int) $section->section === (int) $current),
                 'is_completed' => $is_completed,
                 'in_progress' => $in_progress,
@@ -703,6 +698,31 @@ class section extends section_base
         }
 
         return $items;
+    }
+
+    /**
+     * Resolve the active section number for nav highlighting (Moodle 5 section.php compatible).
+     *
+     * @return int
+     */
+    private function get_active_section_number(): int
+    {
+        $format = $this->format;
+        $sectionnum = $format->get_sectionnum();
+        if ($sectionnum !== null && $sectionnum >= 0) {
+            return (int) $sectionnum;
+        }
+
+        $sectionid = $format->get_sectionid();
+        if ($sectionid) {
+            $modinfo = $format->get_modinfo();
+            $sectioninfo = $modinfo->get_section_info_by_id($sectionid);
+            if ($sectioninfo) {
+                return (int) $sectioninfo->section;
+            }
+        }
+
+        return 0;
     }
 
     /**
