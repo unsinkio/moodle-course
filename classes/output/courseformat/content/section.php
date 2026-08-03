@@ -767,7 +767,7 @@ class section extends section_base
 
             $notes[] = (object) [
                 'id'             => (int) $r->id,
-                'content'        => format_string($r->content),
+                'content'        => $r->content,
                 'timecreated'    => userdate($r->timecreated, get_string('strftimedatetimeshort', 'langconfig')),
                 'timemodified'   => userdate($r->timemodified, get_string('strftimedatetimeshort', 'langconfig')),
                 'isshared'       => !empty($recipientnames),
@@ -810,7 +810,7 @@ class section extends section_base
         foreach ($records as $r) {
             $notes[] = (object) [
                 'id'             => (int) $r->id,
-                'content'        => format_string($r->content),
+                'content'        => $r->content,
                 'authorfullname' => fullname($r),
                 'timeshared'     => userdate($r->timeshared, get_string('strftimedatetimeshort', 'langconfig')),
             ];
