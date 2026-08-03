@@ -16,7 +16,8 @@
                     {{#is_restricted}}
                         <button type="button"
                                 class="videoclass-section-link videoclass-section-restricted {{#current}}is-current{{/current}}"
-                                data-sectionid="{{sectionid}}">
+                                data-sectionid="{{sectionid}}"
+                                data-restriction-target="videoclass-restriction-{{sectionid}}">
                             {{#has_tracking}}
                                 {{#is_completed}}<span class="vc-progress-icon vc-completed">&#9679;</span>{{/is_completed}}
                                 {{#in_progress}}<span class="vc-progress-icon vc-in-progress">&#9681;</span>{{/in_progress}}
@@ -24,7 +25,7 @@
                             {{/has_tracking}}
                             <span class="vc-section-name">{{name}}</span>
                         </button>
-                        <template class="videoclass-restriction-template">{{{availabilityhtml}}}</template>
+                        <div id="videoclass-restriction-{{sectionid}}" class="videoclass-restriction-data" hidden aria-hidden="true">{{{availabilityhtml}}}</div>
                     {{/is_restricted}}
                     {{^is_restricted}}
                         <a class="videoclass-section-link {{#current}}is-current{{/current}}"
@@ -216,8 +217,9 @@
                         {{#restricted}}
                             <div class="videoclass-activity videoclass-activity-restricted" data-activity-id="{{id}}">
                                 <div class="videoclass-activity-icon">{{{icon}}}</div>
-                                <button type="button" class="videoclass-activity-link videoclass-restricted-trigger">{{name}}</button>
-                                <template class="videoclass-restriction-template">{{{availabilityhtml}}}</template>
+                                <button type="button" class="videoclass-activity-link videoclass-restricted-trigger"
+                                        data-restriction-target="videoclass-restriction-cm-{{id}}">{{name}}</button>
+                                <div id="videoclass-restriction-cm-{{id}}" class="videoclass-restriction-data" hidden aria-hidden="true">{{{availabilityhtml}}}</div>
                                 {{#editing}}
                                     <div class="videoclass-cm-controls">{{{cmcontrols}}}</div>
                                 {{/editing}}
@@ -265,8 +267,9 @@
                         {{#restricted}}
                             <div class="videoclass-activity videoclass-activity-restricted" data-activity-id="{{id}}">
                                 <div class="videoclass-activity-icon">{{{icon}}}</div>
-                                <button type="button" class="videoclass-activity-link videoclass-restricted-trigger">{{name}}</button>
-                                <template class="videoclass-restriction-template">{{{availabilityhtml}}}</template>
+                                <button type="button" class="videoclass-activity-link videoclass-restricted-trigger"
+                                        data-restriction-target="videoclass-restriction-cm-{{id}}">{{name}}</button>
+                                <div id="videoclass-restriction-cm-{{id}}" class="videoclass-restriction-data" hidden aria-hidden="true">{{{availabilityhtml}}}</div>
                                 {{#editing}}
                                     <div class="videoclass-cm-controls">{{{cmcontrols}}}</div>
                                 {{/editing}}
@@ -299,8 +302,9 @@
                         {{#restricted}}
                             <div class="videoclass-activity videoclass-activity-restricted" data-activity-id="{{id}}">
                                 <div class="videoclass-activity-icon">{{{icon}}}</div>
-                                <button type="button" class="videoclass-activity-link videoclass-restricted-trigger">{{name}}</button>
-                                <template class="videoclass-restriction-template">{{{availabilityhtml}}}</template>
+                                <button type="button" class="videoclass-activity-link videoclass-restricted-trigger"
+                                        data-restriction-target="videoclass-restriction-cm-{{id}}">{{name}}</button>
+                                <div id="videoclass-restriction-cm-{{id}}" class="videoclass-restriction-data" hidden aria-hidden="true">{{{availabilityhtml}}}</div>
                                 {{#editing}}
                                     <div class="videoclass-cm-controls">{{{cmcontrols}}}</div>
                                 {{/editing}}
@@ -504,14 +508,60 @@
         return embedDiv;
     }
 
-    function vcShowRestrictionInCenter(videoContainer, html) {
-        var restrictedDiv = videoContainer.querySelector('.videoclass-video-restricted');
-        var embedDiv = videoContainer.querySelector('.videoclass-video-embed');
-        var emptyDiv = videoContainer.querySelector('.videoclass-video-empty');
+    function vcGetRestrictionHtml(sourceEl) {
+        if (!sourceEl) {
+            return '';
+        }
 
-        if (restrictedDiv) {
-            restrictedDiv.innerHTML = html;
-            restrictedDiv.style.display = '';
+        var targetId = sourceEl.getAttribute('data-restriction-target');
+        if (targetId) {
+            var dataEl = document.getElementById(targetId);
+            return dataEl ? dataEl.innerHTML : '';
+        }
+
+        var dataEl = sourceEl.querySelector('.videoclass-restriction-data');
+        if (dataEl) {
+            return dataEl.innerHTML;
+        }
+
+        var tpl = sourceEl.querySelector('.videoclass-restriction-template');
+        if (!tpl) {
+            tpl = sourceEl.nextElementSibling;
+        }
+        if (!tpl) {
+            return '';
+        }
+
+        if (tpl.classList && tpl.classList.contains('videoclass-restriction-data')) {
+            return tpl.innerHTML;
+        }
+
+        if (tpl.tagName === 'TEMPLATE') {
+            if (tpl.innerHTML) {
+                return tpl.innerHTML;
+            }
+            if (tpl.content) {
+                var wrapper = document.createElement('div');
+                wrapper.appendChild(tpl.content.cloneNode(true));
+                return wrapper.innerHTML;
+            }
+        }
+
+        return tpl.innerHTML || '';
+    }
+
+    function vcShowRestrictionInCenter(videoContainer, html) {
+        if (!html) {
+            return;
+        }
+
+        var emptyDiv = videoContainer.querySelector('.videoclass-video-empty');
+        var embedDiv = videoContainer.querySelector('.videoclass-video-embed');
+        var directRestricted = videoContainer.querySelector(':scope > .videoclass-video-restricted');
+
+        if (directRestricted) {
+            directRestricted.innerHTML = html;
+            directRestricted.style.display = '';
             if (embedDiv) {
                 embedDiv.style.display = 'none';
             }
@@ -528,11 +578,17 @@
         videoContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
-    document.querySelectorAll('.videoclass-section-restricted').forEach(function(btn) {
-        btn.addEventListener('click', function(e) {
+    document.querySelectorAll('.videoclass-sections-nav').forEach(function(nav) {
+        nav.addEventListener('click', function(e) {
+            var btn = e.target.closest('.videoclass-section-restricted');
+            if (!btn) {
+                return;
+            }
+
             e.preventDefault();
-            var tpl = btn.nextElementSibling;
-            if (!tpl || !tpl.classList.contains('videoclass-restriction-template')) {
+
+            var html = vcGetRestrictionHtml(btn);
+            if (!html) {
                 return;
             }
 
@@ -546,7 +602,7 @@
                 return;
             }
 
-            vcShowRestrictionInCenter(videoContainer, tpl.innerHTML);
+            vcShowRestrictionInCenter(videoContainer, html);
 
             sectionContent.querySelectorAll('.videoclass-section-link').forEach(function(link) {
                 link.classList.remove('is-current');
@@ -563,17 +619,12 @@
 
             e.preventDefault();
 
-            var activity = btn.closest('.videoclass-activity');
-            if (!activity) {
+            var html = vcGetRestrictionHtml(btn);
+            if (!html) {
                 return;
             }
 
-            var tpl = activity.querySelector('.videoclass-restriction-template');
-            if (!tpl) {
-                return;
-            }
-
-            var sectionContent = activity.closest('.videoclass-section-content');
+            var sectionContent = btn.closest('.videoclass-section-content');
             if (!sectionContent) {
                 return;
             }
@@ -583,7 +634,7 @@
                 return;
             }
 
-            vcShowRestrictionInCenter(videoContainer, tpl.innerHTML);
+            vcShowRestrictionInCenter(videoContainer, html);
         });
     });
 
@@ -1577,20 +1628,67 @@
             messagesEl.scrollTop = messagesEl.scrollHeight;
         }
 
-        // Keep wheel/touch scroll inside chat messages (don't scroll the course page).
-        if (messagesEl) {
-            messagesEl.addEventListener('wheel', function(e) {
+        function trapScrollInElement(scrollableEl) {
+            if (!scrollableEl) {
+                return;
+            }
+
+            scrollableEl.addEventListener('wheel', function(e) {
+                if (scrollableEl.scrollHeight <= scrollableEl.clientHeight) {
+                    return;
+                }
+
                 var delta = e.deltaY;
-                var atTop = messagesEl.scrollTop <= 0;
-                var atBottom = messagesEl.scrollTop + messagesEl.clientHeight >= messagesEl.scrollHeight - 1;
-                if ((delta < 0 && !atTop) || (delta > 0 && !atBottom)) {
+                var maxScroll = scrollableEl.scrollHeight - scrollableEl.clientHeight;
+                var nextTop = scrollableEl.scrollTop + delta;
+
+                if ((delta < 0 && scrollableEl.scrollTop <= 0) ||
+                    (delta > 0 && scrollableEl.scrollTop >= maxScroll)) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return;
+                }
+
+                e.preventDefault();
+                e.stopPropagation();
+                scrollableEl.scrollTop = Math.max(0, Math.min(maxScroll, nextTop));
+            }, { passive: false });
+
+            var touchStartY = 0;
+            scrollableEl.addEventListener('touchstart', function(e) {
+                if (e.touches.length !== 1) {
+                    return;
+                }
+                touchStartY = e.touches[0].clientY;
+            }, { passive: true });
+
+            scrollableEl.addEventListener('touchmove', function(e) {
+                if (e.touches.length !== 1 || scrollableEl.scrollHeight <= scrollableEl.clientHeight) {
+                    return;
+                }
+
+                var currentY = e.touches[0].clientY;
+                var deltaY = touchStartY - currentY;
+                touchStartY = currentY;
+                var atTop = scrollableEl.scrollTop <= 0;
+                var atBottom = scrollableEl.scrollTop + scrollableEl.clientHeight >= scrollableEl.scrollHeight - 1;
+
+                if ((deltaY < 0 && atTop) || (deltaY > 0 && atBottom)) {
+                    e.preventDefault();
                     e.stopPropagation();
                 }
-            }, { passive: true });
+            }, { passive: false });
         }
 
-        if (convListEl) {
-            convListEl.addEventListener('wheel', function(e) {
+        trapScrollInElement(messagesEl);
+        trapScrollInElement(convListEl);
+
+        var chatColEl = widget.querySelector('.videoclass-tutor-chat-col');
+        if (chatColEl) {
+            chatColEl.addEventListener('wheel', function(e) {
+                if (e.target.closest('.videoclass-tutor-messages, .videoclass-tutor-conv-list')) {
+                    return;
+                }
                 e.stopPropagation();
             }, { passive: true });
         }
