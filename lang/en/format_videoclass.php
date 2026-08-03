@@ -45,6 +45,8 @@ $string['tabslabel'] = 'Section resources';
 // Section content.
 $string['editsection'] = 'Edit this topic';
 $string['videoplaceholder'] = 'Add a video to the topic summary to display it here.';
+$string['sectionnotavailable'] = 'This topic is not available yet.';
+$string['activitynotavailable'] = 'This activity is not available yet.';
 $string['noresources'] = 'No resources assigned to this topic.';
 $string['noassessments'] = 'No assessments assigned to this topic.';
 $string['noqaprefix'] = 'Add activities with the [Q&A] prefix or forums to show them here.';

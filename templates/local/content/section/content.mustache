@@ -13,15 +13,30 @@
             <div class="videoclass-sidebar-header">{{#str}}tabresources, format_videoclass{{/str}}</div>
             <nav class="videoclass-sections-nav" aria-label="Course sections">
                 {{#videoclass.sectionsnav}}
-                    <a class="videoclass-section-link {{#current}}is-current{{/current}}"
-                       href="{{url}}" data-sectionid="{{sectionid}}">
-                        {{#has_tracking}}
-                            {{#is_completed}}<span class="vc-progress-icon vc-completed">&#9679;</span>{{/is_completed}}
-                            {{#in_progress}}<span class="vc-progress-icon vc-in-progress">&#9681;</span>{{/in_progress}}
-                            {{#not_started}}<span class="vc-progress-icon vc-not-started">&#9675;</span>{{/not_started}}
-                        {{/has_tracking}}
-                        <span class="vc-section-name">{{name}}</span>
-                    </a>
+                    {{#is_restricted}}
+                        <button type="button"
+                                class="videoclass-section-link videoclass-section-restricted {{#current}}is-current{{/current}}"
+                                data-sectionid="{{sectionid}}">
+                            {{#has_tracking}}
+                                {{#is_completed}}<span class="vc-progress-icon vc-completed">&#9679;</span>{{/is_completed}}
+                                {{#in_progress}}<span class="vc-progress-icon vc-in-progress">&#9681;</span>{{/in_progress}}
+                                {{#not_started}}<span class="vc-progress-icon vc-not-started">&#9675;</span>{{/not_started}}
+                            {{/has_tracking}}
+                            <span class="vc-section-name">{{name}}</span>
+                        </button>
+                        <template class="videoclass-restriction-template">{{{availabilityhtml}}}</template>
+                    {{/is_restricted}}
+                    {{^is_restricted}}
+                        <a class="videoclass-section-link {{#current}}is-current{{/current}}"
+                           href="{{url}}" data-sectionid="{{sectionid}}">
+                            {{#has_tracking}}
+                                {{#is_completed}}<span class="vc-progress-icon vc-completed">&#9679;</span>{{/is_completed}}
+                                {{#in_progress}}<span class="vc-progress-icon vc-in-progress">&#9681;</span>{{/in_progress}}
+                                {{#not_started}}<span class="vc-progress-icon vc-not-started">&#9675;</span>{{/not_started}}
+                            {{/has_tracking}}
+                            <span class="vc-section-name">{{name}}</span>
+                        </a>
+                    {{/is_restricted}}
                 {{/videoclass.sectionsnav}}
                 {{^videoclass.sectionsnav}}
                     <div class="videoclass-empty">{{#str}}noresources, format_videoclass{{/str}}</div>
@@ -36,16 +51,23 @@
                     <a class="videoclass-edit-button" href="{{videoclass.editurl}}">{{#str}}editsection, format_videoclass{{/str}}</a>
                 </div>
             {{/editing}}
-            {{#videoclass.hasvideo}}
-                <div class="videoclass-video-embed">
-                    {{{summary.summarytext}}}
+            {{#videoclass.sectionrestricted}}
+                <div class="videoclass-video-restricted">
+                    {{{videoclass.centeravailabilityhtml}}}
                 </div>
-            {{/videoclass.hasvideo}}
-            {{^videoclass.hasvideo}}
-                <div class="videoclass-video-empty">
-                    <span>{{#str}}videoplaceholder, format_videoclass{{/str}}</span>
-                </div>
-            {{/videoclass.hasvideo}}
+            {{/videoclass.sectionrestricted}}
+            {{^videoclass.sectionrestricted}}
+                {{#videoclass.hasvideo}}
+                    <div class="videoclass-video-embed">
+                        {{{summary.summarytext}}}
+                    </div>
+                {{/videoclass.hasvideo}}
+                {{^videoclass.hasvideo}}
+                    <div class="videoclass-video-empty">
+                        <span>{{#str}}videoplaceholder, format_videoclass{{/str}}</span>
+                    </div>
+                {{/videoclass.hasvideo}}
+            {{/videoclass.sectionrestricted}}
         </div>
     </div>
 
@@ -191,6 +213,17 @@
                 {{! ── Tab 1: Resources ── }}
                 <section class="videoclass-tab-panel" role="tabpanel" aria-labelledby="videoclass-tab-{{id}}-resources">
                     {{#videoclass.resources}}
+                        {{#restricted}}
+                            <div class="videoclass-activity videoclass-activity-restricted" data-activity-id="{{id}}">
+                                <div class="videoclass-activity-icon">{{{icon}}}</div>
+                                <button type="button" class="videoclass-activity-link videoclass-restricted-trigger">{{name}}</button>
+                                <template class="videoclass-restriction-template">{{{availabilityhtml}}}</template>
+                                {{#editing}}
+                                    <div class="videoclass-cm-controls">{{{cmcontrols}}}</div>
+                                {{/editing}}
+                            </div>
+                        {{/restricted}}
+                        {{^restricted}}
                         {{#isvideo}}
                             <div class="videoclass-activity videoclass-activity-video" data-activity-id="{{id}}">
                                 <div class="videoclass-activity-icon">{{{icon}}}</div>
@@ -219,6 +252,7 @@
                                 {{/editing}}
                             </div>
                         {{/isvideo}}
+                        {{/restricted}}
                     {{/videoclass.resources}}
                     {{^videoclass.resources}}
                         <div class="videoclass-empty">{{#str}}noresources, format_videoclass{{/str}}</div>
@@ -228,6 +262,17 @@
                 {{! ── Tab 2: Assessments ── }}
                 <section class="videoclass-tab-panel" role="tabpanel" aria-labelledby="videoclass-tab-{{id}}-assessments">
                     {{#videoclass.assessments}}
+                        {{#restricted}}
+                            <div class="videoclass-activity videoclass-activity-restricted" data-activity-id="{{id}}">
+                                <div class="videoclass-activity-icon">{{{icon}}}</div>
+                                <button type="button" class="videoclass-activity-link videoclass-restricted-trigger">{{name}}</button>
+                                <template class="videoclass-restriction-template">{{{availabilityhtml}}}</template>
+                                {{#editing}}
+                                    <div class="videoclass-cm-controls">{{{cmcontrols}}}</div>
+                                {{/editing}}
+                            </div>
+                        {{/restricted}}
+                        {{^restricted}}
                         <div class="videoclass-activity" data-activity-id="{{id}}">
                             <div class="videoclass-activity-icon">{{{icon}}}</div>
                             {{#hasurl}}
@@ -241,6 +286,7 @@
                                 <div class="videoclass-cm-controls">{{{cmcontrols}}}</div>
                             {{/editing}}
                         </div>
+                        {{/restricted}}
                     {{/videoclass.assessments}}
                     {{^videoclass.assessments}}
                         <div class="videoclass-empty">{{#str}}noassessments, format_videoclass{{/str}}</div>
@@ -250,6 +296,17 @@
                 {{! ── Tab 3: Q&A ── }}
                 <section class="videoclass-tab-panel" role="tabpanel" aria-labelledby="videoclass-tab-{{id}}-qa">
                     {{#videoclass.qa}}
+                        {{#restricted}}
+                            <div class="videoclass-activity videoclass-activity-restricted" data-activity-id="{{id}}">
+                                <div class="videoclass-activity-icon">{{{icon}}}</div>
+                                <button type="button" class="videoclass-activity-link videoclass-restricted-trigger">{{name}}</button>
+                                <template class="videoclass-restriction-template">{{{availabilityhtml}}}</template>
+                                {{#editing}}
+                                    <div class="videoclass-cm-controls">{{{cmcontrols}}}</div>
+                                {{/editing}}
+                            </div>
+                        {{/restricted}}
+                        {{^restricted}}
                         <div class="videoclass-activity" data-activity-id="{{id}}">
                             <div class="videoclass-activity-icon">{{{icon}}}</div>
                             {{#hasurl}}
@@ -263,6 +320,7 @@
                                 <div class="videoclass-cm-controls">{{{cmcontrols}}}</div>
                             {{/editing}}
                         </div>
+                        {{/restricted}}
                     {{/videoclass.qa}}
                     {{^videoclass.qa}}
                         <div class="videoclass-empty">{{#str}}noqaprefix, format_videoclass{{/str}}</div>
@@ -445,6 +503,89 @@
         }
         return embedDiv;
     }
+
+    function vcShowRestrictionInCenter(videoContainer, html) {
+        var restrictedDiv = videoContainer.querySelector('.videoclass-video-restricted');
+        var embedDiv = videoContainer.querySelector('.videoclass-video-embed');
+        var emptyDiv = videoContainer.querySelector('.videoclass-video-empty');
+
+        if (restrictedDiv) {
+            restrictedDiv.innerHTML = html;
+            restrictedDiv.style.display = '';
+            if (embedDiv) {
+                embedDiv.style.display = 'none';
+            }
+        } else {
+            embedDiv = vcEnsureEmbedDiv(videoContainer);
+            embedDiv.innerHTML = '<div class="videoclass-video-restricted">' + html + '</div>';
+            embedDiv.style.display = '';
+        }
+
+        if (emptyDiv) {
+            emptyDiv.style.display = 'none';
+        }
+
+        videoContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    document.querySelectorAll('.videoclass-section-restricted').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            var tpl = btn.nextElementSibling;
+            if (!tpl || !tpl.classList.contains('videoclass-restriction-template')) {
+                return;
+            }
+
+            var sectionContent = btn.closest('.videoclass-section-content');
+            if (!sectionContent) {
+                return;
+            }
+
+            var videoContainer = sectionContent.querySelector('.videoclass-video');
+            if (!videoContainer) {
+                return;
+            }
+
+            vcShowRestrictionInCenter(videoContainer, tpl.innerHTML);
+
+            sectionContent.querySelectorAll('.videoclass-section-link').forEach(function(link) {
+                link.classList.remove('is-current');
+            });
+            btn.classList.add('is-current');
+        });
+    });
+
+    document.querySelectorAll('.videoclass-restricted-trigger').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            if (e.target.closest('.videoclass-cm-controls')) {
+                return;
+            }
+
+            e.preventDefault();
+
+            var activity = btn.closest('.videoclass-activity');
+            if (!activity) {
+                return;
+            }
+
+            var tpl = activity.querySelector('.videoclass-restriction-template');
+            if (!tpl) {
+                return;
+            }
+
+            var sectionContent = activity.closest('.videoclass-section-content');
+            if (!sectionContent) {
+                return;
+            }
+
+            var videoContainer = sectionContent.querySelector('.videoclass-video');
+            if (!videoContainer) {
+                return;
+            }
+
+            vcShowRestrictionInCenter(videoContainer, tpl.innerHTML);
+        });
+    });
 
     function vcRenderCenterIframe(embedDiv, embedUrl, isPdf, cmid, activityUrl) {
         var iframeClass = isPdf

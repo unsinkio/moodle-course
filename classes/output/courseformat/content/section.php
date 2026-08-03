@@ -68,14 +68,11 @@ class section extends section_base
         // Moodle's parent export may return renderable objects for these;
         // our custom template outputs them with {{{...}}} which requires strings.
 
-        // availability → string.
-        if (isset($data->availability) && is_object($data->availability)) {
-            try {
-                $data->availability = $output->render($data->availability);
-            } catch (\Throwable $e) {
-                $data->availability = '';
-            }
-        }
+        // availability → rendered HTML string for templates.
+        $sectioninfo = $this->section;
+        $availabilityhtml = $this->render_section_availability_html($output, $sectioninfo);
+        $sectionrestricted = $this->is_restricted_section($sectioninfo);
+        $data->availability = $sectionrestricted ? '' : $availabilityhtml;
 
         // summary.summarytext → string.
         if (isset($data->summary) && is_object($data->summary)) {
@@ -140,8 +137,6 @@ class section extends section_base
         $context = \context_course::instance($course->id);
         $sectioninfo = $this->section;
         $sectionid = $sectioninfo->id;
-
-        // Build activity lists directly from modinfo (reliable source of truth).
         [$resources, $assessments, $qa] = $this->build_activity_lists($output);
 
         // Load personal notes for this user (with sharing info).
@@ -155,11 +150,14 @@ class section extends section_base
         $aitutorenabled = !empty($formatoptions['enable_aitutor']);
 
         $data->videoclass = (object) [
-            'sectionsnav'    => $this->build_sections_nav(),
+            'sectionsnav'    => $this->build_sections_nav($output),
             'resources'      => $resources,
             'assessments'    => $assessments,
             'qa'             => $qa,
-            'hasvideo'       => $this->summary_has_video($data),
+            'hasvideo'       => !$sectionrestricted && $this->summary_has_video($data),
+            'sectionrestricted' => $sectionrestricted,
+            'centeravailabilityhtml' => $sectionrestricted ? $availabilityhtml : '',
+            'hascenteravailability' => $sectionrestricted && $availabilityhtml !== '',
             'editurl'        => (new \moodle_url('/course/editsection.php', ['id' => $data->id]))->out(false),
             'personalnotes'  => $personalnotes,
             'sharedwithme'   => $sharedwithme,
@@ -236,13 +234,13 @@ class section extends section_base
         foreach ($modinfo->sections[$section->section] as $cmid) {
             $cminfo = $modinfo->get_cm($cmid);
 
-            // Skip hidden or deleted modules.
-            if (!$cminfo->uservisible) {
+            // Skip hidden modules unless they are shown on the course page with availability info.
+            $restricted = $this->is_restricted_cm($cminfo);
+            if (!$cminfo->uservisible && !$restricted) {
                 continue;
             }
 
-
-
+            $availabilityhtml = $restricted ? $this->render_cm_availability_html($output, $cminfo) : '';
             $name = $cminfo->name;
 
             // Determine bucket from name prefix first.
@@ -266,8 +264,8 @@ class section extends section_base
                 $icon = '<img src="' . $iconurl->out(false) . '" class="activityicon" alt="" role="presentation">';
             }
 
-            // Build URL.
-            $url = $cminfo->url ? $cminfo->url->out(false) : '';
+            // Build URL (restricted activities open availability in the center panel).
+            $url = (!$restricted && $cminfo->url) ? $cminfo->url->out(false) : '';
 
             // Build controls for editing mode.
             $cmcontrols = '';
@@ -328,6 +326,9 @@ class section extends section_base
                 'name'       => format_string($name),
                 'icon'       => $icon,
                 'hasurl'     => !empty($url),
+                'restricted' => $restricted,
+                'availabilityhtml' => $availabilityhtml,
+                'hasavailabilityhtml' => !empty($availabilityhtml),
                 'content'    => $content,
                 'isvideo'    => $isvideo,
                 'ispdf'      => $ispdf,
@@ -622,9 +623,10 @@ class section extends section_base
     /**
      * Build navigation items for all visible sections.
      *
+     * @param \renderer_base $output
      * @return array
      */
-    private function build_sections_nav(): array
+    private function build_sections_nav(\renderer_base $output): array
     {
         global $USER;
         $format = $this->format;
@@ -651,8 +653,10 @@ class section extends section_base
                 continue;
             }
 
+            $isrestricted = $this->is_restricted_section($section);
             $name = get_section_name($course, $section);
-            $url = $format->get_view_url($section, ['navigation' => true])->out(false);
+            $availabilityhtml = $isrestricted ? $this->render_section_availability_html($output, $section) : '';
+            $url = $isrestricted ? '' : $format->get_view_url($section, ['navigation' => true])->out(false);
             
             // Calculate completion for this section
             $tracked_activities = 0;
@@ -689,6 +693,9 @@ class section extends section_base
                 'name' => $name,
                 'url' => $url,
                 'sectionid' => $section->id,
+                'is_restricted' => $isrestricted,
+                'availabilityhtml' => $availabilityhtml,
+                'hasavailabilityhtml' => !empty($availabilityhtml),
                 'current' => ((int) $section->section === (int) $current),
                 'is_completed' => $is_completed,
                 'in_progress' => $in_progress,
@@ -810,5 +817,102 @@ class section extends section_base
         }
 
         return $notes;
+    }
+
+    /**
+     * Whether a section is listed but blocked by availability restrictions.
+     *
+     * @param \section_info $section
+     * @return bool
+     */
+    private function is_restricted_section(\section_info $section): bool
+    {
+        return !$section->uservisible && !empty($section->availableinfo);
+    }
+
+    /**
+     * Whether an activity is listed but blocked by availability restrictions.
+     *
+     * @param \cm_info $cm
+     * @return bool
+     */
+    private function is_restricted_cm(\cm_info $cm): bool
+    {
+        return !$cm->uservisible
+            && $cm->is_visible_on_course_page()
+            && !empty($cm->availableinfo);
+    }
+
+    /**
+     * Render section availability HTML for templates.
+     *
+     * @param \renderer_base $output
+     * @param \section_info $section
+     * @return string
+     */
+    private function render_section_availability_html(\renderer_base $output, \section_info $section): string
+    {
+        if (!$section->uservisible && !empty($section->availableinfo)) {
+            return $this->format_availability_message($section->availableinfo);
+        }
+
+        $format = $this->format;
+        $class = $format->get_output_classname('content\\section\\availability');
+        $availability = new $class($format, $section);
+        if (!$availability->has_availability($output)) {
+            return '';
+        }
+
+        return $output->render($availability);
+    }
+
+    /**
+     * Render activity availability HTML for templates.
+     *
+     * @param \renderer_base $output
+     * @param \cm_info $cm
+     * @return string
+     */
+    private function render_cm_availability_html(\renderer_base $output, \cm_info $cm): string
+    {
+        if (!$cm->uservisible && !empty($cm->availableinfo)) {
+            return $this->format_availability_message($cm->availableinfo);
+        }
+
+        $format = $this->format;
+        $section = $format->get_modinfo()->get_section_info($cm->sectionnum);
+        $class = $format->get_output_classname('content\\cm\\availability');
+        $availability = new $class($format, $section, $cm);
+        $exported = $availability->export_for_template($output);
+        if (!$exported || empty($exported->hasmodavailability)) {
+            return '';
+        }
+
+        $templatedata = (object) [
+            'hasavailability' => $exported->hasmodavailability,
+            'info' => $exported->info ?? [],
+        ];
+
+        return $output->render_from_template('core_courseformat/local/content/section/availability', $templatedata);
+    }
+
+    /**
+     * Format availability info text into a styled notice.
+     *
+     * @param string $availableinfo
+     * @return string
+     */
+    private function format_availability_message(string $availableinfo): string
+    {
+        global $CFG;
+        require_once($CFG->dirroot . '/availability/classes/info.php');
+
+        $course = $this->format->get_course();
+        $text = \core_availability\info::format_info($availableinfo, $course);
+        if ($text === '') {
+            return '';
+        }
+
+        return '<div class="videoclass-availability-notice alert alert-warning mb-0">' . $text . '</div>';
     }
 }

@@ -167,6 +167,12 @@
     box-shadow: 0 6px 16px rgba(249, 115, 22, 0.2);
 }
 
+button.videoclass-section-link {
+    width: 100%;
+    text-align: left;
+    font: inherit;
+}
+
 .vc-progress-icon {
     display: inline-block;
     margin-right: 6px;
@@ -293,6 +299,36 @@
     font-size: 0.95rem;
     color: var(--vc-muted);
     width: 100%;
+}
+
+.videoclass-video-restricted {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 280px;
+    padding: 24px;
+}
+
+.videoclass-video-restricted .videoclass-availability-notice,
+.videoclass-video-restricted .alert {
+    max-width: 560px;
+    width: 100%;
+    margin: 0;
+}
+
+.videoclass-activity-restricted .videoclass-restricted-trigger {
+    background: none;
+    border: none;
+    padding: 0;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.videoclass-activity-restricted .videoclass-restricted-trigger:hover {
+    text-decoration: underline;
 }
 
 .videoclass-tabs {
