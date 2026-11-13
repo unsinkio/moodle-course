@@ -248,4 +248,19 @@ EOF;
 
         return $courseformatoptions;
     }
+
+    /**
+     * Whether AI tutor chat APIs may run for this course (VideoClass or Canvas Format 360 panel).
+     */
+    public static function is_aitutor_enabled_for_course(int $courseid): bool {
+        $format = course_get_format($courseid);
+        $options = $format->get_format_options();
+        if (!empty($options['enable_aitutor'])) {
+            return true;
+        }
+        if ($format->get_format() === 'canvasformat' && !empty($options['enable_atlas_panel'])) {
+            return true;
+        }
+        return false;
+    }
 }

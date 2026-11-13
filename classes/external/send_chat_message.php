@@ -61,10 +61,7 @@ class send_chat_message extends external_api {
             throw new \moodle_exception('notenrolled', 'error');
         }
 
-        // Check that the AI Tutor is enabled for this course.
-        $format = course_get_format($params['courseid']);
-        $formatoptions = $format->get_format_options();
-        if (empty($formatoptions['enable_aitutor'])) {
+        if (!\format_videoclass::is_aitutor_enabled_for_course($params['courseid'])) {
             throw new \moodle_exception('aitutordisabled', 'format_videoclass');
         }
 

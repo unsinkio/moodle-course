@@ -24,7 +24,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version = 2026061607; // Render markdown formatting in My Notes and shared notes.
+$plugin->version = 2026061608; // Allow Canvas Format 360 enable_atlas_panel for tutor chat WS.
 $plugin->requires = 2024100700; // Moodle 4.5.0.
 $plugin->component = 'format_videoclass';
 $plugin->maturity = MATURITY_ALPHA;
